@@ -11,7 +11,7 @@
 ## Phase 0 — 발행 경로 뚫기
 
 - [x] 레포 생성과 문서 골격
-- [ ] **사용자 작업**: Settings → Pages → Source를 `GitHub Actions` 로 변경
+- [x] **사용자 작업**: Settings → Pages → Source를 `GitHub Actions` 로 변경
 - [ ] Actions 워크플로가 성공하고 사이트가 실제로 열리는지 확인
 - [ ] 모바일 폭에서 레이아웃이 깨지지 않는지 확인
 
@@ -40,6 +40,7 @@
 세팅 과정에서 실제로 부딪힌 것들이다. 해결되면 지운다.
 
 - 세션에서 저장소를 생성할 수 없다. 세션이 지정된 레포에만 묶여 있어 사용자가 직접 만들었다.
-- Pages 활성화를 자동화할 수 없다. REST API는 프록시가 차단하고, Actions 의 `GITHUB_TOKEN` 도 권한이 없다(`configure-pages` 의 `enablement` 포함). 저장소 설정에서 한 번 켜야 하며, Branch 방식으로 바꿔도 이 단계는 동일하다.
+- Pages 활성화를 자동화할 수 없어 사용자가 저장소 설정에서 직접 켰다. REST API는 프록시가 차단하고, Actions 의 `GITHUB_TOKEN` 도 권한이 없다(`configure-pages` 의 `enablement` 포함). Branch 방식이었어도 이 단계는 동일하게 필요했다.
+- Pages 설정 화면의 `GitHub Pages Jekyll` · `Static HTML` 카드는 워크플로가 없는 경우를 위한 제안이다. 우리 워크플로가 있으므로 무시한다.
 - `github.io` 아웃바운드가 차단되어 세션에서 발행된 사이트를 열어볼 수 없다. 검증은 Actions 실행 결과와 사용자 확인으로 한다.
 - 컨테이너가 UTC 라 주차 계산은 `TZ=Asia/Seoul` 을 명시해야 한다. 연말 경계까지 검증해 `docs/ROUTINE.md` 에 명령을 박아 두었다.
