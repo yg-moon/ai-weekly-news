@@ -26,10 +26,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
+      # Pages는 저장소 설정에서 미리 켜 두어야 한다. configure-pages 의
+      # enablement 파라미터는 GITHUB_TOKEN 권한 부족으로 동작하지 않는다.
       - uses: actions/configure-pages@v5
-        # Pages가 아직 꺼져 있으면 워크플로가 직접 켠다.
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
