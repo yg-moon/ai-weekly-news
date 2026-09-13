@@ -20,7 +20,7 @@ const PRIMARY = [
   // 지상파와 보도채널
   "KBS", "SBS", "MBC", "JTBC", "YTN", "MBN", "채널A", "TV조선",
   // 통신사
-  "연합뉴스", "연합뉴스TV", "뉴시스",
+  "연합뉴스", "연합뉴스TV",
 ];
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];

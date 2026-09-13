@@ -95,7 +95,7 @@ node scripts/read-article.mjs <URL>   # 발행일과 본문 텍스트
 
 | 분야 | 주요 | 보조 |
 |---|---|---|
-| 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · 오마이뉴스 · KBS · SBS · MBC · JTBC · YTN · MBN · 채널A · TV조선 · 연합뉴스 · 뉴시스 | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
+| 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · 오마이뉴스 · KBS · SBS · MBC · JTBC · YTN · MBN · 채널A · TV조선 · 연합뉴스 · 연합뉴스TV | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴시스 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
 | 해외 | BBC · CNN · The Guardian · NPR · Al Jazeera · Washington Post · France 24 · Reuters · AP | Axios · CNBC · Politico · DW |
 | AI | 연구소 1차 출처(아래) · Bloomberg · TechCrunch · The Verge · Ars Technica | VentureBeat · The Information · Semafor |
 
@@ -125,6 +125,7 @@ node scripts/read-article.mjs <URL>   # 발행일과 본문 텍스트
 - 복수의 독립 매체 보도를 원칙으로 한다.
 - 단일 매체 보도뿐이면 싣되, 그 항목 출처 끝에 `(단일 매체)`를 붙인다.
 - 발표 주체의 1차 출처는 독립 매체로 세지 않는다. 1차 출처와 독립 매체 1곳이면 `(단일 매체 + 1차 출처)`로 밝힌다.
+- **주요 매체 출처가 하나도 없으면 `(보조 매체)`로 밝힌다.** 주요 매체가 당연히 보도했을 사안인데 수집 풀에 없으면 그 매체에서 먼저 찾아보고, 그래도 못 찾으면 보조 매체로 싣되 표기한다. 표기를 빼고 싣지 않는다.
 - 어느 경우에도 **원문 대조는 건너뛰지 않는다**. 출처가 하나여도 그 하나는 반드시 읽는다.
 
 ### 9. 문체
