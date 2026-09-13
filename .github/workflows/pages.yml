@@ -4,7 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'site/**'
+      - 'content/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -26,6 +29,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
       # Pages는 저장소 설정에서 미리 켜 두어야 한다. configure-pages 의
       # enablement 파라미터는 GITHUB_TOKEN 권한 부족으로 동작하지 않는다.
       - uses: actions/configure-pages@v5

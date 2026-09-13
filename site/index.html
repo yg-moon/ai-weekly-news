@@ -4,130 +4,71 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ai-weekly-news — 주간 뉴스 브리핑</title>
-<meta name="description" content="지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리해 매주 월요일 오전에 발행합니다.">
+<meta name="description" content="지난 한 주에 실제로 있었던 일을 국내·해외·AI 각 5건으로 정리합니다.">
 <style>
-  :root {
-    --bg: #fbfbfa;
-    --surface: #ffffff;
-    --text: #1a1a19;
-    --muted: #6b6b66;
-    --line: #e4e4e0;
-    --accent: #1f5f4f;
-    --radius: 10px;
-  }
+  :root { --bg:#fbfbfa; --surface:#fff; --text:#1a1a19; --muted:#6b6b66; --line:#e4e4e0; --accent:#1f5f4f; --radius:10px; }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #17181a;
-      --surface: #1f2023;
-      --text: #ececeb;
-      --muted: #9a9a95;
-      --line: #313236;
-      --accent: #6fbfa5;
-    }
+    :root { --bg:#17181a; --surface:#1f2023; --text:#ececeb; --muted:#9a9a95; --line:#313236; --accent:#6fbfa5; }
   }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    padding-block: 3rem 4rem;
-    padding-inline: 20px;
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
-                 "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
-    font-size: 16px;
-    line-height: 1.7;
-    -webkit-text-size-adjust: 100%;
-  }
-  .wrap { max-width: 42rem; margin: 0 auto; }
-
-  header { border-bottom: 1px solid var(--line); padding-bottom: 1.75rem; }
-  h1 { margin: 0 0 .5rem; font-size: 1.6rem; letter-spacing: -.02em; }
-  .tagline { margin: 0 0 .75rem; color: var(--muted); }
-  .byline {
-    margin: 0; font-size: .875rem; color: var(--muted);
-    display: flex; flex-wrap: wrap; gap: .4rem .75rem; align-items: center;
-  }
-  .badge {
-    display: inline-block; padding: .1rem .5rem; border-radius: 999px;
-    border: 1px solid var(--line); background: var(--surface);
-    font-size: .75rem; color: var(--muted); white-space: nowrap;
-  }
-
-  h2 { margin: 2.5rem 0 1rem; font-size: 1.05rem; letter-spacing: -.01em; }
-
-  .cols { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; padding: 0; list-style: none; }
-  .cols li {
-    flex: 1 1 8rem; padding: .7rem .85rem;
-    border: 1px solid var(--line); border-radius: var(--radius);
-    background: var(--surface); font-size: .875rem;
-  }
-  .cols strong { display: block; font-size: .95rem; }
-  .cols span { color: var(--muted); }
-
-  .archive { list-style: none; margin: 0; padding: 0; }
-  .archive li { border-bottom: 1px solid var(--line); }
-  .archive a {
-    display: flex; flex-wrap: wrap; gap: .25rem .75rem; align-items: baseline;
-    padding: .85rem .25rem; text-decoration: none; color: inherit;
-  }
-  .archive a:hover { background: var(--surface); }
-  .archive .wk { font-weight: 600; font-variant-numeric: tabular-nums; }
-  .archive .period { color: var(--muted); font-size: .875rem; }
-
-  .empty {
-    padding: 1.5rem; border: 1px dashed var(--line); border-radius: var(--radius);
-    color: var(--muted); background: var(--surface);
-  }
-  .empty p { margin: 0 0 .5rem; }
-  .empty p:last-child { margin: 0; }
-
-  footer {
-    margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line);
-    font-size: .875rem; color: var(--muted);
-  }
-  footer a { color: var(--accent); }
+  * { box-sizing:border-box; }
+  body { margin:0; padding-block:2.5rem 4rem; padding-inline:20px; background:var(--bg); color:var(--text);
+    font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+    font-size:16px; line-height:1.75; -webkit-text-size-adjust:100%; word-break:keep-all; overflow-wrap:anywhere; }
+  .wrap { max-width:42rem; margin:0 auto; }
+  a { color:var(--accent); }
+  header.site { border-bottom:1px solid var(--line); padding-bottom:1.5rem; margin-bottom:2rem; }
+  header.site h1 { margin:0 0 .4rem; font-size:1.5rem; letter-spacing:-.02em; }
+  header.site h1 a { color:inherit; text-decoration:none; }
+  .tagline { margin:0 0 .75rem; color:var(--muted); }
+  .badges { margin:0; display:flex; flex-wrap:wrap; gap:.4rem .6rem; }
+  .badge { display:inline-block; padding:.1rem .55rem; border-radius:999px; border:1px solid var(--line); background:var(--surface); font-size:.75rem; color:var(--muted); white-space:nowrap; }
+  .crumb { font-size:.875rem; color:var(--muted); margin:0 0 1.25rem; }
+  .crumb a { text-decoration:none; }
+  article h1 { font-size:1.35rem; letter-spacing:-.02em; margin:0 0 .25rem; }
+  article .meta { color:var(--muted); font-size:.875rem; margin:0 0 2rem; }
+  article h2 { font-size:1.15rem; margin:2.75rem 0 1rem; padding-bottom:.4rem; border-bottom:2px solid var(--accent); display:inline-block; }
+  article h3 { font-size:1.02rem; margin:2rem 0 .6rem; line-height:1.5; }
+  article ul { padding-left:1.1rem; margin:0 0 1rem; }
+  article li { margin:.35rem 0; }
+  article li strong { color:var(--text); }
+  article p { margin:0 0 1rem; }
+  article blockquote { margin:1.25rem 0; padding:.75rem 1rem; border-left:3px solid var(--line); background:var(--surface); color:var(--muted); font-size:.925rem; border-radius:0 var(--radius) var(--radius) 0; }
+  article blockquote p { margin:0; }
+  article code { font-size:.9em; background:var(--surface); border:1px solid var(--line); padding:0 .3em; border-radius:4px; }
+  h2.list { font-size:1.05rem; margin:2rem 0 1rem; }
+  .archive { list-style:none; margin:0; padding:0; }
+  .archive li { border-bottom:1px solid var(--line); }
+  .archive a { display:flex; flex-wrap:wrap; gap:.25rem .75rem; align-items:baseline; padding:.85rem .25rem; text-decoration:none; color:inherit; }
+  .archive a:hover { background:var(--surface); }
+  .archive .wk { font-weight:600; font-variant-numeric:tabular-nums; }
+  .archive .period, .archive .counts { color:var(--muted); font-size:.875rem; }
+  .archive .counts { margin-left:auto; }
+  .empty { padding:1.5rem; border:1px dashed var(--line); border-radius:var(--radius); color:var(--muted); background:var(--surface); }
+  footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--line); font-size:.875rem; color:var(--muted); }
 </style>
 </head>
 <body>
 <div class="wrap">
-
-  <header>
-    <h1>ai-weekly-news</h1>
-    <p class="tagline">지난 한 주에 실제로 있었던 일을 국내·해외·AI 각 5건으로 정리합니다.</p>
-    <p class="byline">
-      <span class="badge">매주 월요일 오전 발행 (KST)</span>
-      <span class="badge">AI 수집·요약 · 사람 검수</span>
-    </p>
-  </header>
-
-  <h2>다루는 범위</h2>
-  <ul class="cols">
-    <li><strong>국내</strong><span>5건</span></li>
-    <li><strong>해외</strong><span>5건</span></li>
-    <li><strong>AI</strong><span>5건</span></li>
-  </ul>
-
-  <h2>주간호</h2>
-  <!-- 새 주차는 이 목록의 맨 위에 추가한다. 형식은 docs/ROUTINE.md 참고.
-  <ul class="archive">
-    <li><a href="/ai-weekly-news/week/2026-W37/">
-      <span class="wk">2026-W37</span>
-      <span class="period">9월 7일–13일</span>
-    </a></li>
-  </ul>
-  -->
-  <div class="empty">
-    <p>아직 발행된 주간호가 없습니다.</p>
-    <p>첫 호는 발행 경로와 수집 방식을 검증한 뒤 올라갑니다.</p>
-  </div>
-
-  <footer>
-    <p>
-      최신 속보가 아니라 완결된 주간의 정리입니다. 주의 경계는 ISO 8601(월~일)을 따릅니다.<br>
-      <a href="https://github.com/yg-moon/ai-weekly-news">GitHub 저장소</a>
-    </p>
-  </footer>
-
+<header class="site">
+  <h1><a href="./">ai-weekly-news</a></h1>
+  <p class="tagline">지난 한 주에 실제로 있었던 일을 국내·해외·AI 각 5건으로 정리합니다.</p>
+  <p class="badges">
+    <span class="badge">매주 월요일 오전 발행 (KST)</span>
+    <span class="badge">AI 수집·요약 · 사람 검수</span>
+  </p>
+</header>
+<h2 class="list">주간호</h2>
+<ul class="archive">
+  <li><a href="week/2026-W36/">
+    <span class="wk">2026-W36</span>
+    <span class="period">8월 31일–9월 6일</span>
+    <span class="counts">국내 4 · 해외 5 · AI 5</span>
+  </a></li>
+</ul>
+<footer>
+  <p>최신 속보가 아니라 완결된 주간의 정리입니다. 주의 경계는 ISO 8601(월~일)을 따릅니다.<br>
+  <a href="https://github.com/yg-moon/ai-weekly-news">GitHub 저장소</a></p>
+</footer>
 </div>
 </body>
 </html>
