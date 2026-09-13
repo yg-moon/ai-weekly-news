@@ -14,6 +14,8 @@ const SITE_TAGLINE = "지난 한 주에 실제로 있었던 일을 국내·해�
 const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
 const FOOTER_NOTE =
   "최신 속보가 아니라 완결된 주간의 정리입니다. 한 주의 범위는 월요일부터 일요일까지입니다.";
+const FOOTER_LIMIT =
+  "수집과 요약은 AI가 합니다. 사람이 개별 항목을 일일이 검증하지는 않으므로, 각 항목의 출처 링크로 확인해 주세요.";
 
 const GROUPS = { 국내: "home", 해외: "world", AI: "ai" };
 
@@ -51,6 +53,8 @@ const koDate = (iso) => {
 };
 const period = (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`;
 const counts = (meta) => `국내 ${meta.domestic} · 해외 ${meta.world} · AI ${meta.ai}`;
+// 각 분야 5건이 표준이다. 표준이면 건수를 화면에서 반복하지 않고, 어긋날 때만 드러낸다.
+const isStandard = (meta) => ["domestic", "world", "ai"].every((k) => meta[k] === "5");
 const pageTitle = (w) => `${w.week} 주간 브리핑 (${period(w.meta)})`;
 
 // ---------- 본문 구조화 ----------
@@ -97,7 +101,8 @@ function structure(html) {
       const name = m[1].trim();
       const slug = GROUPS[name] ?? "other";
       const n = (chunk.match(/class="item"/g) ?? []).length;
-      const head = `<h2><span class="rule"></span>${name}<span class="n">${n}건</span></h2>`;
+      const chip = n === 5 ? "" : `<span class="n">${n}건</span>`;
+      const head = `<h2><span class="rule"></span>${name}${chip}</h2>`;
       return `<section class="group group--${slug}">${head}${chunk.slice(m[0].length)}</section>`;
     })
     .join("");
@@ -221,6 +226,8 @@ const CSS = `
     font-size:.82rem; color:var(--muted);
   }
   footer a { color:var(--muted); }
+  footer p { margin:0 0 .5rem; }
+  footer p:last-child { margin:0; }
 
   @media (min-width:36rem) {
     .archive .counts { width:auto; margin-left:auto; }
@@ -246,13 +253,15 @@ function layout({ title, description, root, body }) {
   <h1><a href="${root}">${SITE_TITLE}</a></h1>
   <p class="tagline">${SITE_TAGLINE}</p>
   <p class="badges">
-    <span class="badge">매주 월요일 오전 발행 (KST)</span>
-    <span class="badge">AI 수집·요약 · 사람 검수</span>
+    <span class="badge">매주 월요일 오전 8시 발행 (KST)</span>
+    <span class="badge">AI 자동 생성 · 모든 항목에 출처 링크</span>
   </p>
 </header>
 ${body}
 <footer>
-  <p>${FOOTER_NOTE}<br><a href="${REPO_URL}">GitHub 저장소</a></p>
+  <p>${FOOTER_NOTE}</p>
+  <p>${FOOTER_LIMIT}</p>
+  <p><a href="${REPO_URL}">GitHub 저장소</a></p>
 </footer>
 </div>
 </body>
@@ -264,7 +273,7 @@ function renderWeek(w) {
   const body = `
 <p class="crumb"><a href="../../">← 전체 목록</a></p>
 <h1 class="issue-title">${pageTitle(w)}</h1>
-<p class="issue-meta">${counts(w.meta)} · ${koDate(w.meta.published)} 발행</p>
+<p class="issue-meta">${isStandard(w.meta) ? "" : counts(w.meta) + " · "}${koDate(w.meta.published)} 발행</p>
 ${structure(marked.parse(w.body))}`;
   return layout({
     title: `${pageTitle(w)} — ${SITE_TITLE}`,
@@ -282,7 +291,7 @@ function renderIndex(weeks) {
   <li><a href="week/${w.week}/">
     <span class="wk">${w.week}</span>
     <span class="period">${period(w.meta)}</span>
-    <span class="counts">${counts(w.meta)}</span>
+    ${isStandard(w.meta) ? "" : `<span class="counts">${counts(w.meta)}</span>`}
   </a></li>`
         )
         .join("")}
