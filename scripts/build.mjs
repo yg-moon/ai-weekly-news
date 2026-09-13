@@ -12,6 +12,10 @@ const SITE = join(ROOT, "site");
 const SITE_TITLE = "ai-weekly-news";
 const SITE_TAGLINE = "지난 한 주에 실제로 있었던 일을 국내·해외·AI 각 5건으로 정리합니다.";
 const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
+const FOOTER_NOTE =
+  "최신 속보가 아니라 완결된 주간의 정리입니다. 한 주의 범위는 월요일부터 일요일까지입니다.";
+
+const GROUPS = { 국내: "home", 해외: "world", AI: "ai" };
 
 // ---------- 파싱 ----------
 
@@ -41,65 +45,186 @@ function loadWeeks() {
 
 // ---------- 표기 ----------
 
-function koDate(iso) {
+const koDate = (iso) => {
   const [, m, d] = iso.split("-").map(Number);
   return `${m}월 ${d}일`;
+};
+const period = (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`;
+const counts = (meta) => `국내 ${meta.domestic} · 해외 ${meta.world} · AI ${meta.ai}`;
+const pageTitle = (w) => `${w.week} 주간 브리핑 (${period(w.meta)})`;
+
+// ---------- 본문 구조화 ----------
+// marked 가 낸 h3 + ul 을 항목 블록으로 바꾼다. 라벨을 화면에서 없애고
+// 날짜는 칩으로, "왜 중요한가"는 강조 블록으로, 출처는 각주로 보낸다.
+
+function buildItem(num, title, listHtml) {
+  const fields = {};
+  const re = /<li>\s*<strong>(날짜|무슨 일|왜 중요한가|출처)<\/strong>\s*:?\s*([\s\S]*?)<\/li>/g;
+  let m;
+  while ((m = re.exec(listHtml))) fields[m[1]] = m[2].trim();
+
+  // 알려진 라벨이 하나도 없으면 원본을 그대로 둔다.
+  if (!Object.keys(fields).length) return null;
+
+  const parts = [
+    `<div class="item-head"><span class="num">${num}</span><h3>${title}</h3></div>`,
+  ];
+  if (fields["날짜"]) parts.push(`<p class="when">${fields["날짜"]}</p>`);
+  if (fields["무슨 일"]) parts.push(`<div class="what"><p>${fields["무슨 일"]}</p></div>`);
+  if (fields["왜 중요한가"])
+    parts.push(
+      `<div class="why"><p class="lbl">왜 중요한가</p><p>${fields["왜 중요한가"]}</p></div>`
+    );
+  if (fields["출처"])
+    parts.push(`<p class="src"><span class="lbl">출처</span>${fields["출처"]}</p>`);
+
+  return `<article class="item">${parts.join("")}</article>`;
 }
 
-function period(meta) {
-  return `${koDate(meta.period_start)}–${koDate(meta.period_end)}`;
-}
+function structure(html) {
+  // 1) 항목: <h3>N. 제목</h3> + 바로 뒤 <ul>
+  html = html.replace(
+    /<h3[^>]*>\s*(\d+)\.\s*([\s\S]*?)<\/h3>\s*<ul>([\s\S]*?)<\/ul>/g,
+    (whole, num, title, list) => buildItem(num, title.trim(), list) ?? whole
+  );
 
-function counts(meta) {
-  return `국내 ${meta.domestic} · 해외 ${meta.world} · AI ${meta.ai}`;
-}
-
-function pageTitle(w) {
-  return `${w.week} 주간 브리핑 (${period(w.meta)})`;
+  // 2) 분야: <h2>국내</h2> 부터 다음 <h2> 직전까지를 section 으로 감싼다
+  const chunks = html.split(/(?=<h2[^>]*>)/);
+  return chunks
+    .map((chunk) => {
+      const m = chunk.match(/^<h2[^>]*>\s*([\s\S]*?)<\/h2>/);
+      if (!m) return chunk;
+      const name = m[1].trim();
+      const slug = GROUPS[name] ?? "other";
+      const n = (chunk.match(/class="item"/g) ?? []).length;
+      const head = `<h2><span class="rule"></span>${name}<span class="n">${n}건</span></h2>`;
+      return `<section class="group group--${slug}">${head}${chunk.slice(m[0].length)}</section>`;
+    })
+    .join("");
 }
 
 // ---------- 레이아웃 ----------
 
 const CSS = `
-  :root { --bg:#fbfbfa; --surface:#fff; --text:#1a1a19; --muted:#6b6b66; --line:#e4e4e0; --accent:#1f5f4f; --radius:10px; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#17181a; --surface:#1f2023; --text:#ececeb; --muted:#9a9a95; --line:#313236; --accent:#6fbfa5; }
+  :root {
+    --bg:#fbfbf9; --surface:#fff; --sunken:#f4f4f1;
+    --text:#191918; --dim:#55554f; --muted:#84847c; --line:#e5e5e0;
+    --home:#0f6b57; --world:#2a5aa8; --ai:#6d3fa8;
+    --accent:var(--home); --radius:12px;
   }
-  * { box-sizing:border-box; }
-  body { margin:0; padding-block:2.5rem 4rem; padding-inline:20px; background:var(--bg); color:var(--text);
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#151517; --surface:#1d1e21; --sunken:#232428;
+      --text:#eeeeec; --dim:#b6b6b0; --muted:#8d8d87; --line:#303136;
+      --home:#63c3a6; --world:#82aeee; --ai:#bb9af0;
+    }
+  }
+  *,*::before,*::after { box-sizing:border-box; }
+  body {
+    margin:0; padding-block:2.5rem 4rem; padding-inline:20px;
+    background:var(--bg); color:var(--text);
     font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
-    font-size:16px; line-height:1.75; -webkit-text-size-adjust:100%; word-break:keep-all; overflow-wrap:anywhere; }
-  .wrap { max-width:42rem; margin:0 auto; }
-  a { color:var(--accent); }
-  header.site { border-bottom:1px solid var(--line); padding-bottom:1.5rem; margin-bottom:2rem; }
-  header.site h1 { margin:0 0 .4rem; font-size:1.5rem; letter-spacing:-.02em; }
+    font-size:16px; line-height:1.75; -webkit-text-size-adjust:100%;
+    word-break:keep-all; overflow-wrap:anywhere;
+  }
+  .wrap { max-width:44rem; margin:0 auto; }
+  a { color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px; }
+
+  /* 머리말 */
+  header.site { padding-bottom:1.5rem; border-bottom:1px solid var(--line); margin-bottom:2.25rem; }
+  header.site h1 { margin:0 0 .4rem; font-size:1.4rem; letter-spacing:-.02em; }
   header.site h1 a { color:inherit; text-decoration:none; }
-  .tagline { margin:0 0 .75rem; color:var(--muted); }
-  .badges { margin:0; display:flex; flex-wrap:wrap; gap:.4rem .6rem; }
-  .badge { display:inline-block; padding:.1rem .55rem; border-radius:999px; border:1px solid var(--line); background:var(--surface); font-size:.75rem; color:var(--muted); white-space:nowrap; }
-  .crumb { font-size:.875rem; color:var(--muted); margin:0 0 1.25rem; }
-  .crumb a { text-decoration:none; }
-  article h1 { font-size:1.35rem; letter-spacing:-.02em; margin:0 0 .25rem; }
-  article .meta { color:var(--muted); font-size:.875rem; margin:0 0 2rem; }
-  article h2 { font-size:1.15rem; margin:2.75rem 0 1rem; padding-bottom:.4rem; border-bottom:2px solid var(--accent); display:inline-block; }
-  article h3 { font-size:1.02rem; margin:2rem 0 .6rem; line-height:1.5; }
-  article ul { padding-left:1.1rem; margin:0 0 1rem; }
-  article li { margin:.35rem 0; }
-  article li strong { color:var(--text); }
-  article p { margin:0 0 1rem; }
-  article blockquote { margin:1.25rem 0; padding:.75rem 1rem; border-left:3px solid var(--line); background:var(--surface); color:var(--muted); font-size:.925rem; border-radius:0 var(--radius) var(--radius) 0; }
-  article blockquote p { margin:0; }
-  article code { font-size:.9em; background:var(--surface); border:1px solid var(--line); padding:0 .3em; border-radius:4px; }
-  h2.list { font-size:1.05rem; margin:2rem 0 1rem; }
+  .tagline { margin:0 0 .8rem; color:var(--dim); font-size:.95rem; }
+  .badges { margin:0; display:flex; flex-wrap:wrap; gap:.4rem; }
+  .badge {
+    padding:.15rem .6rem; border-radius:999px; border:1px solid var(--line);
+    background:var(--surface); font-size:.75rem; color:var(--muted); white-space:nowrap;
+  }
+  .crumb { font-size:.875rem; margin:0 0 1.5rem; }
+  .crumb a { color:var(--muted); text-decoration:none; }
+  .crumb a:hover { color:var(--text); }
+
+  /* 주간호 제목 */
+  .issue-title { font-size:1.5rem; letter-spacing:-.02em; margin:0 0 .3rem; line-height:1.35; }
+  .issue-meta { color:var(--muted); font-size:.875rem; margin:0 0 1rem; }
+
+  /* 분야 */
+  .group { --accent:var(--home); margin-top:3.5rem; }
+  .group--world { --accent:var(--world); }
+  .group--ai { --accent:var(--ai); }
+  .group > h2 {
+    display:flex; align-items:center; gap:.6rem;
+    font-size:1.2rem; letter-spacing:-.01em; margin:0 0 .5rem; color:var(--accent);
+  }
+  .group > h2 .rule { width:1.5rem; height:3px; border-radius:2px; background:var(--accent); }
+  .group > h2 .n {
+    margin-left:auto; font-size:.75rem; font-weight:400; color:var(--muted);
+    border:1px solid var(--line); border-radius:999px; padding:.1rem .55rem; background:var(--surface);
+  }
+  /* 분야 도입 문단 */
+  .group > p { color:var(--dim); font-size:.95rem; margin:0 0 .5rem; }
+
+  /* 항목 */
+  .item { padding:1.75rem 0; border-top:1px solid var(--line); }
+  .group > h2 + .item, .group > p + .item { border-top:none; padding-top:.75rem; }
+  .item-head { display:flex; gap:.7rem; align-items:baseline; }
+  .num {
+    flex:none; min-width:1.6rem; height:1.6rem; padding:0 .35rem;
+    display:inline-flex; align-items:center; justify-content:center;
+    border-radius:.5rem; background:var(--accent); color:var(--bg);
+    font-size:.8rem; font-weight:700; font-variant-numeric:tabular-nums;
+    transform:translateY(.15rem);
+  }
+  .item h3 { margin:0; font-size:1.08rem; line-height:1.55; letter-spacing:-.01em; }
+  .when {
+    margin:.5rem 0 .9rem 2.3rem; font-size:.8rem; color:var(--muted);
+    font-variant-numeric:tabular-nums;
+  }
+  .what { margin-left:2.3rem; }
+  .what p { margin:0; color:var(--dim); }
+  .why {
+    margin:1rem 0 0 2.3rem; padding:.85rem 1rem;
+    background:var(--sunken); border-left:3px solid var(--accent);
+    border-radius:0 var(--radius) var(--radius) 0;
+  }
+  .why p { margin:0; }
+  .why .lbl {
+    display:block; font-size:.7rem; letter-spacing:.08em; font-weight:700;
+    color:var(--accent); margin-bottom:.3rem;
+  }
+  .src { margin:.9rem 0 0 2.3rem; font-size:.8rem; color:var(--muted); line-height:1.9; }
+  .src .lbl { color:var(--muted); margin-right:.4rem; }
+  .src a { color:var(--muted); }
+  .src a:hover { color:var(--accent); }
+  .src em { font-style:normal; color:var(--muted); opacity:.85; }
+
+  /* 목록 페이지 */
+  h2.list { font-size:1.05rem; margin:0 0 1rem; }
   .archive { list-style:none; margin:0; padding:0; }
-  .archive li { border-bottom:1px solid var(--line); }
-  .archive a { display:flex; flex-wrap:wrap; gap:.25rem .75rem; align-items:baseline; padding:.85rem .25rem; text-decoration:none; color:inherit; }
+  .archive li + li { border-top:1px solid var(--line); }
+  .archive a {
+    display:flex; flex-wrap:wrap; gap:.15rem .75rem; align-items:baseline;
+    padding:1rem .5rem; margin-inline:-.5rem; text-decoration:none; color:inherit;
+    border-radius:var(--radius);
+  }
   .archive a:hover { background:var(--surface); }
-  .archive .wk { font-weight:600; font-variant-numeric:tabular-nums; }
-  .archive .period, .archive .counts { color:var(--muted); font-size:.875rem; }
-  .archive .counts { margin-left:auto; }
-  .empty { padding:1.5rem; border:1px dashed var(--line); border-radius:var(--radius); color:var(--muted); background:var(--surface); }
-  footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--line); font-size:.875rem; color:var(--muted); }
+  .archive .wk { font-weight:700; font-variant-numeric:tabular-nums; }
+  .archive .period { color:var(--dim); font-size:.9rem; }
+  .archive .counts { width:100%; color:var(--muted); font-size:.78rem; }
+  .empty {
+    padding:1.5rem; border:1px dashed var(--line); border-radius:var(--radius);
+    color:var(--muted); background:var(--surface);
+  }
+
+  footer {
+    margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line);
+    font-size:.82rem; color:var(--muted);
+  }
+  footer a { color:var(--muted); }
+
+  @media (min-width:36rem) {
+    .archive .counts { width:auto; margin-left:auto; }
+  }
 `;
 
 function layout({ title, description, root, body }) {
@@ -110,6 +235,9 @@ function layout({ title, description, root, body }) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <meta name="description" content="${description}">
+<meta property="og:title" content="${title}">
+<meta property="og:description" content="${description}">
+<meta property="og:type" content="website">
 <style>${CSS}</style>
 </head>
 <body>
@@ -124,8 +252,7 @@ function layout({ title, description, root, body }) {
 </header>
 ${body}
 <footer>
-  <p>최신 속보가 아니라 완결된 주간의 정리입니다. 주의 경계는 ISO 8601(월~일)을 따릅니다.<br>
-  <a href="${REPO_URL}">GitHub 저장소</a></p>
+  <p>${FOOTER_NOTE}<br><a href="${REPO_URL}">GitHub 저장소</a></p>
 </footer>
 </div>
 </body>
@@ -136,11 +263,9 @@ ${body}
 function renderWeek(w) {
   const body = `
 <p class="crumb"><a href="../../">← 전체 목록</a></p>
-<article>
-  <h1>${pageTitle(w)}</h1>
-  <p class="meta">${counts(w.meta)} · ${koDate(w.meta.published)} 발행</p>
-  ${marked.parse(w.body)}
-</article>`;
+<h1 class="issue-title">${pageTitle(w)}</h1>
+<p class="issue-meta">${counts(w.meta)} · ${koDate(w.meta.published)} 발행</p>
+${structure(marked.parse(w.body))}`;
   return layout({
     title: `${pageTitle(w)} — ${SITE_TITLE}`,
     description: `${w.week} (${period(w.meta)}) 주간 브리핑. ${counts(w.meta)}.`,
