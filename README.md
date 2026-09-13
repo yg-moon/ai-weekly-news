@@ -1,6 +1,6 @@
 # ai-weekly-news
 
-### 👉 [**yg-moon.github.io/ai-weekly-news**](https://yg-moon.github.io/ai-weekly-news/)
+### [yg-moon.github.io/ai-weekly-news](https://yg-moon.github.io/ai-weekly-news/)
 
 지난 한 주에 실제로 있었던 일을 **국내 5건 · 해외 5건 · AI 5건**으로 정리해 매주 월요일 오전 8시(KST)에 발행합니다.
 
