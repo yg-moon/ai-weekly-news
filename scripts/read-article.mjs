@@ -3,6 +3,8 @@
 //
 //   node scripts/read-article.mjs <URL> [URL...]
 
+import { execFileSync } from "node:child_process";
+
 const UA =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36";
 
@@ -58,13 +60,18 @@ for (const url of urls) {
   console.log("=".repeat(80));
   console.log("URL   " + url);
   try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": UA, "Accept-Language": "ko,en;q=0.8" },
-      redirect: "follow",
-      signal: AbortSignal.timeout(25000),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
+    // Node 의 fetch 는 일부 언론사 호스트에서 403 을 받는다. curl 로 받는다.
+    const buf = execFileSync(
+      "curl",
+      ["-sSL", "-m", "25", "-A", UA, "-H", "Accept-Language: ko-KR,ko;q=0.9,en;q=0.8", url],
+      { maxBuffer: 64 * 1024 * 1024 }
+    );
+    if (buf.length < 2000) throw new Error(`응답이 짧다 (${buf.length}B)`);
+    // EUC-KR 로 내려주는 매체가 있어 charset 을 보고 디코딩한다.
+    const head = buf.subarray(0, 4000).toString("latin1");
+    const cs = head.match(/charset=["']?([\w-]+)/i);
+    const enc = cs && /euc-kr|ks_c_5601|cp949/i.test(cs[1]) ? "euc-kr" : "utf-8";
+    const html = new TextDecoder(enc).decode(buf);
     const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
     console.log("DATE  " + (metaDate(html) ?? "(발행일 메타태그 없음 — 본문에서 확인할 것)"));
     console.log("TITLE " + (title ? title[1].trim() : "(없음)"));
