@@ -97,22 +97,6 @@ function buildItem(num, title, listHtml) {
   return `<article class="item">${parts.join("")}</article>`;
 }
 
-// 한글은 음절 단위로 끊어야 줄 끝이 고르다. 그런데 그 설정은 숫자와 영문까지
-// 쪼개 "2024" 가 "202/4" 가 된다. 그래서 숫자·영문 덩어리만 묶어 둔다.
-// 태그 안(속성)은 건드리지 않고, 엔티티(&quot; 등)도 그대로 둔다.
-function keepNumbersWhole(html) {
-  const wrap = (text) =>
-    text
-      .split(/(&[#a-zA-Z0-9]+;)/)
-      .map((part, i) =>
-        i % 2
-          ? part
-          : part.replace(/[A-Za-z0-9](?:[A-Za-z0-9.,%'-]*[A-Za-z0-9%])?/g, (s) => `<span class="nb">${s}</span>`)
-      )
-      .join("");
-  return html.replace(/(^|>)([^<]+)/g, (_, lead, text) => lead + wrap(text));
-}
-
 function structure(html) {
   // 1) 항목: <h3>N. 제목</h3> + 바로 뒤 <ul>
   html = html.replace(
@@ -122,7 +106,7 @@ function structure(html) {
 
   // 2) 분야: <h2>국내</h2> 부터 다음 <h2> 직전까지를 section 으로 감싼다
   const chunks = html.split(/(?=<h2[^>]*>)/);
-  const out = chunks
+  return chunks
     .map((chunk) => {
       const m = chunk.match(/^<h2[^>]*>\s*([\s\S]*?)<\/h2>/);
       if (!m) return chunk;
@@ -134,10 +118,6 @@ function structure(html) {
       return `<section class="group group--${slug}">${head}${chunk.slice(m[0].length)}</section>`;
     })
     .join("");
-
-  // 구조를 다 잡은 뒤에 돌린다. 먼저 돌리면 <h3>1. 제목</h3> 의 번호를 감싸
-  // 항목 파싱이 깨진다.
-  return keepNumbersWhole(out);
 }
 
 // ---------- 레이아웃 ----------
@@ -163,12 +143,12 @@ const CSS = `
     background:var(--bg); color:var(--text);
     font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
     font-size:16px; line-height:1.75; -webkit-text-size-adjust:100%;
-    word-break:break-all; overflow-wrap:break-word; letter-spacing:-.01em;
+    word-break:keep-all; overflow-wrap:break-word; letter-spacing:-.02em;
   }
-  .wrap { max-width:38.3rem; margin:0 auto; }
-  /* 줄바꿈은 음절 단위로 맡기고 정렬은 왼쪽 그대로 둔다. 양쪽 정렬은 어절
-     사이를 늘려 자간이 들쭉날쭉해진다. 제목만 어절 단위로 끊는다. */
-  h1, h2, h3, .issue-title, .badge, .when, .nb { word-break:keep-all; }
+  .wrap { max-width:41rem; margin:0 auto; }
+  /* 어절 단위로 끊고 왼쪽 정렬. 국내 신문사 본문이 모두 이 방식이다.
+     줄 끝에 평균 1.2자가 비지만 단어가 쪼개지지 않는다. */
+  .what p, .why p { font-size:1.125rem; }
   a { color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px; }
 
   /* 머리말 */
@@ -216,7 +196,7 @@ const CSS = `
     font-size:.8rem; font-weight:700; font-variant-numeric:tabular-nums;
     transform:translateY(.15rem);
   }
-  .item h3 { margin:0; font-size:1.08rem; line-height:1.55; letter-spacing:-.01em; }
+  .item h3 { margin:0; font-size:1.2rem; line-height:1.55; letter-spacing:-.01em; }
   .when {
     margin:.5rem 0 .9rem var(--indent); font-size:.8rem; color:var(--muted);
     font-variant-numeric:tabular-nums;
@@ -270,7 +250,6 @@ const CSS = `
 
   @media (max-width:30rem) {
     :root { --indent:0rem; --pad:.9rem; }
-    body { font-size:17px; }
     .why { margin-right:0; }
     .item-head { margin-bottom:.2rem; }
   }
