@@ -39,9 +39,11 @@ node scripts/collect-headlines.mjs <대상주 월요일> <대상주 일요일>
 
 | 분야 | 출처 | 무엇을 주는가 |
 |---|---|---|
-| 국내 | 네이버 뉴스 랭킹 | 날짜별·기성 언론사별 많이 본 기사 5건씩 |
-| 해외 | Wikipedia Portal:Current events | 날짜별로 분류·정리된 국제 사안과 출처 |
-| AI | Hacker News 프런트 페이지 | 날짜별 기술 화제 |
+| 국내 | 네이버 뉴스 랭킹 | 날짜별·주요 언론사 15곳별 많이 본 기사 5건씩 |
+| 해외 | Wikipedia Portal:Current events + The Guardian 피드 | 날짜별로 분류·정리된 국제 사안과 출처 |
+| AI | 연구소·기업 뉴스룸 7곳(`ai`) + Hacker News 프런트(`tech`) | 1차 발표와 날짜별 기술 화제 |
+
+**날짜를 지정해 받을 수 있는 소스만 뼈대로 쓴다.** 회고형 주간지라 대상 주 7일을 정확히 덮어야 한다. 일반 뉴스 RSS는 최신 몇십 건만 담아 이 조건을 못 채운다. 실측으로 BBC World는 3.3일, Techmeme은 0.9일치뿐이었고 CNN World는 날짜가 깨져 있었다. 발행 빈도가 낮은 뉴스룸 RSS만 예외로 수 주에서 수년치를 담는다.
 
 읽은 뒤 **같은 사안이 며칠에 걸쳐 몇 개 언론사에 반복되는지 센다.** 이것이 "그 주에 얼마나 크게 다뤄졌는가"의 측정값이다.
 
@@ -97,8 +99,8 @@ node scripts/read-article.mjs <URL>   # 발행일과 본문 텍스트
 
 | 분야 | 주요 | 보조 |
 |---|---|---|
-| 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · 오마이뉴스 · KBS · SBS · MBC · JTBC · YTN · MBN · 채널A · TV조선 · 연합뉴스 · 연합뉴스TV | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴시스 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
-| 해외 | BBC · CNN · The Guardian · NPR · Al Jazeera · Washington Post · France 24 · Reuters · AP | Axios · CNBC · Politico · DW |
+| 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · KBS · SBS · MBC · JTBC · YTN · 연합뉴스 · 연합뉴스TV (15곳) | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴시스 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
+| 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · NPR · Al Jazeera · Washington Post · France 24 · Reuters · AP | Axios · CNBC · Politico · DW |
 | AI | 연구소 1차 출처(아래) · Bloomberg · TechCrunch · The Verge · Ars Technica | VentureBeat · The Information · Semafor |
 
 국내 사안은 **한국어 원문을 우선한다.** 번역을 거치지 않아 표현과 수치가 정확하고, 영문판에 없는 사안이 많다.
@@ -107,14 +109,17 @@ node scripts/read-article.mjs <URL>   # 발행일과 본문 텍스트
 
 | 주체 | 경로 |
 |---|---|
+| OpenAI | `openai.com/news/rss.xml` |
 | Anthropic | `anthropic.com/news` |
 | Google AI | `blog.google/technology/ai/rss/` |
 | Google DeepMind | `deepmind.google/blog/rss.xml` |
 | NVIDIA | `blogs.nvidia.com/feed/` |
 | Microsoft | `news.microsoft.com/source/feed/` |
+| Hugging Face | `huggingface.co/blog/feed.xml` |
 
-- OpenAI 뉴스룸(`openai.com/news`)은 직접 받기가 막혀 있다. Hacker News 프런트와 테크 매체로 보완한다.
-- 뉴스룸 RSS 는 보통 2주에서 수개월치를 담는다. 주간 실행에는 충분하고, 더 과거를 채울 때는 Hacker News 아카이브를 쓴다.
+- OpenAI 는 HTML 페이지가 403 이지만 **RSS 는 열린다.** 10년치를 담는다.
+- 뉴스룸 피드에는 고객 사례와 홍보 글이 많이 섞인다. 새 모델·연구·인수·정책 발표만 후보로 올리고 나머지는 버린다.
+- 뉴스룸은 자사 발표만 담아 업계 맥락과 비판이 없다. Hacker News 프런트가 그 공백을 일부 메운다.
 
 **도구가 거부하는 매체가 있다.** 검색 도구의 `allowed_domains` 에 연합·조선·중앙·동아·한겨레·매경·Reuters·AP·BBC·The Guardian 을 넣으면 호출 전체가 실패한다. 넣지 않는다. 다만 URL 을 알면 원문 받기는 되므로 대조에는 쓴다. Wall Street Journal 은 원문도 막혀 있다(401).
 

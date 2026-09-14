@@ -5,8 +5,9 @@
 //   node scripts/collect-headlines.mjs 2026-08-31 2026-09-06 [domestic|world|tech]
 //
 // domestic  네이버 뉴스 랭킹 — 날짜별·언론사별 많이 본 기사
-// world     Wikipedia Portal:Current events — 날짜별로 정리된 국제 사안
+// world     Wikipedia Portal:Current events(날짜별) + The Guardian 피드
 // tech      Hacker News 프런트 페이지 — 날짜별 기술 화제
+// ai        AI 연구소·기업 뉴스룸 1차 출처
 
 import { execFileSync } from "node:child_process";
 
@@ -14,12 +15,11 @@ const UA =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36";
 
 // 기성 종합지·지상파·통신사. 편집 판단의 기준으로 삼는다.
+// 기성 종합일간지·지상파·통신사만 본다. 연성 기사 비중이 높은 매체는
+// '많이 본' 편향을 키우므로 제외한다. 근거는 docs/DECISIONS.md 참고.
 const PRIMARY = [
-  // 기성 종합일간지
-  "조선일보", "중앙일보", "동아일보", "한겨레", "경향신문", "한국일보", "서울신문", "국민일보", "오마이뉴스",
-  // 지상파와 보도채널
-  "KBS", "SBS", "MBC", "JTBC", "YTN", "MBN", "채널A", "TV조선",
-  // 통신사
+  "조선일보", "중앙일보", "동아일보", "한겨레", "경향신문", "한국일보", "서울신문", "국민일보",
+  "KBS", "SBS", "MBC", "JTBC", "YTN",
   "연합뉴스", "연합뉴스TV",
 ];
 
@@ -76,7 +76,7 @@ function domestic(day) {
 
 // ---------- 해외 ----------
 
-function world(day) {
+function wikipediaDay(day) {
   const [yy, mm, dd] = day.split("-").map(Number);
   const html = get(`https://en.wikipedia.org/wiki/Portal:Current_events/${yy}_${MONTHS[mm - 1]}_${dd}`);
   const body = html.slice(html.indexOf("current-events-content"));
@@ -115,12 +115,18 @@ function tech(day) {
 // 날짜 구간 전체를 한 번에 받으므로 per-day 가 아니라 per-range 로 돈다.
 
 const FEEDS = [
+  ["OpenAI", "https://openai.com/news/rss.xml", "rss"],
   ["Anthropic", "https://www.anthropic.com/news", "anthropic"],
   ["Google AI", "https://blog.google/technology/ai/rss/", "rss"],
   ["Google DeepMind", "https://deepmind.google/blog/rss.xml", "rss"],
   ["NVIDIA", "https://blogs.nvidia.com/feed/", "rss"],
   ["Microsoft", "https://news.microsoft.com/source/feed/", "rss"],
+  ["Hugging Face", "https://huggingface.co/blog/feed.xml", "rss"],
 ];
+
+// 해외 보조. Wikipedia 가 약한 경제·기업 사안을 메운다.
+// 8.5일치를 담아 주간 회고를 겨우 덮는다. BBC(3.3일)와 CNN(피드 고장)은 쓰지 않는다.
+const WORLD_FEEDS = [["The Guardian", "https://www.theguardian.com/world/rss", "rss"]];
 
 function parseRss(xml) {
   const out = [];
@@ -150,9 +156,9 @@ function parseAnthropic(html) {
   return out;
 }
 
-function ai(from, to) {
+function collectFeeds(list, from, to) {
   const out = [];
-  for (const [name, url, kind] of FEEDS) {
+  for (const [name, url, kind] of list) {
     let items;
     try {
       const body = get(url);
@@ -170,10 +176,26 @@ function ai(from, to) {
   return out;
 }
 
+const ai = (from, to) => collectFeeds(FEEDS, from, to);
+
+// 해외는 날짜별 Wikipedia 를 뼈대로 하고 Guardian 피드를 덧붙인다.
+function world(from, to) {
+  const out = [];
+  for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1)) {
+    const day = dt.toISOString().slice(0, 10);
+    try {
+      for (const g of wikipediaDay(day)) out.push({ group: `${day} · ${g.group}`, items: g.items });
+    } catch (e) {
+      out.push({ group: `${day} — 수집 실패: ${e.message}`, items: [] });
+    }
+  }
+  return out.concat(collectFeeds(WORLD_FEEDS, from, to));
+}
+
 // ---------- 실행 ----------
 
-const SOURCES = { domestic, world, tech };
-const RANGE_SOURCES = { ai };
+const SOURCES = { domestic, tech };
+const RANGE_SOURCES = { world, ai };
 
 const args = process.argv.slice(2);
 const ALL = { ...SOURCES, ...RANGE_SOURCES };
