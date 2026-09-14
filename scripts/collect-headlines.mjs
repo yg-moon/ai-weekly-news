@@ -1,6 +1,6 @@
 // 대상 주의 헤드라인을 날짜별로 모은다. 키워드를 넣지 않는 것이 핵심이다.
 // 검색으로 후보를 찾으면 검색어가 결과를 정하므로, 후보 풀은 이 목록에서 시작한다.
-// RUNBOOK 4절 참고.
+// RUNBOOK_WEEKLY 4절 참고.
 //
 //   node scripts/collect-headlines.mjs 2026-08-31 2026-09-06 [domestic|world|tech]
 //

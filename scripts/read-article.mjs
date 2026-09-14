@@ -1,5 +1,5 @@
 // 기사 URL에서 발행일과 본문 텍스트를 뽑는다.
-// 검색 요약 대신 원문을 대조하기 위한 도구다. RUNBOOK 2절 참고.
+// 검색 요약 대신 원문을 대조하기 위한 도구다. RUNBOOK_WEEKLY 2절 참고.
 //
 //   node scripts/read-article.mjs <URL> [URL...]
 

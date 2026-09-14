@@ -18,6 +18,7 @@ const FOOTER_LIMIT =
   "수집과 요약은 AI가 합니다. 사람이 개별 항목을 일일이 검증하지는 않으므로, 각 항목의 출처 링크로 확인해 주세요.";
 
 const GROUPS = { 국내: "home", 해외: "world", AI: "ai" };
+const GROUP_NAMES = Object.keys(GROUPS);
 
 // ---------- 파싱 ----------
 
@@ -40,9 +41,18 @@ function loadWeeks() {
       const { meta, body } = parseFrontmatter(readFileSync(join(CONTENT, f), "utf8"));
       const week = basename(f, ".md");
       if (meta.week !== week) throw new Error(`${f}: 파일명과 frontmatter week 가 다르다`);
-      return { week, meta, body };
+      return { week, meta, body, n: sectionCounts(body) };
     })
     .sort((a, b) => (a.week < b.week ? 1 : -1)); // 최신순
+}
+
+// 건수는 본문에서 센다. 프론트매터에 적어 두면 본문과 어긋나도 아무도 모른다.
+function sectionCounts(body) {
+  const out = {};
+  for (const chunk of body.split(/^## /m).slice(1)) {
+    out[chunk.split("\n")[0].trim()] = (chunk.match(/^### /gm) ?? []).length;
+  }
+  return out;
 }
 
 // ---------- 표기 ----------
@@ -52,9 +62,9 @@ const koDate = (iso) => {
   return `${m}월 ${d}일`;
 };
 const period = (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`;
-const counts = (meta) => `국내 ${meta.domestic} · 해외 ${meta.world} · AI ${meta.ai}`;
+const counts = (w) => GROUP_NAMES.map((g) => `${g} ${w.n[g] ?? 0}`).join(" · ");
 // 각 분야 5건이 표준이다. 표준이면 건수를 화면에서 반복하지 않고, 어긋날 때만 드러낸다.
-const isStandard = (meta) => ["domestic", "world", "ai"].every((k) => meta[k] === "5");
+const isStandard = (w) => GROUP_NAMES.every((g) => w.n[g] === 5);
 const pageTitle = (w) => `${w.week} 주간 브리핑 (${period(w.meta)})`;
 // 화면에서는 기간을 다음 줄로 내린다. 한 줄에 두면 좁은 화면에서 어중간하게 잘린다.
 const pageTitleHtml = (w) =>
@@ -304,11 +314,11 @@ function renderWeek(w) {
   const body = `
 <p class="crumb"><a href="../../">← 전체 목록</a></p>
 <h1 class="issue-title">${pageTitleHtml(w)}</h1>
-<p class="issue-meta">${isStandard(w.meta) ? "" : counts(w.meta) + " · "}${koDate(w.meta.published)} 발행</p>
+<p class="issue-meta">${isStandard(w) ? "" : counts(w) + " · "}${koDate(w.meta.published)} 발행</p>
 ${structure(marked.parse(w.body))}`;
   return layout({
     title: `${pageTitle(w)} — ${SITE_TITLE}`,
-    description: `${w.week} (${period(w.meta)}) 주간 브리핑. ${counts(w.meta)}.`,
+    description: `${w.week} (${period(w.meta)}) 주간 브리핑. ${counts(w)}.`,
     root: "../../",
     body,
   });
@@ -322,7 +332,7 @@ function renderIndex(weeks) {
   <li><a href="week/${w.week}/">
     <span class="wk">${w.week}</span>
     <span class="period">${period(w.meta)}</span>
-    ${isStandard(w.meta) ? "" : `<span class="counts">${counts(w.meta)}</span>`}
+    ${isStandard(w) ? "" : `<span class="counts">${counts(w)}</span>`}
   </a></li>`
         )
         .join("")}

@@ -8,7 +8,7 @@
 
 ## 작업 전에 읽을 것
 
-- 주간 발행 작업이면 [`docs/RUNBOOK.md`](docs/RUNBOOK.md) 를 처음부터 끝까지 읽고 그대로 따른다.
+- 주간 발행 작업이면 [`docs/RUNBOOK_WEEKLY.md`](docs/RUNBOOK_WEEKLY.md) 를 처음부터 끝까지 읽고 그대로 따른다.
 - 범위·품질·목표에 대한 판단이 필요하면 [`docs/INTENT.md`](docs/INTENT.md) 를 따른다.
 - **기준을 바꾸려 하면 [`docs/DECISIONS.md`](docs/DECISIONS.md) 를 먼저 읽는다.** 이미 검토하고 버린 선택지가 적혀 있다. 바꾼 뒤에는 그곳에 항목을 추가한다.
 - 지금 무엇을 하는 중인지는 [`docs/PLAN.md`](docs/PLAN.md) 에 있다.
@@ -26,9 +26,9 @@
 - 간결성: 중복 표현을 피하고 하나의 의미는 하나의 문장으로 압축한다.
 - 최소 변경: 내용을 추가할 때 기존 문서의 맥락을 고려해 최소한으로 바꾼다.
 - 명확성 우선: 짧게 줄여서 뜻이 갈릴 수 있으면 길더라도 명확한 쪽을 쓴다. 기간·단위·날짜 표기가 특히 그렇다.
-- 평이한 문체: 비유와 추상적 수식을 기본값으로 쓰지 않는다. 발행물의 문체 규칙은 [`docs/RUNBOOK.md`](docs/RUNBOOK.md) 에 있다.
+- 평이한 문체: 비유와 추상적 수식을 기본값으로 쓰지 않는다. 발행물의 문체 규칙은 [`docs/RUNBOOK_WEEKLY.md`](docs/RUNBOOK_WEEKLY.md) 에 있다.
 - 도구 중립: 절차는 **도구 이름이 아니라 할 일**로 쓴다. "WebSearch 로 검색한다"가 아니라 "웹 검색으로 후보를 찾는다"로 쓴다.
-- 플랫폼 분리: 특정 제품에서만 되는 것은 본문에 섞지 않고 [`docs/RUNBOOK.md`](docs/RUNBOOK.md) 의 "플랫폼별 실행" 절에 모은다.
+- 플랫폼 분리: 특정 제품에서만 되는 것은 본문에 섞지 않고 [`docs/RUNBOOK_WEEKLY.md`](docs/RUNBOOK_WEEKLY.md) 의 "플랫폼별 실행" 절에 모은다.
 
 ## 문서의 역할 분담
 
@@ -36,10 +36,10 @@
 
 | 문서 | 담는 것 | 담지 않는 것 |
 |---|---|---|
-| `AGENTS.md` | 모든 세션이 알아야 할 저장소 작업 규칙 | 뉴스를 수집·선별·집필하는 규칙 → `RUNBOOK` |
-| `docs/INTENT.md` | 무엇을 왜 만드는가 | 어떻게 하는가 → `RUNBOOK` |
+| `AGENTS.md` | 모든 세션이 알아야 할 저장소 작업 규칙 | 뉴스를 수집·선별·집필하는 규칙 → `RUNBOOK_WEEKLY` |
+| `docs/INTENT.md` | 무엇을 왜 만드는가 | 어떻게 하는가 → `RUNBOOK_WEEKLY` |
 | `docs/DECISIONS.md` | 무엇을 왜 정했고 무엇을 버렸는가. 요점만 | 실험 과정과 시행착오. 필요하면 다시 조사한다 |
-| `docs/RUNBOOK.md` | 매주 무엇을 어떻게 실행하는가 | 왜 그 기준인지의 설명 → `DECISIONS` |
+| `docs/RUNBOOK_WEEKLY.md` | 매주 무엇을 어떻게 실행하는가 | 왜 그 기준인지의 설명 → `DECISIONS` |
 | `docs/QUALITY_CHECKS.md` | 문서와 발행물이 어긋났는지 점검하는 법 | 점검 결과와 이력 |
 | `docs/PLAN.md` | 지금 무엇을 하는 중인가 | 끝난 항목. 지운다 |
 

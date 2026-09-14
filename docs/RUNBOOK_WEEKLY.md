@@ -1,4 +1,4 @@
-# RUNBOOK
+# RUNBOOK_WEEKLY
 
 **매주 무엇을 어떻게 실행하는가.** 대상 주를 정하는 것부터 수집·선별·집필·발행까지의 절차 전부를 담는다. 주간 발행 작업은 이 문서만 보고 끝낼 수 있어야 한다.
 
@@ -242,9 +242,6 @@ week: 2026-W36
 period_start: 2026-08-31
 period_end: 2026-09-06
 published: 2026-09-14
-domestic: 5
-world: 5
-ai: 5
 ---
 
 ## 국내
@@ -304,8 +301,8 @@ git push origin main
 yg-moon/ai-weekly-news 의 주간 브리핑을 발행한다.
 
 1. 저장소를 클론한다.
-2. docs/RUNBOOK.md 를 처음부터 끝까지 읽는다.
-3. 그 문서의 절차를 그대로 수행한다. 사양의 기준은 이 프롬프트가 아니라 RUNBOOK.md 다.
+2. docs/RUNBOOK_WEEKLY.md 를 처음부터 끝까지 읽는다.
+3. 그 문서의 절차를 그대로 수행한다. 사양의 기준은 이 프롬프트가 아니라 RUNBOOK_WEEKLY.md 다.
 4. 판단이 필요한 지점은 docs/INTENT.md 의 원칙을 따른다.
 ```
 
