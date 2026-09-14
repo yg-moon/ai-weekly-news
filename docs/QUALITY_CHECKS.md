@@ -21,21 +21,28 @@
 
 ## 1. 문서 — 기계로 보는 것
 
-### 1.1 분량
+### 1.1 분량이 늘고 있는가
+
+**줄 수 상한은 두지 않는다.** 몇 줄이 맞는지는 내용에 달렸고, 숫자를 정해 두면 그 숫자를 지키느라 필요한 문장을 지우게 된다. 보는 것은 **얼마나 빠르게 늘고 있는가**다.
 
 ```bash
-wc -l AGENTS.md README.md docs/*.md
+BASE=$(git rev-list HEAD | tail -20 | head -1)
+for f in AGENTS.md README.md docs/*.md; do
+  if git cat-file -e "$BASE:$f" 2>/dev/null; then old=$(git show "$BASE:$f" | wc -l); else old="신규"; fi
+  printf '%-26s %6s → %4s\n' "$f" "$old" "$(wc -l < "$f")"
+done
 ```
 
-| 문서 | 상한 | 넘으면 |
-|---|---|---|
-| `AGENTS.md` | 70줄 | 세션마다 읽는 비용이다. 실행 규칙은 `RUNBOOK.md` 로 내린다 |
-| `docs/INTENT.md` | 70줄 | "어떻게"가 섞였는지 본다 |
-| `docs/RUNBOOK.md` | 350줄 | 절 단위로 쪼갤지 판단한다 |
-| `README.md` | 40줄 | 사람이 읽는 입구다. 상세는 링크로 넘긴다 |
-| `docs/QUALITY_CHECKS.md` | 200줄 | 두 항목이 같은 것을 검사하고 있는지 본다. 안 걸린다고 지우지는 않는다 |
-| `docs/DECISIONS.md` | 없음 (쌓기만 함) | "현재 유효한 결정"이 계속 길어지면 버린 것이 아래로 안 내려간 것이다 |
-| `docs/PLAN.md` | 없음 | 끝난 항목이 남아 있는지만 본다 |
+크게 늘어난 문서가 있으면 늘어난 만큼 값을 하는지 2.4 에서 판단한다. 늘어나는 것 자체가 문제는 아니다.
+
+문서마다 늘어날 때 의심할 곳이 다르다.
+
+- `AGENTS.md` — 세션마다 읽는 비용이다. 실행 규칙이 섞여 들어왔는지 본다.
+- `docs/INTENT.md` — "어떻게"가 섞였는지 본다.
+- `docs/RUNBOOK.md` — 절차가 늘어난 것이면 정상이다. "왜 그렇게 정했는지"의 긴 설명이 늘었으면 `DECISIONS.md` 로 옮긴다.
+- `docs/QUALITY_CHECKS.md` — 두 항목이 같은 것을 검사하고 있는지 본다. 안 걸린다고 지우지는 않는다.
+- `docs/DECISIONS.md` — 쌓기만 하므로 느는 것이 정상이다. "현재 유효한 결정"이 계속 길어지면 버린 것이 아래로 안 내려간 것이다.
+- `docs/PLAN.md` — 길어도 된다. 끝난 항목이 남아 있는지만 본다.
 
 ### 1.2 끊어진 내부 참조
 
