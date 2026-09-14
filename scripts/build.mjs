@@ -61,26 +61,38 @@ const pageTitle = (w) => `${w.week} 주간 브리핑 (${period(w.meta)})`;
 // marked 가 낸 h3 + ul 을 항목 블록으로 바꾼다. 라벨을 화면에서 없애고
 // 날짜는 칩으로, "왜 중요한가"는 강조 블록으로, 출처는 각주로 보낸다.
 
+// 한 필드 안의 빈 줄은 문단 경계다. marked 는 그것을 </p><p> 로 낸다.
+// 긴 본문을 한 덩어리로 두지 않기 위한 것이며, 나머지 필드는 보통 한 문단이다.
+function paragraphs(html) {
+  return html
+    .replace(/^<p>/, "")
+    .replace(/<\/p>$/, "")
+    .split(/<\/p>\s*<p>/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 function buildItem(num, title, listHtml) {
   const fields = {};
-  const re = /<li>\s*<strong>(날짜|무슨 일|왜 중요한가|출처)<\/strong>\s*:?\s*([\s\S]*?)<\/li>/g;
+  // 목록에 빈 줄이 있으면 marked 가 각 <li> 안을 <p> 로 감싼다. 양쪽을 다 받는다.
+  const re =
+    /<li>\s*(?:<p>)?\s*<strong>(날짜|무슨 일|왜 중요한가|출처)<\/strong>\s*:?\s*([\s\S]*?)\s*(?:<\/p>)?\s*<\/li>/g;
   let m;
-  while ((m = re.exec(listHtml))) fields[m[1]] = m[2].trim();
+  while ((m = re.exec(listHtml))) fields[m[1]] = paragraphs(m[2].trim());
 
   // 알려진 라벨이 하나도 없으면 원본을 그대로 둔다.
   if (!Object.keys(fields).length) return null;
 
+  const ps = (key) => fields[key].map((t) => `<p>${t}</p>`).join("");
   const parts = [
     `<div class="item-head"><span class="num">${num}</span><h3>${title}</h3></div>`,
   ];
-  if (fields["날짜"]) parts.push(`<p class="when">${fields["날짜"]}</p>`);
-  if (fields["무슨 일"]) parts.push(`<div class="what"><p>${fields["무슨 일"]}</p></div>`);
+  if (fields["날짜"]) parts.push(`<p class="when">${fields["날짜"].join(" ")}</p>`);
+  if (fields["무슨 일"]) parts.push(`<div class="what">${ps("무슨 일")}</div>`);
   if (fields["왜 중요한가"])
-    parts.push(
-      `<div class="why"><p class="lbl">왜 중요한가</p><p>${fields["왜 중요한가"]}</p></div>`
-    );
+    parts.push(`<div class="why"><p class="lbl">왜 중요한가</p>${ps("왜 중요한가")}</div>`);
   if (fields["출처"])
-    parts.push(`<p class="src"><span class="lbl">출처</span>${fields["출처"]}</p>`);
+    parts.push(`<p class="src"><span class="lbl">출처</span>${fields["출처"].join(" ")}</p>`);
 
   return `<article class="item">${parts.join("")}</article>`;
 }
@@ -116,6 +128,7 @@ const CSS = `
     --text:#191918; --dim:#55554f; --muted:#84847c; --line:#e5e5e0;
     --home:#0f6b57; --world:#2a5aa8; --ai:#6d3fa8;
     --accent:var(--home); --radius:12px;
+    --indent:2.3rem; --pad:1rem;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -132,7 +145,12 @@ const CSS = `
     font-size:16px; line-height:1.75; -webkit-text-size-adjust:100%;
     word-break:keep-all; overflow-wrap:anywhere;
   }
-  .wrap { max-width:44rem; margin:0 auto; }
+  .wrap { max-width:38.3rem; margin:0 auto; }
+  /* 양쪽 정렬은 줄이 충분히 길 때만 쓴다. 좁은 화면에서는 한 줄에 든 어절이
+     적어 늘어나는 폭이 커지고, 그게 들쭉날쭉한 줄 끝보다 더 읽기 나쁘다. */
+  @media (min-width:40rem) {
+    .what p, .why p, .group > p { text-align:justify; text-justify:inter-word; }
+  }
   a { color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px; }
 
   /* 머리말 */
@@ -167,7 +185,7 @@ const CSS = `
     border:1px solid var(--line); border-radius:999px; padding:.1rem .55rem; background:var(--surface);
   }
   /* 분야 도입 문단 */
-  .group > p { color:var(--dim); font-size:.95rem; margin:0 0 .5rem; }
+  .group > p { color:var(--dim); font-size:.95rem; margin:0 0 .5rem var(--indent); }
 
   /* 항목 */
   .item { padding:1.75rem 0; border-top:1px solid var(--line); }
@@ -182,22 +200,25 @@ const CSS = `
   }
   .item h3 { margin:0; font-size:1.08rem; line-height:1.55; letter-spacing:-.01em; }
   .when {
-    margin:.5rem 0 .9rem 2.3rem; font-size:.8rem; color:var(--muted);
+    margin:.5rem 0 .9rem var(--indent); font-size:.8rem; color:var(--muted);
     font-variant-numeric:tabular-nums;
   }
-  .what { margin-left:2.3rem; }
+  .what { margin-left:var(--indent); }
   .what p { margin:0; color:var(--dim); }
+  .what p + p { margin-top:.85rem; }
   .why {
-    margin:1rem 0 0 2.3rem; padding:.85rem 1rem;
+    margin:1.1rem calc(var(--pad) * -1) 0 calc(var(--indent) - var(--pad) - 3px);
+    padding:.85rem var(--pad);
     background:var(--sunken); border-left:3px solid var(--accent);
     border-radius:0 var(--radius) var(--radius) 0;
   }
   .why p { margin:0; }
+  .why p + p { margin-top:.7rem; }
   .why .lbl {
     display:block; font-size:.7rem; letter-spacing:.08em; font-weight:700;
     color:var(--accent); margin-bottom:.3rem;
   }
-  .src { margin:.9rem 0 0 2.3rem; font-size:.8rem; color:var(--muted); line-height:1.9; }
+  .src { margin:.9rem 0 0 var(--indent); font-size:.8rem; color:var(--muted); line-height:1.9; }
   .src .lbl { color:var(--muted); margin-right:.4rem; }
   .src a { color:var(--muted); }
   .src a:hover { color:var(--accent); }
@@ -229,6 +250,11 @@ const CSS = `
   footer p { margin:0 0 .5rem; }
   footer p:last-child { margin:0; }
 
+  @media (max-width:30rem) {
+    :root { --indent:0rem; --pad:.9rem; }
+    .why { margin-right:0; }
+    .item-head { margin-bottom:.2rem; }
+  }
   @media (min-width:36rem) {
     .archive .counts { width:auto; margin-left:auto; }
   }

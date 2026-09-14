@@ -112,6 +112,20 @@ for(const s of t.split(/\n### /).slice(1)){
 
 국내·해외·AI 가 각 5건이어야 한다. 모자라면 발행하지 않는다.
 
+### 3.1.1 한 덩어리로 쓴 본문
+
+```bash
+node -e '
+const t=require("fs").readFileSync(process.argv[1],"utf8");
+for(const s of t.split(/\n### /).slice(1)){
+  const m=s.match(/\*\*무슨 일\*\*:([\s\S]*?)\n- \*\*왜/); if(!m) continue;
+  const paras=m[1].trim().split(/\n\s*\n/).length, sents=(m[1].match(/다\./g)||[]).length;
+  if(sents>4 && paras===1) console.log("문단 미분리:", s.split("\n")[0], `(${sents}문장)`);
+}' "$W"
+```
+
+서너 문장을 넘는 본문은 갈래가 바뀌는 곳에서 나눈다(`RUNBOOK.md` 11절).
+
 ### 3.2 출처 라벨과 실제 매체 (네트워크 필요)
 
 ```bash
