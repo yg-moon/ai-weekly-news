@@ -31,8 +31,12 @@ WEEK=$(date -d "$MON" '+%G-W%V')                          # 예: 2026-W36
 
 대상 주의 헤드라인을 날짜별로 통째로 받아서 읽는 것부터 시작한다.
 
+**분야별로 파일에 받아 둔다.** 인자를 안 주면 네 소스를 다 받지만, 빈도를 뽑을 때 다시 받게 되어 같은 요청을 두 번 보낸다.
+
 ```bash
-node scripts/collect-headlines.mjs <대상주 월요일> <대상주 일요일>
+for s in domestic world tech ai; do
+  node scripts/collect-headlines.mjs <대상주 월요일> <대상주 일요일> $s > /tmp/$s.md
+done
 ```
 
 | 분야 | 출처 | 무엇을 주는가 |
@@ -48,8 +52,7 @@ node scripts/collect-headlines.mjs <대상주 월요일> <대상주 일요일>
 **셀 대상을 직접 고르지 않는다.** 머릿속에 떠오른 주제만 세면 후보를 전수로 모은 의미가 없어진다. 아래 도구로 빈도를 먼저 뽑고, 그 목록을 보고 주제로 묶는다.
 
 ```bash
-node scripts/collect-headlines.mjs <월> <일> domestic > /tmp/dom.md
-node scripts/rank-topics.mjs /tmp/dom.md --top 40
+node scripts/rank-topics.mjs /tmp/domestic.md --top 40
 ```
 
 **세 분야에 같은 기준을 적용하되 방법은 다르다.**

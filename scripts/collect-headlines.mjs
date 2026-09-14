@@ -53,6 +53,7 @@ const clean = (s) =>
     .replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&apos;/g, "'")
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
     .replace(/&nbsp;/g, " ").replace(/&#(\d+);/g, (_, d) => String.fromCharCode(+d))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
     .replace(/\s+/g, " ")
     .trim();
 
@@ -68,7 +69,8 @@ function domestic(day) {
     const items = [];
     const re = /<a href="([^"]+)"[^>]*class="list_title[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
     let m;
-    while ((m = re.exec(box))) items.push({ title: clean(m[2]), url: m[1] });
+    // ?ntype=RANKING 은 기사 주소에 필요 없다. 525건이면 8천 자다.
+    while ((m = re.exec(box))) items.push({ title: clean(m[2]), url: m[1].split("?")[0] });
     if (items.length) out.push({ group: name[1].trim(), items });
   }
   return out;
