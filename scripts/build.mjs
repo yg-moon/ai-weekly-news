@@ -56,6 +56,9 @@ const counts = (meta) => `국내 ${meta.domestic} · 해외 ${meta.world} · AI 
 // 각 분야 5건이 표준이다. 표준이면 건수를 화면에서 반복하지 않고, 어긋날 때만 드러낸다.
 const isStandard = (meta) => ["domestic", "world", "ai"].every((k) => meta[k] === "5");
 const pageTitle = (w) => `${w.week} 주간 브리핑 (${period(w.meta)})`;
+// 화면에서는 기간을 다음 줄로 내린다. 한 줄에 두면 좁은 화면에서 어중간하게 잘린다.
+const pageTitleHtml = (w) =>
+  `${w.week} 주간 브리핑<span class="period">${period(w.meta)}</span>`;
 
 // ---------- 본문 구조화 ----------
 // marked 가 낸 h3 + ul 을 항목 블록으로 바꾼다. 라벨을 화면에서 없애고
@@ -167,6 +170,10 @@ const CSS = `
 
   /* 주간호 제목 */
   .issue-title { font-size:1.5rem; letter-spacing:-.02em; margin:0 0 .3rem; line-height:1.35; }
+  .issue-title .period {
+    display:block; font-size:1.05rem; font-weight:400; color:var(--muted);
+    letter-spacing:-.01em; margin-top:.15rem; font-variant-numeric:tabular-nums;
+  }
   .issue-meta { color:var(--muted); font-size:.875rem; margin:0 0 1rem; }
 
   /* 분야 */
@@ -296,7 +303,7 @@ ${body}
 function renderWeek(w) {
   const body = `
 <p class="crumb"><a href="../../">← 전체 목록</a></p>
-<h1 class="issue-title">${pageTitle(w)}</h1>
+<h1 class="issue-title">${pageTitleHtml(w)}</h1>
 <p class="issue-meta">${isStandard(w.meta) ? "" : counts(w.meta) + " · "}${koDate(w.meta.published)} 발행</p>
 ${structure(marked.parse(w.body))}`;
   return layout({
