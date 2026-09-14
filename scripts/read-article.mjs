@@ -38,15 +38,29 @@ function strip(s) {
     .trim();
 }
 
+// 문단 태그만 모은다. <article> 이 없거나 비어 있는 사이트도 본문이 잡힌다.
+// 문서 전체를 훑으면 메뉴와 안내 문구에 묻혀 본문이 잘려 나간다.
+function paragraphs(html) {
+  const seen = new Set();
+  for (const m of html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)) {
+    const t = strip(m[1]);
+    if (t.length > 60) seen.add(t);
+  }
+  return [...seen].join("\n");
+}
+
 function text(html) {
   const base = html.replace(
     /<(script|style|noscript|svg|nav|header|footer|aside|form)\b[^>]*>[\s\S]*?<\/\1>/gi,
     " "
   );
-  // <article> 안이 비어 있는 사이트가 있어, 너무 짧으면 문서 전체로 되돌린다.
   const article = base.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
   const scoped = article ? strip(article[1]) : "";
-  return scoped.length > 400 ? scoped : strip(base);
+  const paras = paragraphs(base);
+  const best = paras.length > scoped.length ? paras : scoped;
+  // 둘 다 빈약하면 문서 전체로 되돌린다. 기준을 낮게 잡으면 본문 대신
+  // 안내 문구 몇 줄만 잡고 멈춘다.
+  return best.length > 1200 ? best : strip(base);
 }
 
 const urls = process.argv.slice(2);
