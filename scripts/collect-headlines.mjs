@@ -69,7 +69,8 @@ function domestic(day) {
     const items = [];
     const re = /<a href="([^"]+)"[^>]*class="list_title[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
     let m;
-    // ?ntype=RANKING 은 기사 주소에 필요 없다. 525건이면 8천 자다.
+    // ?ntype=RANKING 은 네이버가 랭킹에서 들어온 맥락을 표시하는 값이다.
+    // 본문과 발행일 추출은 붙이든 떼든 결과가 같아 뗀다. 525건이면 8천 자다.
     while ((m = re.exec(box))) items.push({ title: clean(m[2]), url: m[1].split("?")[0] });
     if (items.length) out.push({ group: name[1].trim(), items });
   }
