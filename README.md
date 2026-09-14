@@ -8,10 +8,7 @@
 
 ## 문서
 
-- 무엇을 왜 만드는가: [`docs/INTENT.md`](docs/INTENT.md)
-- 어떤 기준을 왜 정했는가: [`docs/DECISIONS.md`](docs/DECISIONS.md)
-- 매주 어떻게 만드는가: [`docs/RUNBOOK.md`](docs/RUNBOOK.md)
-- 에이전트 작업 규칙: [`AGENTS.md`](AGENTS.md)
+프로젝트 문서는 [`docs/`](docs/) 에 있습니다. 어느 문서가 무엇을 담는지는 [`AGENTS.md`](AGENTS.md) 의 "문서의 역할 분담" 표에 정리돼 있습니다.
 
 ## 구조
 

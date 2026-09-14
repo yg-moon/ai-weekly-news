@@ -1,6 +1,6 @@
 # QUALITY_CHECKS
 
-문서와 발행물이 시간이 지나며 어긋나는 것을 잡는 점검표다. **매주 돌리지 않는다.** 비용이 크고 매주 바뀌는 것도 아니다.
+**매주 돌리지 않는다.** 비용이 크고 매주 바뀌는 것도 아니다.
 
 ## 언제 돌리나
 
@@ -22,7 +22,7 @@
 ### 1.1 분량
 
 ```bash
-wc -l AGENTS.md README.md PLAN.md docs/*.md
+wc -l AGENTS.md README.md docs/*.md
 ```
 
 | 문서 | 상한 | 넘으면 |
@@ -33,12 +33,12 @@ wc -l AGENTS.md README.md PLAN.md docs/*.md
 | `README.md` | 40줄 | 사람이 읽는 입구다. 상세는 링크로 넘긴다 |
 | `docs/QUALITY_CHECKS.md` | 200줄 | 두 항목이 같은 것을 검사하고 있는지 본다. 안 걸린다고 지우지는 않는다 |
 | `docs/DECISIONS.md` | 없음 (쌓기만 함) | "현재 유효한 결정"이 계속 길어지면 버린 것이 아래로 안 내려간 것이다 |
-| `PLAN.md` | 없음 | 끝난 항목이 남아 있는지만 본다 |
+| `docs/PLAN.md` | 없음 | 끝난 항목이 남아 있는지만 본다 |
 
 ### 1.2 끊어진 내부 참조
 
 ```bash
-for f in AGENTS.md README.md PLAN.md docs/*.md; do
+for f in AGENTS.md README.md docs/*.md; do
   grep -o '](\([^)#]*\.md\)[^)]*)' "$f" | sed 's/](//;s/).*//;s/#.*//' | while read -r l; do
     [ -e "$(dirname "$f")/$l" ] || echo "$f -> $l"
   done
@@ -61,13 +61,11 @@ done | sort -t$'\t' -k2 \
 
 ### 2.1 문장이 제 문서에 있는가
 
-각 문서가 답하는 질문은 [`../AGENTS.md`](../AGENTS.md) "문서의 역할 분담" 표에 있다. 소제목과 항목을 훑으며 묻는다.
+[`../AGENTS.md`](../AGENTS.md) "문서의 역할 분담" 표를 펴 놓고 각 문서의 소제목과 항목을 훑는다. 표의 **담지 않는 것** 칸에 해당하는 문장이 있으면 옮긴다.
 
-- `AGENTS.md` 에 뉴스를 수집·선별·집필하는 규칙이 있는가 → `RUNBOOK.md`
-- `INTENT.md` 에 "어떻게"가 있는가 → `RUNBOOK.md`
-- `RUNBOOK.md` 에 "왜 이 방식인가"의 긴 설명이 있는가 → `DECISIONS.md` (한 줄 근거는 남겨도 된다)
-- 영구 문서에 지금 시점에만 해당하는 상태가 있는가 → `PLAN.md`
-- 특정 제품에서만 되는 절차가 본문에 섞였는가 → `RUNBOOK.md` "플랫폼별 실행"
+- 표에 없는 종류의 내용이면 어느 칸도 안 맞는 것이다. `PLAN.md` 에 두고, 반복해서 필요해지면 그때 표를 고친다.
+- 각 문서가 자기 역할을 설명하는 문장을 새로 쓰지 않았는가. 역할은 표에만 적는다.
+- 특정 제품에서만 되는 절차가 `RUNBOOK.md` 본문에 섞이지 않았는가. "플랫폼별 실행" 절로 모은다.
 
 ### 2.2 서로 어긋나지 않는가
 
@@ -93,7 +91,6 @@ grep -n 'const PRIMARY\|const FEEDS\|const WORLD_FEEDS' -A 20 scripts/collect-he
 
 - 새로 늘어난 문장마다 묻는다. 이 문장이 없으면 무엇이 잘못되는가. 답이 없으면 지운다.
 - 한 번 쓰고 아무도 안 읽는 절이 있는가.
-- `PLAN.md` 에 끝난 항목이 남아 있는가. 지운다.
 
 ## 3. 발행물 — 기계로 보는 것
 
