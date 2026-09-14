@@ -50,9 +50,17 @@ node scripts/collect-headlines.mjs <대상주 월요일> <대상주 일요일>
 **셀 대상을 직접 고르지 않는다.** 머릿속에 떠오른 주제만 세면 후보를 전수로 모은 의미가 없어진다. 아래 도구로 빈도를 먼저 뽑고, 그 목록을 보고 주제로 묶는다.
 
 ```bash
-node scripts/collect-headlines.mjs <월> <일> domestic > /tmp/heads.md
-node scripts/rank-topics.mjs /tmp/heads.md --top 40
+node scripts/collect-headlines.mjs <월> <일> domestic > /tmp/dom.md
+node scripts/rank-topics.mjs /tmp/dom.md --top 40
 ```
+
+**세 분야에 같은 기준을 적용하되 방법은 다르다.**
+
+| 분야 | 측정 방법 |
+|---|---|
+| 국내 | 도구로 빈도를 뽑고 묶는다. 한글 토큰이라 잘 맞는다 |
+| 해외 | 도구로 빈도를 뽑고 묶는다. 영어는 고유명사만 센다 |
+| AI | **목록 전체를 읽는다.** 항목이 200여 건으로 적고 제목이 짧아 빈도가 흩어진다. 고유명사가 두 단어로 쪼개져(Hugging Face, GPT-6 Astra) 빈도에 안 잡힌다. 도구는 보조로만 쓴다 |
 
 **'많이 본'과 '많이 보도된'은 다르다.** 네이버 랭킹은 독자 클릭 기준이라 정치 논란과 사건사고가 유리하고 재정·정책 기사가 불리하다. 랭킹에 거의 없어도 모든 신문이 1면에 올린 사안이 있다. 랭킹은 후보를 빠짐없이 찾는 도구이고, 순위는 4절 기준으로 매긴다.
 

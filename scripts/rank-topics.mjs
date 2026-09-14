@@ -4,6 +4,9 @@
 // 한 단계 뒤에서 되살아난다. 이 도구는 무엇을 셀지 데이터가 정하게 한다.
 // RUNBOOK 4절 참고.
 //
+// 국내와 해외 풀에 잘 맞는다. AI 풀은 항목이 적고 제목이 짧아 빈도가 흩어지므로
+// 이 도구를 보조로만 쓰고 뉴스룸 목록은 전부 읽는다. RUNBOOK 4절 참고.
+//
 //   node scripts/rank-topics.mjs <헤드라인파일> [--top 40]
 //   node scripts/rank-topics.mjs <헤드라인파일> --covered "용혜인,호르무즈,종부세"
 //
@@ -22,6 +25,32 @@ const STOP = new Set(
 );
 const PARTICLE = /(은|는|이|가|을|를|에|의|도|와|과|로|으로|에서|에게|부터|까지|만|들|씨|측)$/;
 
+// 해외와 AI 풀은 영어다. 같은 기준을 적용하려면 영어도 세야 한다.
+const STOP_EN = new Set(
+  `the a an and or but of in on at to for from with by as is are was were be been being
+   has have had do does did will would can could may might must shall should
+   this that these those it its his her their our your my he she they we you
+   not no nor so than then there here what which who whom whose when where why how
+   after before during over under between about against into through more most some any
+   all both each other another new says said say according report reports reported
+   first second third last next year years day days week weeks month months
+   one two three four five six seven eight nine ten million billion percent
+   says his her also amid following since until while including such other
+   // 출처 표기 — Wikipedia 항목 끝에 "(AFP via France 24)" 처럼 붙는다
+   via afp reuters bbc cnn npr jazeera guardian xinhua euronews nbc espn dawn fortune
+   tribune news agency press media post times wire service france daily world
+   independent telegraph journal herald observer today online magazine network
+   // Hacker News 게시글 접두사
+   show ask launch tell hiring
+   // 사건 서술에 늘 붙는 일반어
+   people killed injured dead death toll least others wounded missing rescue
+   president minister government official officials state states united country countries
+   city district province region town village area local national international
+   attack attacks strike strikes announces announced says reports court judge police
+   military forces troops security company court case election party`
+    .split(/\s+/).filter((w) => w && !w.startsWith("//"))
+);
+
 const args = process.argv.slice(2);
 const file = args.find((a) => !a.startsWith("--"));
 const top = Number(args[args.indexOf("--top") + 1]) || 40;
@@ -38,8 +67,10 @@ const heads = readFileSync(file, "utf8")
 
 const freq = new Map();
 const sample = new Map();
+const display = new Map();
 for (const h of heads) {
   const seen = new Set();
+  // 한글
   for (const raw of h.match(/[가-힣]{2,8}/g) ?? []) {
     const t = raw.replace(PARTICLE, "");
     if (t.length < 2 || t.length > 6 || STOP.has(t) || seen.has(t)) continue;
@@ -47,22 +78,45 @@ for (const h of heads) {
     freq.set(t, (freq.get(t) ?? 0) + 1);
     if (!sample.has(t)) sample.set(t, h);
   }
+  // 영어 — 소문자로 세고 표시는 원형을 쓴다
+  for (const raw of h.match(/[A-Za-z][A-Za-z'-]{2,}/g) ?? []) {
+    if (!/^[A-Z]/.test(raw)) continue; // 고유명사만
+    const key = raw.toLowerCase();
+    if (key.length < 3 || STOP_EN.has(key) || seen.has(key)) continue;
+    seen.add(key);
+    freq.set(key, (freq.get(key) ?? 0) + 1);
+    if (!sample.has(key)) sample.set(key, h);
+    if (!display.has(key) || /^[A-Z]/.test(raw)) display.set(key, raw);
+  }
 }
 
+// 아무것도 세지 못했다면 통과로 착각하게 두지 않는다.
+if (!heads.length || !freq.size) {
+  console.error(
+    `측정할 것이 없다. 헤드라인 ${heads.length}건, 토큰 ${freq.size}종.\n` +
+      `입력 파일이 '- ' 로 시작하는 헤드라인 목록인지 확인한다.`
+  );
+  process.exit(2);
+}
+
+const show = (t) => display.get(t) ?? t;
 const sorted = [...freq].sort((a, b) => b[1] - a[1]).slice(0, top);
 console.log(`헤드라인 ${heads.length}건 · 토큰 ${freq.size}종 · 상위 ${top}개\n`);
 for (const [t, n] of sorted) {
-  console.log(`${String(n).padStart(3)}  ${t.padEnd(8)} ${sample.get(t).slice(0, 58)}`);
+  console.log(`${String(n).padStart(3)}  ${show(t).padEnd(14)} ${sample.get(t).slice(0, 56)}`);
 }
 
 if (covered.length) {
   // 선정한 주제의 토큰이 상위 목록의 어느 항목과도 겹치지 않으면 빠뜨린 것이다.
-  const miss = sorted.filter(([t]) => !covered.some((c) => t.includes(c) || c.includes(t)));
+  const norm = (x) => x.toLowerCase();
+  const miss = sorted.filter(([t]) =>
+    !covered.some((c) => norm(t).includes(norm(c)) || norm(c).includes(norm(t)))
+  );
   console.log(`\n${"=".repeat(60)}`);
   if (!miss.length) {
     console.log("상위 목록이 모두 선정에 반영됐다.");
   } else {
     console.log(`선정에 반영되지 않은 상위 토큰 ${miss.length}개 — 빠뜨린 사안이 없는지 확인한다.\n`);
-    for (const [t, n] of miss) console.log(`  ${String(n).padStart(3)}  ${t.padEnd(8)} ${sample.get(t).slice(0, 52)}`);
+    for (const [t, n] of miss) console.log(`  ${String(n).padStart(3)}  ${show(t).padEnd(14)} ${sample.get(t).slice(0, 50)}`);
   }
 }
