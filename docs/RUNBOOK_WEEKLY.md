@@ -133,8 +133,8 @@ node scripts/rank-topics.mjs /tmp/domestic.md --covered "용혜인,호르무즈,
 | 분야 | 주요 | 보조 |
 |---|---|---|
 | 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · KBS · SBS · MBC · JTBC · YTN · 연합뉴스 · 연합뉴스TV (15곳) | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴시스 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
-| 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times | CBS News · USA Today · The Independent |
-| AI | 연구소 1차 출처(아래) · Bloomberg · TechCrunch · The Verge · Ars Technica | VentureBeat · The Information · Semafor |
+| 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times | CBS News · USA Today · The Independent · Gulf News |
+| AI | 연구소 1차 출처(아래) · Bloomberg · TechCrunch · The Verge · Ars Technica | VentureBeat · The Information · Semafor · Axios |
 
 국내 사안은 **한국어 원문을 우선한다.** 번역을 거치지 않아 표현과 수치가 정확하고, 영문판에 없는 사안이 많다.
 
@@ -233,6 +233,8 @@ node scripts/rank-topics.mjs /tmp/domestic.md --covered "용혜인,호르무즈,
 말한 주체를 밝히는 것은 다르다. "준비단은 청탁이 아니라고 반박했다" 처럼 **사건 당사자**가 한 말은 사실 관계의 일부이므로 그대로 쓴다.
 
 **출처끼리는 `/` 로 나눈다.** 가운뎃점은 매체 이름 안에도 쓰여서 어디까지가 한 출처인지 흐려진다.
+
+**순서는 1차 출처 → 주요 매체 → 보조 매체다.** 층 안에서는 쓴 순서를 그대로 둔다. 7절이 주요와 보조를 정하고, 그 표에 없는 이름은 발표 주체의 1차 출처다. 순서가 고정되면 첫 이름만 보고도 근거가 어느 층에서 왔는지 알 수 있다. 이 순서가 나타내는 것은 매체의 층이다. 보조 매체가 핵심 수치를 유일하게 실었더라도 뒤에 온다.
 
 **같은 매체를 여러 번 인용하면 그냥 여러 번 쓴다.** `[CNN](url1) / [CNN](url2)` 이다. 구분할 키워드를 지어내지 않는다. 빌드가 이름을 한 번만 내고 링크마다 번호를 붙여 `CNN 1 2` 로 보여 준다. 위키백과가 여러 번 인용된 출처를 묶는 방식과 같다.
 
