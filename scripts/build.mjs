@@ -85,6 +85,32 @@ function paragraphs(html) {
     .filter(Boolean);
 }
 
+// 같은 매체가 한 항목에 여러 번 나오면 이름을 한 번만 쓰고 링크마다 번호를 붙인다.
+// 위키백과가 여러 번 인용된 출처를 하나로 묶고 번호 링크를 다는 방식과 같다.
+// 매체 이름을 되풀이하지 않으면서 링크는 하나도 잃지 않는다.
+function sources(html) {
+  // 링크 말고 다른 글이 섞여 있으면 손대지 않는다. 묶다가 조용히 지우는 것보다 낫다.
+  const rest = html.replace(/<a\b[^>]*>[\s\S]*?<\/a>/g, "").replace(/[\s/·]/g, "");
+  if (rest) return html;
+
+  const groups = new Map();
+  for (const m of html.matchAll(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)) {
+    const label = m[2].trim();
+    if (!groups.has(label)) groups.set(label, []);
+    const urls = groups.get(label);
+    if (!urls.includes(m[1])) urls.push(m[1]);
+  }
+  if (!groups.size) return html;
+
+  return [...groups]
+    .map(([label, urls]) =>
+      urls.length === 1
+        ? `<a href="${urls[0]}">${label}</a>`
+        : label + urls.map((u, i) => ` <a class="n" href="${u}">${i + 1}</a>`).join("")
+    )
+    .join(" / ");
+}
+
 function buildItem(num, title, listHtml) {
   const fields = {};
   // 목록에 빈 줄이 있으면 marked 가 각 <li> 안을 <p> 로 감싼다. 양쪽을 다 받는다.
@@ -105,7 +131,7 @@ function buildItem(num, title, listHtml) {
   if (fields["왜 중요한가"])
     parts.push(`<div class="why"><p class="lbl">왜 중요한가</p>${ps("왜 중요한가")}</div>`);
   if (fields["출처"])
-    parts.push(`<p class="src"><span class="lbl">출처</span>${fields["출처"].join(" ")}</p>`);
+    parts.push(`<p class="src"><span class="lbl">출처</span>${sources(fields["출처"].join(" "))}</p>`);
 
   return `<article class="item">${parts.join("")}</article>`;
 }
@@ -237,6 +263,8 @@ const CSS = `
   .src .lbl { color:var(--muted); margin-right:.4rem; }
   .src a { color:var(--muted); }
   .src a:hover { color:var(--accent); }
+  /* 같은 매체의 여러 링크. 이름과 구분되게 작고 흐리게 둔다. */
+  .src a.n { font-size:.7rem; vertical-align:.25em; padding:0 .05rem; opacity:.75; }
   .src em { font-style:normal; color:var(--muted); opacity:.85; }
 
   /* 목록 페이지 */

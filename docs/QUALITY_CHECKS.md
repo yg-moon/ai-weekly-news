@@ -162,17 +162,10 @@ done
 
 네이버 링크는 매체가 URL 에 안 보여서 라벨이 틀려도 눈으로는 안 걸린다. 네이버 외 링크는 호스트를 직접 본다.
 
-한 항목 안에 똑같은 라벨이 두 번 나오면 구분 키워드가 빠진 것이다(`RUNBOOK_WEEKLY.md` 11절).
+같은 매체가 두 번 나오는 것은 정상이며 빌드가 번호 링크로 묶는다(`RUNBOOK_WEEKLY.md` 11절). 라벨에 엠대시 부연이 남아 있으면 옛 표기다.
 
 ```bash
-node -e '
-const t=require("fs").readFileSync(process.argv[1],"utf8");
-for(const line of t.split("\n")){
-  if(!line.startsWith("- **출처**:")) continue;
-  const seen=new Set();
-  for(const m of line.matchAll(/\[([^\]]+)\]\(/g))
-    if(seen.has(m[1])) console.log("같은 라벨 중복:", m[1]); else seen.add(m[1]);
-}' "$W"
+grep -n -o '\[[^]]* — [^]]*\]' "$W" || echo "(없음)"
 ```
 
 ```bash
