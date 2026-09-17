@@ -60,8 +60,14 @@ const clean = (s) =>
 // ---------- 국내 ----------
 
 function domestic(day) {
-  const buf = get(`https://news.naver.com/main/ranking/popularDay.naver?date=${day.replace(/-/g, "")}`, { binary: true });
+  const ymd = day.replace(/-/g, "");
+  const buf = get(`https://news.naver.com/main/ranking/popularDay.naver?date=${ymd}`, { binary: true });
   const html = new TextDecoder("euc-kr").decode(buf); // 네이버 랭킹은 EUC-KR
+  // 아카이브 밖 날짜를 요청하면 네이버가 오늘 랭킹을 대신 준다. 그대로 쓰면
+  // 오늘 뉴스가 그 주의 기사로 실린다. 페이지의 날짜 이동 목록에 요청한
+  // 날짜가 있는지로 가려낸다.
+  if (!html.includes(`date=${ymd}`))
+    throw new Error(`${day} 은 네이버 랭킹 아카이브 밖이다 — 오늘 랭킹이 대신 온다`);
   const out = [];
   for (const box of html.split('class="rankingnews_box"').slice(1)) {
     const name = box.match(/class="rankingnews_name"[^>]*>([^<]+)/);
@@ -190,6 +196,7 @@ function world(from, to) {
       for (const g of wikipediaDay(day)) out.push({ group: `${day} · ${g.group}`, items: g.items });
     } catch (e) {
       out.push({ group: `${day} — 수집 실패: ${e.message}`, items: [] });
+      console.error(`경고: world ${day} 를 못 받았다 (${e.message}). 이 날의 사안이 후보 풀에서 빠진다.`);
     }
   }
   return out.concat(collectFeeds(WORLD_FEEDS, from, to));
@@ -223,11 +230,25 @@ for (const src of picked) {
   for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1)) {
     const day = dt.toISOString().slice(0, 10);
     const wd = WEEKDAYS[new Date(day + "T00:00:00+09:00").getDay()];
-    let groups;
-    try {
-      groups = SOURCES[src](day);
-    } catch (e) {
-      console.log(`\n## ${day} (${wd}) — 수집 실패: ${e.message}`);
+    // 빈 목록으로 끝나는 날은 하루가 통째로 후보 풀에서 빠진다. 네이버가
+    // 정상 응답에 빈 목록을 준 적이 있어 다시 받아 본다. 실패는 stdout 이
+    // 아니라 stderr 로 낸다. stdout 은 파일로 보내져 수백 줄에 묻힌다.
+    let groups = [];
+    let err;
+    for (let attempt = 1; attempt <= 3 && !groups.length; attempt++) {
+      try {
+        groups = SOURCES[src](day);
+        err = null;
+      } catch (e) {
+        err = e;
+      }
+      if (!groups.length && attempt < 3)
+        console.error(`재시도 ${attempt}/3 — ${src} ${day} 가 비었다`);
+    }
+    if (!groups.length) {
+      const why = err ? `수집 실패: ${err.message}` : "빈 목록";
+      console.log(`\n## ${day} (${wd}) — ${why}`);
+      console.error(`경고: ${src} ${day} 를 못 받았다 (${why}). 이 날의 사안이 후보 풀에서 빠진다.`);
       continue;
     }
     console.log(`\n## ${day} (${wd}) — ${groups.length}개 묶음`);

@@ -55,6 +55,10 @@ done
 | 해외 | Wikipedia Portal:Current events + The Guardian 피드 | 날짜별로 분류·정리된 국제 사안과 출처 |
 | AI | 연구소·기업 뉴스룸 7곳(`ai`) + Hacker News 프런트(`tech`) | 1차 발표와 날짜별 기술 화제 |
 
+**네이버 랭킹 아카이브는 2020년 11월 중순까지다.** 그보다 앞선 날짜를 요청하면 오늘 랭킹이 대신 온다. `collect-headlines.mjs` 가 페이지의 날짜 이동 목록으로 가려내 수집 실패로 처리한다. 2020-11-15 는 밖이고 2020-11-22 는 받아진다.
+
+**하루가 비면 경고가 stderr 로 나온다.** 정상 응답에 빈 목록이 온 적이 있어 세 번까지 다시 받는다. stdout 은 파일로 보내지므로 경고는 화면에 남는다. 경고를 보면 그 날을 다시 받아 채운다.
+
 **날짜를 지정해 받을 수 있는 소스만 뼈대로 쓴다.** 회고형 주간지라 대상 주 7일을 정확히 덮어야 한다. 일반 뉴스 RSS는 최신 몇십 건만 담아 이 조건을 못 채운다. 실측으로 BBC World는 3.3일, Techmeme은 0.9일치뿐이었고 CNN World는 날짜가 깨져 있었다. 발행 빈도가 낮은 뉴스룸 RSS만 예외로 수 주에서 수년치를 담는다.
 
 읽은 뒤 **같은 사안이 며칠에 걸쳐 몇 개 언론사에 반복되는지 센다.** 이것이 "그 주에 얼마나 크게 다뤄졌는가"의 측정값이다.
@@ -135,7 +139,7 @@ node scripts/rank-topics.mjs /tmp/domestic.md --covered "용혜인,호르무즈,
 |---|---|---|
 | 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · KBS · SBS · MBC · JTBC · YTN · 연합뉴스 · 연합뉴스TV (15곳) | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴시스 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
 | 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times | CBS News · USA Today · The Independent · Gulf News |
-| AI | 연구소 1차 출처(아래) · Bloomberg · TechCrunch · The Verge · Ars Technica | VentureBeat · The Information · Semafor · Axios |
+| AI | 연구소 1차 출처(아래) · Bloomberg · TechCrunch · The Verge · Ars Technica | VentureBeat · The Information · Semafor |
 
 국내 사안은 **한국어 원문을 우선한다.** 번역을 거치지 않아 표현과 수치가 정확하고, 영문판에 없는 사안이 많다.
 
@@ -161,7 +165,7 @@ node scripts/rank-topics.mjs /tmp/domestic.md --covered "용혜인,호르무즈,
 
 | 받아진다 | 막힌다 |
 |---|---|
-| The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times · CBS News · USA Today · The Independent | Reuters(401) · AP(403, 자바스크립트 챌린지) · France 24(403) · CNBC(403) · Washington Post(연결 실패) · Times of Israel(403) |
+| The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times · CBS News · USA Today · The Independent | Reuters(401) · AP(403, 자바스크립트 챌린지) · France 24(403) · CNBC(403) · Washington Post(연결 실패) · Times of Israel(403) · Axios(403) · Sky News(403) |
 
 **차단은 우회하지 않는다.** 받아지는 매체로 대조하고, 한 사안을 인용한 매체가 전부 막혔으면 그 사안은 싣지 않는다.
 
@@ -387,4 +391,4 @@ fatal: ... The requested URL returned error: 403
 ## 아직 검증되지 않은 것
 
 - 푸시 알림이 실제로 도착하는지. 세션이 보내는 데까지는 확인했다.
-- 새 세션이 이 문서만으로 같은 품질을 내는지. 세 번 발화해 모두 1절에서 멈춰 수집 이후를 보지 못했다. 1절의 시험 경로로 확인한다.
+- 정기 실행이 발행까지 끝내는지. 시험 경로는 13절과 14절을 건너뛰므로 파일 쓰기와 푸시는 아직 실행되지 않았다.
