@@ -350,8 +350,27 @@ yg-moon/ai-weekly-news 의 주간 브리핑을 발행한다.
 | `notifications` | `{"push": true}` |
 | `initiation` | `human_request` |
 
-- 클론 전에 `add_repo` 로 저장소를 세션에 붙여야 한다. 위 프롬프트 1번이 그 일이다.
-- 푸시 알림은 새 세션 방식에서만 받는다.
+| `model` | `claude-opus-5` |
+
+**루틴에 저장소를 등록해야 한다.** 등록 자리는 claude.ai/code/routines 의 편집 화면 "Select repositories" 다. `create_trigger` 도구에는 저장소 필드가 없어서 그 경로로 만든 루틴은 저장소가 비어 있다. 모델도 필드가 없어 만든 뒤 `update_trigger` 로 넣는다.
+
+**저장소가 비면 읽기는 되고 쓰기가 막힌다.** 공개 저장소라 `git clone` 은 익명으로 한 번에 되지만, 푸시는 프록시가 자격 증명 주입을 거부한다.
+
+```
+remote: access denied by the git proxy: yg-moon/ai-weekly-news is not in
+this session's authorized repository set
+fatal: ... The requested URL returned error: 403
+```
+
+`credential.interactive false` 라 프롬프트 없이 그대로 실패한다. 수집과 집필을 다 마친 뒤 마지막 단계에서 끊긴다.
+
+**발화된 세션에는 `mcp__` 로 시작하는 도구가 없다.** `add_repo` 도 GitHub MCP 도 없다. 저장소는 루틴 등록으로 붙이고, 14절의 CI 확인은 공개 저장소의 Actions API 를 `curl` 로 읽어서 한다.
+
+**알림은 `PushNotification` 도구로 보낸다.** 새 세션 방식에서만 받는다.
+
+**루틴은 기본적으로 `claude/` 접두 브랜치에 푸시한다.** 14절은 `main` 에 직접 발행하므로 추가 검사를 받는다. 보호 브랜치이거나, 그 브랜치에서 남이 연 풀 리퀘스트가 있거나, 남이 쓴 커밋이 있으면 거부된다.
+
+**환경은 이 저장소로 수집이 되는 것을 확인한 곳을 쓴다.** 기본 환경의 네트워크 정책은 허용 목록 방식이라 네이버·위키백과 같은 수집처가 막힐 수 있다.
 
 ### 다른 플랫폼
 
@@ -360,6 +379,6 @@ yg-moon/ai-weekly-news 의 주간 브리핑을 발행한다.
 
 ## 아직 검증되지 않은 것
 
-- 스케줄러가 띄우는 새 세션에서 저장소 접근이 되는지.
+- `main` 에 직접 푸시가 통과하는지. 저장소를 루틴에 등록한 뒤 확인한다.
 - 푸시 알림이 실제로 도착하는지.
-- 새 세션이 이 문서만으로 같은 품질을 내는지. 4줄 프롬프트만 주는 실행을 시작했다가 끝까지 돌리지 않고 중단했다.
+- 새 세션이 이 문서만으로 같은 품질을 내는지. 두 번 발화해 보았으나 둘 다 1절에서 멈춰 수집 이후를 보지 못했다.
