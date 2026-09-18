@@ -12,7 +12,7 @@
 - 바꾸기 전에 논의한다. 선택지와 근거를 먼저 내놓고 결정은 사용자가 한다.
 - 근거는 선례에서 찾는다. 자기 판단보다 기성 관행을 확인한 결과를 우선한다.
 - 억지 부리지 않는다. 안 되는 건 안 된다고 말하고 한계를 그대로 밝힌다.
-- 주간 발행 작업이면 [`docs/RUNBOOK_WEEKLY.md`](docs/RUNBOOK_WEEKLY.md) 를 처음부터 끝까지 읽고 그대로 따른다.
+- 주간 발행 작업이면 [`docs/RUNBOOK_WEEKLY.md`](docs/RUNBOOK_WEEKLY.md) 를 처음부터 끝까지 읽고 그대로 따른다. 그 문서가 분기말에 [`docs/RUNBOOK_QUARTERLY.md`](docs/RUNBOOK_QUARTERLY.md) 로 넘긴다.
 - 기준을 바꾸려 하면 [`docs/DECISIONS.md`](docs/DECISIONS.md) 를 먼저 읽는다. 이미 검토하고 버린 선택지가 적혀 있다.
 
 ## 문서 작성 규칙
@@ -36,6 +36,7 @@
 | `docs/INTENT.md` | 목적과 품질 기준 |
 | `docs/DECISIONS.md` | 결정과 폐기 기록 |
 | `docs/RUNBOOK_WEEKLY.md` | 주간호 실행 절차 |
+| `docs/RUNBOOK_QUARTERLY.md` | 분기·연간 인사이트 실행 절차 |
 | `docs/QUALITY_CHECKS.md` | 점검 항목과 실행 방법 |
 | `docs/PLAN.md` | 진행 상황 |
 
@@ -57,7 +58,9 @@
 
 | 경로 | 역할 |
 |---|---|
-| `content/week/` | 주간호 원본 마크다운. 사이트와 월간·연간 인사이트의 입력이다 |
+| `content/week/` | 주간호 원본 마크다운. 사이트와 분기 인사이트의 입력이다 |
+| `content/quarter/` | 분기 인사이트 원본. 연간 인사이트의 입력이다 |
+| `content/year/` | 연간 인사이트 원본 |
 | `scripts/` | 반복 실행되는 코드. 빌드와 기사 원문 추출 |
 | `site/` | 빌드 산출물. 커밋하지 않으며 CI 가 배포한다 |
 | `docs/` | 프로젝트 문서. 코드를 두지 않는다 |
