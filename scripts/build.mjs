@@ -10,7 +10,7 @@ const CONTENT = join(ROOT, "content", "week");
 const SITE = join(ROOT, "site");
 
 const SITE_TITLE = "ai-weekly-news";
-const SITE_TAGLINE = "지난 한 주에 실제로 있었던 일을 국내·해외·AI 각 5건으로 정리합니다.";
+const SITE_TAGLINE = "지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다.";
 const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
 const FOOTER_NOTE =
   "최신 속보가 아니라 완결된 주간의 정리입니다. 한 주의 범위는 월요일부터 일요일까지입니다.";
@@ -342,7 +342,7 @@ function renderWeek(w) {
   const body = `
 <p class="crumb"><a href="../../">← 전체 목록</a></p>
 <h1 class="issue-title">${pageTitleHtml(w)}</h1>
-<p class="issue-meta">${isStandard(w) ? "" : counts(w) + " · "}${koDate(w.meta.published)} 발행</p>
+${isStandard(w) ? "" : `<p class="issue-meta">${counts(w)}</p>`}
 ${structure(marked.parse(w.body))}`;
   return layout({
     title: `${pageTitle(w)} — ${SITE_TITLE}`,
