@@ -111,7 +111,7 @@ function sources(html) {
     .join(" / ");
 }
 
-function buildItem(num, title, listHtml) {
+function buildItem(slug, num, title, listHtml) {
   const fields = {};
   // 목록에 빈 줄이 있으면 marked 가 각 <li> 안을 <p> 로 감싼다. 양쪽을 다 받는다.
   const re =
@@ -133,17 +133,12 @@ function buildItem(num, title, listHtml) {
   if (fields["출처"])
     parts.push(`<p class="src"><span class="lbl">출처</span>${sources(fields["출처"].join(" "))}</p>`);
 
-  return `<article class="item">${parts.join("")}</article>`;
+  // 분기 인사이트가 개별 항목을 가리킨다. 앵커는 `<분야>-<번호>` 다.
+  return `<article class="item" id="${slug}-${num}">${parts.join("")}</article>`;
 }
 
 function structure(html) {
-  // 1) 항목: <h3>N. 제목</h3> + 바로 뒤 <ul>
-  html = html.replace(
-    /<h3[^>]*>\s*(\d+)\.\s*([\s\S]*?)<\/h3>\s*<ul>([\s\S]*?)<\/ul>/g,
-    (whole, num, title, list) => buildItem(num, title.trim(), list) ?? whole
-  );
-
-  // 2) 분야: <h2>국내</h2> 부터 다음 <h2> 직전까지를 section 으로 감싼다
+  // 분야로 먼저 자른다. 항목 앵커에 분야 이름이 들어가므로 항목보다 분야를 먼저 알아야 한다.
   const chunks = html.split(/(?=<h2[^>]*>)/);
   return chunks
     .map((chunk) => {
@@ -151,10 +146,17 @@ function structure(html) {
       if (!m) return chunk;
       const name = m[1].trim();
       const slug = GROUPS[name] ?? "other";
-      const n = (chunk.match(/class="item"/g) ?? []).length;
+
+      // 항목: <h3>N. 제목</h3> + 바로 뒤 <ul>
+      const body = chunk.slice(m[0].length).replace(
+        /<h3[^>]*>\s*(\d+)\.\s*([\s\S]*?)<\/h3>\s*<ul>([\s\S]*?)<\/ul>/g,
+        (whole, num, title, list) => buildItem(slug, num, title.trim(), list) ?? whole
+      );
+
+      const n = (body.match(/class="item"/g) ?? []).length;
       const chip = n === 5 ? "" : `<span class="n">${n}건</span>`;
       const head = `<h2><span class="rule"></span>${name}${chip}</h2>`;
-      return `<section class="group group--${slug}">${head}${chunk.slice(m[0].length)}</section>`;
+      return `<section class="group group--${slug}">${head}${body}</section>`;
     })
     .join("");
 }
@@ -229,7 +231,7 @@ const CSS = `
   .group > p { color:var(--dim); font-size:.95rem; margin:0 0 .5rem var(--indent); }
 
   /* 항목 */
-  .item { padding:1.75rem 0; border-top:1px solid var(--line); }
+  .item { padding:1.75rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
   .group > h2 + .item, .group > p + .item { border-top:none; padding-top:.75rem; }
   .item-head { display:flex; gap:.7rem; align-items:baseline; }
   .num {
