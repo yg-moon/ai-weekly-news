@@ -332,7 +332,7 @@ ${body}
 <footer>
   <p>${FOOTER_NOTE}</p>
   <p>${FOOTER_LIMIT}</p>
-  <p><a href="${REPO_URL}">GitHub 저장소</a></p>
+  <p><a href="${REPO_URL}">GitHub 저장소</a> · 글 <a href="${REPO_URL}/blob/main/LICENSE-CONTENT">CC BY-NC-SA 4.0</a></p>
 </footer>
 </div>
 </body>

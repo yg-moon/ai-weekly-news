@@ -1,0 +1,33 @@
+이 저장소는 두 가지를 담고 있고 각각 다른 라이선스를 따릅니다.
+
+| 대상 | 라이선스 |
+|---|---|
+| **코드** — `scripts/`, `package.json`, `.github/` | MIT (아래 전문) |
+| **글** — `content/`, `docs/`, `README.md`, `AGENTS.md` | CC BY-NC-SA 4.0 ([`LICENSE-CONTENT`](LICENSE-CONTENT)) |
+
+발행물이 인용한 기사의 원문과 제목은 각 언론사에 저작권이 있으며 이 라이선스가
+다루지 않습니다.
+
+---
+
+MIT License
+
+Copyright (c) 2026 yg-moon
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
