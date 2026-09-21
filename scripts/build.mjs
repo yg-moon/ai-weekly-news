@@ -1,4 +1,4 @@
-// content/week/*.md → site/
+// content/{week,quarter,year}/*.md → site/
 // 프론트매터는 평면 key: value 만 지원한다. 그 이상이 필요해지면 그때 파서를 바꾼다.
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync } from "node:fs";
@@ -6,7 +6,7 @@ import { join, basename } from "node:path";
 import { marked } from "marked";
 
 const ROOT = new URL("..", import.meta.url).pathname;
-const CONTENT = join(ROOT, "content", "week");
+const CONTENT = join(ROOT, "content");
 const SITE = join(ROOT, "site");
 
 const SITE_TITLE = "ai-weekly-news";
@@ -17,8 +17,22 @@ const FOOTER_NOTE =
 const FOOTER_LIMIT =
   "수집과 요약은 AI가 합니다. 사람이 개별 항목을 일일이 검증하지는 않으므로, 각 항목의 출처 링크로 확인해 주세요.";
 
-const GROUPS = { 국내: "home", 해외: "world", AI: "ai" };
-const GROUP_NAMES = Object.keys(GROUPS);
+// 발행물의 종류. 순서가 곧 탭 순서다.
+const KINDS = {
+  week: {
+    label: "주간호", suffix: "주간 브리핑",
+    groups: { 국내: "home", 해외: "world", AI: "ai" },
+  },
+  quarter: {
+    label: "분기호", suffix: "분기호",
+    groups: { 흐름: "flow", 단발: "single" },
+  },
+  year: {
+    label: "연간호", suffix: "연간호",
+    groups: { 흐름: "flow", 단발: "single" },
+  },
+};
+const KIND_NAMES = Object.keys(KINDS);
 
 // ---------- 파싱 ----------
 
@@ -34,23 +48,32 @@ function parseFrontmatter(text) {
   return { meta, body: m[2] };
 }
 
-function loadWeeks() {
-  return readdirSync(CONTENT)
+// 아직 만들지 않은 종류는 폴더가 없다. 그때는 빈 목록이다.
+function load(kind) {
+  let files;
+  try {
+    files = readdirSync(join(CONTENT, kind));
+  } catch {
+    return [];
+  }
+  return files
     .filter((f) => f.endsWith(".md"))
     .map((f) => {
-      const { meta, body } = parseFrontmatter(readFileSync(join(CONTENT, f), "utf8"));
-      const week = basename(f, ".md");
-      if (meta.week !== week) throw new Error(`${f}: 파일명과 frontmatter week 가 다르다`);
-      return { week, meta, body, n: sectionCounts(body) };
+      const { meta, body } = parseFrontmatter(readFileSync(join(CONTENT, kind, f), "utf8"));
+      const id = basename(f, ".md");
+      if (meta[kind] !== id) throw new Error(`${kind}/${f}: 파일명과 frontmatter ${kind} 가 다르다`);
+      return { kind, id, meta, body, n: sectionCounts(body) };
     })
-    .sort((a, b) => (a.week < b.week ? 1 : -1)); // 최신순
+    .sort((a, b) => (a.id < b.id ? 1 : -1)); // 최신순
 }
 
 // 건수는 본문에서 센다. 프론트매터에 적어 두면 본문과 어긋나도 아무도 모른다.
+// 단발처럼 항목이 h3 가 아니라 목록이면 목록 줄을 센다.
 function sectionCounts(body) {
   const out = {};
   for (const chunk of body.split(/^## /m).slice(1)) {
-    out[chunk.split("\n")[0].trim()] = (chunk.match(/^### /gm) ?? []).length;
+    const heads = (chunk.match(/^### /gm) ?? []).length;
+    out[chunk.split("\n")[0].trim()] = heads || (chunk.match(/^- /gm) ?? []).length;
   }
   return out;
 }
@@ -62,13 +85,15 @@ const koDate = (iso) => {
   return `${m}월 ${d}일`;
 };
 const period = (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`;
-const counts = (w) => GROUP_NAMES.map((g) => `${g} ${w.n[g] ?? 0}`).join(" · ");
-// 각 분야 5건이 표준이다. 표준이면 건수를 화면에서 반복하지 않고, 어긋날 때만 드러낸다.
-const isStandard = (w) => GROUP_NAMES.every((g) => w.n[g] === 5);
-const pageTitle = (w) => `${w.week} 주간 브리핑 (${period(w.meta)})`;
+const groupsOf = (d) => Object.keys(KINDS[d.kind].groups);
+const counts = (d) => groupsOf(d).map((g) => `${g} ${d.n[g] ?? 0}`).join(" · ");
+// 어느 종류든 구획마다 5건이 표준이다. 표준이면 건수를 화면에서 반복하지 않고,
+// 어긋날 때만 드러낸다.
+const isStandard = (d) => groupsOf(d).every((g) => d.n[g] === 5);
+const pageTitle = (d) => `${d.id} ${KINDS[d.kind].suffix} (${period(d.meta)})`;
 // 화면에서는 기간을 다음 줄로 내린다. 한 줄에 두면 좁은 화면에서 어중간하게 잘린다.
-const pageTitleHtml = (w) =>
-  `${w.week} 주간 브리핑<span class="period">${period(w.meta)}</span>`;
+const pageTitleHtml = (d) =>
+  `${d.id} ${KINDS[d.kind].suffix}<span class="period">${period(d.meta)}</span>`;
 
 // ---------- 본문 구조화 ----------
 // marked 가 낸 h3 + ul 을 항목 블록으로 바꾼다. 라벨을 화면에서 없애고
@@ -115,7 +140,7 @@ function buildItem(slug, num, title, listHtml) {
   const fields = {};
   // 목록에 빈 줄이 있으면 marked 가 각 <li> 안을 <p> 로 감싼다. 양쪽을 다 받는다.
   const re =
-    /<li>\s*(?:<p>)?\s*<strong>(날짜|무슨 일|왜 중요한가|출처)<\/strong>\s*:?\s*([\s\S]*?)\s*(?:<\/p>)?\s*<\/li>/g;
+    /<li>\s*(?:<p>)?\s*<strong>(날짜|무슨 일|왜 중요한가|출처|전개|근거)<\/strong>\s*:?\s*([\s\S]*?)\s*(?:<\/p>)?\s*<\/li>/g;
   let m;
   while ((m = re.exec(listHtml))) fields[m[1]] = paragraphs(m[2].trim());
 
@@ -128,24 +153,26 @@ function buildItem(slug, num, title, listHtml) {
   ];
   if (fields["날짜"]) parts.push(`<p class="when">${fields["날짜"].join(" ")}</p>`);
   if (fields["무슨 일"]) parts.push(`<div class="what">${ps("무슨 일")}</div>`);
+  if (fields["전개"]) parts.push(`<div class="what">${ps("전개")}</div>`);
   if (fields["왜 중요한가"])
     parts.push(`<div class="why"><p class="lbl">왜 중요한가</p>${ps("왜 중요한가")}</div>`);
-  if (fields["출처"])
-    parts.push(`<p class="src"><span class="lbl">출처</span>${sources(fields["출처"].join(" "))}</p>`);
+  for (const label of ["출처", "근거"])
+    if (fields[label])
+      parts.push(`<p class="src"><span class="lbl">${label}</span>${sources(fields[label].join(" "))}</p>`);
 
   // 분기 인사이트가 개별 항목을 가리킨다. 앵커는 `<분야>-<번호>` 다.
   return `<article class="item" id="${slug}-${num}">${parts.join("")}</article>`;
 }
 
-function structure(html) {
-  // 분야로 먼저 자른다. 항목 앵커에 분야 이름이 들어가므로 항목보다 분야를 먼저 알아야 한다.
+function structure(html, groups) {
+  // 구획으로 먼저 자른다. 항목 앵커에 구획 이름이 들어가므로 항목보다 구획을 먼저 알아야 한다.
   const chunks = html.split(/(?=<h2[^>]*>)/);
   return chunks
     .map((chunk) => {
       const m = chunk.match(/^<h2[^>]*>\s*([\s\S]*?)<\/h2>/);
       if (!m) return chunk;
       const name = m[1].trim();
-      const slug = GROUPS[name] ?? "other";
+      const slug = groups[name] ?? "other";
 
       // 항목: <h3>N. 제목</h3> + 바로 뒤 <ul>
       const body = chunk.slice(m[0].length).replace(
@@ -153,7 +180,9 @@ function structure(html) {
         (whole, num, title, list) => buildItem(slug, num, title.trim(), list) ?? whole
       );
 
-      const n = (body.match(/class="item"/g) ?? []).length;
+      // 단발처럼 항목이 h3 가 아니면 목록 줄을 센다.
+      const n =
+        (body.match(/class="item"/g) ?? []).length || (body.match(/<li>/g) ?? []).length;
       const chip = n === 5 ? "" : `<span class="n">${n}건</span>`;
       const head = `<h2><span class="rule"></span>${name}${chip}</h2>`;
       return `<section class="group group--${slug}">${head}${body}</section>`;
@@ -218,6 +247,12 @@ const CSS = `
   .group { --accent:var(--home); margin-top:3.5rem; }
   .group--world { --accent:var(--world); }
   .group--ai { --accent:var(--ai); }
+  /* 분기호·연간호. 흐름이 본체이고 단발은 보조라 색으로 층을 나눈다. */
+  .group--flow { --accent:var(--home); }
+  .group--single { --accent:var(--dim); }
+  .group--single ul { list-style:none; margin:0; padding:0; }
+  .group--single li { padding:.9rem 0; border-top:1px solid var(--line); }
+  .group--single li:first-child { border-top:none; }
   .group > h2 {
     display:flex; align-items:center; gap:.6rem;
     font-size:1.2rem; letter-spacing:-.01em; margin:0 0 .5rem; color:var(--accent);
@@ -270,6 +305,14 @@ const CSS = `
   .src em { font-style:normal; color:var(--muted); opacity:.85; }
 
   /* 목록 페이지 */
+  .tabs { display:flex; gap:.25rem; margin:0 0 1.75rem; border-bottom:1px solid var(--line); }
+  .tab {
+    padding:.5rem .85rem; font-size:.9rem; text-decoration:none;
+    color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .tab:hover { color:var(--text); }
+  .tab.on { color:var(--text); font-weight:700; border-bottom-color:var(--accent); }
+
   h2.list { font-size:1.05rem; margin:0 0 1rem; }
   .archive { list-style:none; margin:0; padding:0; }
   .archive li + li { border-top:1px solid var(--line); }
@@ -340,51 +383,86 @@ ${body}
 `;
 }
 
-function renderWeek(w) {
+// 종류가 하나뿐이면 탭을 그리지 않는다. 분기호가 처음 들어오는 날 탭이 생긴다.
+// root 는 사이트 최상위까지의 상대 경로다. 주간호 목록이 최상위에 있으므로
+// 주간호 탭은 root 자신을 가리킨다.
+function tabs(current, sets, root) {
+  const live = KIND_NAMES.filter((k) => sets[k].length);
+  if (live.length < 2) return "";
+  return `<nav class="tabs">${live
+    .map((k) => {
+      const href = k === "week" ? root : `${root}${k}/`;
+      return k === current
+        ? `<span class="tab on" aria-current="page">${KINDS[k].label}</span>`
+        : `<a class="tab" href="${href}">${KINDS[k].label}</a>`;
+    })
+    .join("")}</nav>`;
+}
+
+function renderDoc(d, sets) {
+  // 주간호 목록만 최상위에 있어서 되돌아가는 링크가 한 단계 더 올라간다.
+  const back = d.kind === "week" ? "../../" : "../";
   const body = `
-<p class="crumb"><a href="../../">← 전체 목록</a></p>
-<h1 class="issue-title">${pageTitleHtml(w)}</h1>
-${isStandard(w) ? "" : `<p class="issue-meta">${counts(w)}</p>`}
-${structure(marked.parse(w.body))}`;
+<p class="crumb"><a href="${back}">← ${KINDS[d.kind].label} 목록</a></p>
+<h1 class="issue-title">${pageTitleHtml(d)}</h1>
+${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
+${structure(marked.parse(d.body), KINDS[d.kind].groups)}`;
   return layout({
-    title: `${pageTitle(w)} — ${SITE_TITLE}`,
-    description: `${w.week} (${period(w.meta)}) 주간 브리핑. ${counts(w)}.`,
+    title: `${pageTitle(d)} — ${SITE_TITLE}`,
+    description: `${d.id} (${period(d.meta)}) ${KINDS[d.kind].suffix}. ${counts(d)}.`,
     root: "../../",
     body,
   });
 }
 
-function renderIndex(weeks) {
-  const list = weeks.length
-    ? `<ul class="archive">${weeks
+function renderIndex(kind, sets) {
+  const docs = sets[kind];
+  const label = KINDS[kind].label;
+  const root = kind === "week" ? "./" : "../";
+  const list = docs.length
+    ? `<ul class="archive">${docs
         .map(
-          (w) => `
-  <li><a href="week/${w.week}/">
-    <span class="wk">${w.week}</span>
-    <span class="period">${period(w.meta)}</span>
-    ${isStandard(w) ? "" : `<span class="counts">${counts(w)}</span>`}
+          (d) => `
+  <li><a href="${root}${d.kind}/${d.id}/">
+    <span class="wk">${d.id}</span>
+    <span class="period">${period(d.meta)}</span>
+    ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
   </a></li>`
         )
         .join("")}
 </ul>`
-    : `<div class="empty"><p>아직 발행된 주간호가 없습니다.</p></div>`;
+    : `<div class="empty"><p>아직 발행된 ${label}가 없습니다.</p></div>`;
   return layout({
-    title: `${SITE_TITLE} — 주간 뉴스 브리핑`,
+    title: kind === "week" ? `${SITE_TITLE} — 주간 뉴스 브리핑` : `${label} — ${SITE_TITLE}`,
     description: SITE_TAGLINE,
-    root: "./",
-    body: `<h2 class="list">주간호</h2>\n${list}`,
+    root,
+    body: `${tabs(kind, sets, root)}\n<h2 class="list">${label}</h2>\n${list}`,
   });
 }
 
 // ---------- 실행 ----------
 
-const weeks = loadWeeks();
+const sets = Object.fromEntries(KIND_NAMES.map((k) => [k, load(k)]));
 rmSync(SITE, { recursive: true, force: true });
 mkdirSync(SITE, { recursive: true });
-writeFileSync(join(SITE, "index.html"), renderIndex(weeks));
-for (const w of weeks) {
-  const dir = join(SITE, "week", w.week);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "index.html"), renderWeek(w));
+
+for (const kind of KIND_NAMES) {
+  // 주간호 목록은 최상위에, 나머지는 자기 폴더에 둔다.
+  const indexDir = kind === "week" ? SITE : join(SITE, kind);
+  // 아직 하나도 없는 종류는 목록 페이지도 만들지 않는다. 탭에 없으므로 갈 길이 없다.
+  if (kind !== "week" && !sets[kind].length) continue;
+  mkdirSync(indexDir, { recursive: true });
+  writeFileSync(join(indexDir, "index.html"), renderIndex(kind, sets));
+
+  for (const d of sets[kind]) {
+    const dir = join(SITE, kind, d.id);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "index.html"), renderDoc(d, sets));
+  }
 }
-console.log(`built ${weeks.length} week(s): ${weeks.map((w) => w.week).join(", ")}`);
+
+console.log(
+  KIND_NAMES.filter((k) => sets[k].length)
+    .map((k) => `${KINDS[k].label} ${sets[k].length}개: ${sets[k].map((d) => d.id).join(", ")}`)
+    .join(" | ")
+);
