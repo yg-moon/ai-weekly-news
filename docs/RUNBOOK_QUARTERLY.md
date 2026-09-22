@@ -158,8 +158,8 @@ git push origin main
 SITE=https://yg-moon.github.io/ai-weekly-news
 curl -s "$SITE/quarter/<Y>-Q<분기>/" -o /tmp/pub.html -w '응답: %{http_code}\n'
 echo "흐름: $(grep -c '<article class="item"' /tmp/pub.html)건"
-echo "단발: $(grep -o '<li>' /tmp/pub.html | wc -l)건"
-echo "목록: $(curl -s "$SITE/quarter/" | grep -c "quarter/<Y>-Q<분기>/")건"
+echo "단발: $(grep -c '<li id="single-' /tmp/pub.html)건"
+echo "목록: $(curl -s "$SITE/<Y>/Q<분기>/" | grep -c "quarter/<Y>-Q<분기>/")건"
 ```
 
 응답 200, 흐름 5건, 단발 5건, 목록 1건이어야 한다. 하나라도 다르면 배포가 아직 안 끝났거나 빌드가 그 분기를 빠뜨린 것이다. 잠시 뒤 다시 보고, 그래도 같으면 CI 로그를 읽는다.
@@ -169,7 +169,7 @@ echo "목록: $(curl -s "$SITE/quarter/" | grep -c "quarter/<Y>-Q<분기>/")건"
 발행한 주차가 그 해의 마지막 주이면 분기호를 만든 뒤 이어서 연간을 만든다.
 
 - 입력은 **그 해의 분기호 네 개뿐**이다. 주간호를 다시 읽지 않는다. 분기호가 이미 추세를 뽑은 결과이므로, 52주를 다시 읽으면 분기호가 한 일을 되풀이한다.
-- 구조는 분기호와 같다. 흐름 다섯, 단발 다섯이다. 입력이 분기호이므로 근거는 분기호 항목으로 건다.
+- 구조는 분기호와 같다. 흐름 다섯, 단발 다섯이다. 입력이 분기호이므로 근거는 분기호 항목으로 건다. 앵커는 `flow-<번호>` 와 `single-<번호>` 이며, 연간호는 `/year/<Y>/` 에 놓이므로 `../../quarter/<Y>-Q<분기>/#flow-1` 꼴이 된다.
 - 한 해에 걸친 흐름은 **여러 분기의 흐름이 이어진 것**이다. 한 분기에만 있던 흐름은 연간에서 단발 후보다.
 - `content/year/<Y>.md` 가 이미 있으면 덮어쓰지 않는다.
 
@@ -182,6 +182,6 @@ echo "목록: $(curl -s "$SITE/quarter/" | grep -c "quarter/<Y>-Q<분기>/")건"
 - 이 절차는 한 번도 실행되지 않았다. 형식을 보려고 시험 발행을 먼저 돌린다.
 - 13주에서 흐름이 실제로 다섯 개 나오는지. W35~W37 세 주차에서 2주 이상 걸친 흐름이 6개 나온 것이 근거의 전부다.
 
-빌드는 준비돼 있다. `content/quarter/<Y>-Q<분기>.md` 를 두면 `/quarter/<Y>-Q<분기>/` 로 나가고 목록 페이지와 탭이 함께 생긴다. 뼈대 파일로 확인했다.
+빌드는 준비돼 있다. `content/quarter/<Y>-Q<분기>.md` 를 두면 `/quarter/<Y>-Q<분기>/` 로 나가고, 그 분기 목록(`/<Y>/Q<분기>/`) 맨 위에 놓인다. 뼈대 파일로 확인했다.
 
 8절의 배포 확인 명령은 뼈대 파일을 빌드해 로컬 서버로 돌려 본 것까지다. 실제 주소에서는 첫 분기호를 내는 날 확인한다.

@@ -180,12 +180,16 @@ function structure(html, groups) {
         (whole, num, title, list) => buildItem(slug, num, title.trim(), list) ?? whole
       );
 
-      // 단발처럼 항목이 h3 가 아니면 목록 줄을 센다.
-      const n =
-        (body.match(/class="item"/g) ?? []).length || (body.match(/<li>/g) ?? []).length;
+      // 단발처럼 항목이 h3 가 아니면 목록 줄 하나가 곧 항목이다.
+      const items = (body.match(/class="item"/g) ?? []).length;
+      const n = items || (body.match(/<li>/g) ?? []).length;
+
+      // 연간호가 분기호의 단발 줄을 가리킨다. 항목과 같은 앵커 규약을 준다.
+      let i = 0;
+      const anchored = items ? body : body.replace(/<li>/g, () => `<li id="${slug}-${++i}">`);
       const chip = n === 5 ? "" : `<span class="n">${n}건</span>`;
       const head = `<h2><span class="rule"></span>${name}${chip}</h2>`;
-      return `<section class="group group--${slug}">${head}${body}</section>`;
+      return `<section class="group group--${slug}">${head}${anchored}</section>`;
     })
     .join("");
 }
@@ -251,7 +255,7 @@ const CSS = `
   .group--flow { --accent:var(--home); }
   .group--single { --accent:var(--dim); }
   .group--single ul { list-style:none; margin:0; padding:0; }
-  .group--single li { padding:.9rem 0; border-top:1px solid var(--line); }
+  .group--single li { padding:.9rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
   .group--single li:first-child { border-top:none; }
   .group > h2 {
     display:flex; align-items:center; gap:.6rem;
@@ -305,13 +309,20 @@ const CSS = `
   .src em { font-style:normal; color:var(--muted); opacity:.85; }
 
   /* 목록 페이지 */
-  .tabs { display:flex; gap:.25rem; margin:0 0 1.75rem; border-bottom:1px solid var(--line); }
+  .tabs { display:flex; flex-wrap:wrap; gap:.25rem; margin:0 0 1.75rem; border-bottom:1px solid var(--line); }
   .tab {
     padding:.5rem .85rem; font-size:.9rem; text-decoration:none;
     color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px;
   }
   .tab:hover { color:var(--text); }
   .tab.on { color:var(--text); font-weight:700; border-bottom-color:var(--accent); }
+  .yr {
+    padding:.5rem .35rem; font-size:.9rem; text-decoration:none;
+    color:var(--muted); font-variant-numeric:tabular-nums;
+  }
+  .yr:hover { color:var(--text); }
+  .yr.on { color:var(--text); font-weight:700; }
+  .tabdiv { width:1px; margin:.55rem .45rem; background:var(--line); }
 
   h2.list { font-size:1.05rem; margin:0 0 1rem; }
   .archive { list-style:none; margin:0; padding:0; }
@@ -325,6 +336,8 @@ const CSS = `
   .archive .wk { font-weight:700; font-variant-numeric:tabular-nums; }
   .archive .period { color:var(--dim); font-size:.9rem; }
   .archive .counts { width:100%; color:var(--muted); font-size:.78rem; }
+  .archive li.quarter .wk { color:var(--accent); }
+  .archive li.quarter + li { border-top-color:var(--dim); }
   .empty {
     padding:1.5rem; border:1px dashed var(--line); border-radius:var(--radius);
     color:var(--muted); background:var(--surface);
@@ -383,27 +396,96 @@ ${body}
 `;
 }
 
-// 종류가 하나뿐이면 탭을 그리지 않는다. 분기호가 처음 들어오는 날 탭이 생긴다.
-// root 는 사이트 최상위까지의 상대 경로다. 주간호 목록이 최상위에 있으므로
-// 주간호 탭은 root 자신을 가리킨다.
-function tabs(current, sets, root) {
-  const live = KIND_NAMES.filter((k) => sets[k].length);
-  if (live.length < 2) return "";
-  return `<nav class="tabs">${live
-    .map((k) => {
-      const href = k === "week" ? root : `${root}${k}/`;
-      return k === current
-        ? `<span class="tab on" aria-current="page">${KINDS[k].label}</span>`
-        : `<a class="tab" href="${href}">${KINDS[k].label}</a>`;
-    })
-    .join("")}</nav>`;
+// ---------- 기간 ----------
+// 탭은 기간이다. 종류가 아니다. 한 분기 목록 안에 그 분기의 분기호와 주간호가
+// 같이 놓인다. 발행물 자체의 경로는 종류별로 그대로 둔다.
+
+// 분기는 ISO 8601 에 없다. 이 프로젝트가 13주씩 끊어 쓴다. 4분기만 그 해의
+// 마지막 주(52 또는 53)까지라 한 주 길 때가 있다.
+const quarterOf = (week) => (week <= 13 ? 1 : week <= 26 ? 2 : week <= 39 ? 3 : 4);
+
+// 발행물이 어느 해 어느 분기에 속하는가. 연간호는 분기가 없다.
+function placeOf(d) {
+  if (d.kind === "week") {
+    const [y, w] = d.id.split("-W");
+    return { year: y, q: quarterOf(Number(w)) };
+  }
+  if (d.kind === "quarter") {
+    const [y, q] = d.id.split("-Q");
+    return { year: y, q: Number(q) };
+  }
+  return { year: d.id, q: null };
 }
 
-function renderDoc(d, sets) {
-  // 주간호 목록만 최상위에 있어서 되돌아가는 링크가 한 단계 더 올라간다.
-  const back = d.kind === "week" ? "../../" : "../";
+// 연도 → 그 해의 분기들과 연간호.
+function timeline(sets) {
+  const years = new Map();
+  const at = (y) => {
+    if (!years.has(y)) years.set(y, { quarters: new Map(), annual: null });
+    return years.get(y);
+  };
+  for (const kind of KIND_NAMES)
+    for (const d of sets[kind]) {
+      const { year, q } = placeOf(d);
+      if (q === null) {
+        at(year).annual = d;
+        continue;
+      }
+      const qs = at(year).quarters;
+      if (!qs.has(q)) qs.set(q, []);
+      qs.get(q).push(d);
+    }
+  // 분기호가 맨 위, 그 아래로 주간호 최신순이다.
+  for (const y of years.values())
+    for (const docs of y.quarters.values())
+      docs.sort((a, b) =>
+        a.kind === b.kind ? (a.id < b.id ? 1 : -1) : a.kind === "quarter" ? -1 : 1
+      );
+  return years;
+}
+
+// 내용이 있는 분기만 나온다. 연도·분기 오름차순이라 마지막이 가장 나중이다.
+const periods = (years) =>
+  [...years.keys()]
+    .sort()
+    .flatMap((y) =>
+      [...years.get(y).quarters.keys()].sort((a, b) => a - b).map((q) => ({ year: y, q }))
+    );
+
+const listPath = (p) => `${p.year}/Q${p.q}/`;
+const listTitle = (p) => `${p.year}년 ${p.q}분기`;
+
+// 연도 칩과 분기 칩을 한 줄에 둔다. 연도가 하나뿐이면 누를 데가 없는 라벨이다.
+// 연도를 누르면 그 해에서 가장 나중 분기로 간다. `연간` 은 지금 보고 있는 해의
+// 연간호로 간다. root 는 최상위까지의 상대 경로다.
+function tabs(years, here, root) {
+  const all = periods(years);
+  if (!all.length) return "";
+
+  const yearChip = (y) =>
+    y === here.year
+      ? `<span class="yr on">${y}</span>`
+      : `<a class="yr" href="${root}${listPath(all.filter((p) => p.year === y).pop())}">${y}</a>`;
+
+  const quarterChip = (p) =>
+    p.q === here.q
+      ? `<span class="tab on" aria-current="page">Q${p.q}</span>`
+      : `<a class="tab" href="${root}${listPath(p)}">Q${p.q}</a>`;
+
+  const annual = years.get(here.year).annual;
+  const yearRow = [...new Set(all.map((p) => p.year))].map(yearChip).join("");
+  const quarterRow = all.filter((p) => p.year === here.year).map(quarterChip).join("");
+  const annualChip = annual ? `<a class="tab" href="${root}year/${annual.id}/">연간</a>` : "";
+  return `<nav class="tabs">${yearRow}<span class="tabdiv"></span>${quarterRow}${annualChip}</nav>`;
+}
+
+function renderDoc(d, years) {
+  // 되돌아가는 곳은 그 발행물이 속한 분기 목록이다. 연간호는 분기가 없으므로
+  // 그 해에서 가장 나중 분기로 보낸다.
+  const p = placeOf(d);
+  const back = p.q ? p : periods(years).filter((x) => x.year === p.year).pop();
   const body = `
-<p class="crumb"><a href="${back}">← ${KINDS[d.kind].label} 목록</a></p>
+${back ? `<p class="crumb"><a href="../../${listPath(back)}">← ${listTitle(back)}</a></p>` : ""}
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
 ${structure(marked.parse(d.body), KINDS[d.kind].groups)}`;
@@ -415,54 +497,67 @@ ${structure(marked.parse(d.body), KINDS[d.kind].groups)}`;
   });
 }
 
-function renderIndex(kind, sets) {
-  const docs = sets[kind];
-  const label = KINDS[kind].label;
-  const root = kind === "week" ? "./" : "../";
-  const list = docs.length
-    ? `<ul class="archive">${docs
-        .map(
-          (d) => `
-  <li><a href="${root}${d.kind}/${d.id}/">
-    <span class="wk">${d.id}</span>
+// 한 분기의 목록. 홈은 가장 나중 분기와 같은 내용이고 root 와 제목만 다르다.
+function renderList(years, p, root, home) {
+  const cards = years
+    .get(p.year)
+    .quarters.get(p.q)
+    .map(
+      (d) => `
+  <li class="${d.kind}"><a href="${root}${d.kind}/${d.id}/">
+    <span class="wk">${d.id}${d.kind === "quarter" ? ` ${KINDS[d.kind].label}` : ""}</span>
     <span class="period">${period(d.meta)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
   </a></li>`
-        )
-        .join("")}
-</ul>`
-    : `<div class="empty"><p>아직 발행된 ${label}가 없습니다.</p></div>`;
+    )
+    .join("");
   return layout({
-    title: kind === "week" ? `${SITE_TITLE} — 주간 뉴스 브리핑` : `${label} — ${SITE_TITLE}`,
+    title: home ? `${SITE_TITLE} — 주간 뉴스 브리핑` : `${listTitle(p)} — ${SITE_TITLE}`,
     description: SITE_TAGLINE,
     root,
-    body: `${tabs(kind, sets, root)}\n<h2 class="list">${label}</h2>\n${list}`,
+    body: `${tabs(years, p, root)}\n<h2 class="list">${listTitle(p)}</h2>\n<ul class="archive">${cards}\n</ul>`,
   });
 }
 
 // ---------- 실행 ----------
 
 const sets = Object.fromEntries(KIND_NAMES.map((k) => [k, load(k)]));
+const years = timeline(sets);
+const all = periods(years);
+
 rmSync(SITE, { recursive: true, force: true });
 mkdirSync(SITE, { recursive: true });
 
-for (const kind of KIND_NAMES) {
-  // 주간호 목록은 최상위에, 나머지는 자기 폴더에 둔다.
-  const indexDir = kind === "week" ? SITE : join(SITE, kind);
-  // 아직 하나도 없는 종류는 목록 페이지도 만들지 않는다. 탭에 없으므로 갈 길이 없다.
-  if (kind !== "week" && !sets[kind].length) continue;
-  mkdirSync(indexDir, { recursive: true });
-  writeFileSync(join(indexDir, "index.html"), renderIndex(kind, sets));
-
+// 발행물 경로는 종류별로 그대로 둔다. 이미 나간 주소가 깨지면 안 된다.
+for (const kind of KIND_NAMES)
   for (const d of sets[kind]) {
     const dir = join(SITE, kind, d.id);
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, "index.html"), renderDoc(d, sets));
+    writeFileSync(join(dir, "index.html"), renderDoc(d, years));
   }
+
+for (const p of all) {
+  const dir = join(SITE, p.year, `Q${p.q}`);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "index.html"), renderList(years, p, "../../", false));
 }
 
+// 홈은 가장 나중 분기다. 분기가 바뀐 첫 주에는 그 분기에 주간호 한 건뿐이다.
+const latest = all[all.length - 1];
+writeFileSync(
+  join(SITE, "index.html"),
+  latest
+    ? renderList(years, latest, "./", true)
+    : layout({
+        title: `${SITE_TITLE} — 주간 뉴스 브리핑`,
+        description: SITE_TAGLINE,
+        root: "./",
+        body: `<div class="empty"><p>아직 발행된 ${KINDS.week.label}가 없습니다.</p></div>`,
+      })
+);
+
 console.log(
-  KIND_NAMES.filter((k) => sets[k].length)
-    .map((k) => `${KINDS[k].label} ${sets[k].length}개: ${sets[k].map((d) => d.id).join(", ")}`)
-    .join(" | ")
+  all
+    .map((p) => `${listTitle(p)} ${years.get(p.year).quarters.get(p.q).length}개`)
+    .join(" | ") || "발행물 없음"
 );
