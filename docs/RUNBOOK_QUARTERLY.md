@@ -150,7 +150,19 @@ git push origin main
 ```
 
 - 이 저장소는 `main` 에 직접 발행한다.
-- 푸시 뒤 CI 성공을 확인하고 종료한다.
+- 푸시 뒤 CI 성공을 확인한다. 실패하면 로그를 읽고 원인을 남긴다.
+
+**배포된 페이지를 받아 본다.** CI 성공은 빌드가 끝났다는 뜻이지 페이지가 제대로 나왔다는 뜻이 아니다.
+
+```bash
+SITE=https://yg-moon.github.io/ai-weekly-news
+curl -s "$SITE/quarter/<Y>-Q<분기>/" -o /tmp/pub.html -w '응답: %{http_code}\n'
+echo "흐름: $(grep -c '<article class="item"' /tmp/pub.html)건"
+echo "단발: $(grep -o '<li>' /tmp/pub.html | wc -l)건"
+echo "목록: $(curl -s "$SITE/quarter/" | grep -c "quarter/<Y>-Q<분기>/")건"
+```
+
+응답 200, 흐름 5건, 단발 5건, 목록 1건이어야 한다. 하나라도 다르면 배포가 아직 안 끝났거나 빌드가 그 분기를 빠뜨린 것이다. 잠시 뒤 다시 보고, 그래도 같으면 CI 로그를 읽는다.
 
 ## 9. 연간호
 
@@ -171,3 +183,5 @@ git push origin main
 - 13주에서 흐름이 실제로 다섯 개 나오는지. W35~W37 세 주차에서 2주 이상 걸친 흐름이 6개 나온 것이 근거의 전부다.
 
 빌드는 준비돼 있다. `content/quarter/<Y>-Q<분기>.md` 를 두면 `/quarter/<Y>-Q<분기>/` 로 나가고 목록 페이지와 탭이 함께 생긴다. 뼈대 파일로 확인했다.
+
+8절의 배포 확인 명령은 뼈대 파일을 빌드해 로컬 서버로 돌려 본 것까지다. 실제 주소에서는 첫 분기호를 내는 날 확인한다.
