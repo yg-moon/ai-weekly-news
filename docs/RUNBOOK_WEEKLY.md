@@ -140,8 +140,8 @@ node scripts/rank-topics.mjs /tmp/domestic.md --covered "용혜인,호르무즈,
 | 분야 | 주요 | 보조 |
 |---|---|---|
 | 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · KBS · SBS · MBC · JTBC · YTN · 연합뉴스 · 연합뉴스TV (15곳) | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴시스 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
-| 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times | CBS News · USA Today · The Independent · Gulf News |
-| AI | 연구소 1차 출처(아래) · Bloomberg · TechCrunch · The Verge · Ars Technica | VentureBeat · The Information · Semafor |
+| 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times | CBS News · NBC News · USA Today · The Independent · Gulf News |
+| AI | 연구소 1차 출처(아래) · TechCrunch · The Verge · Ars Technica | The Register · The New Stack · BNN Bloomberg · The Information · Semafor |
 
 국내 사안은 **한국어 원문을 우선한다.** 번역을 거치지 않아 표현과 수치가 정확하고, 영문판에 없는 사안이 많다.
 
@@ -163,13 +163,15 @@ node scripts/rank-topics.mjs /tmp/domestic.md --covered "용혜인,호르무즈,
 
 **도구가 거부하는 매체가 있다.** 검색 도구의 `allowed_domains` 에 연합·조선·중앙·동아·한겨레·매경·Reuters·AP·BBC·The Guardian 을 넣으면 호출 전체가 실패한다. 넣지 않는다. 다만 URL 을 알면 원문 받기는 되므로 대조에는 쓴다. Wall Street Journal 은 원문도 막혀 있다(401).
 
-**봇 차단으로 원문을 받을 수 없는 매체가 있다.** 2026-W37 실측이다. 주요 매체 목록은 이 결과로 정했다.
+**봇 차단으로 원문을 받을 수 없는 매체가 있다.** 2026-W37 실측에 2026-09-23 실측을 더했다. 주요 매체 목록은 이 결과로 정했다.
 
 | 받아진다 | 막힌다 |
 |---|---|
-| The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times · CBS News · USA Today · The Independent | Reuters(401) · AP(403, 자바스크립트 챌린지) · France 24(403) · CNBC(403) · Washington Post(연결 실패) · Times of Israel(403) · Axios(403) · Sky News(403) |
+| The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times · CBS News · NBC News · USA Today · The Independent · TechCrunch · Ars Technica · The Register · The New Stack · BNN Bloomberg | Reuters(401) · AP(403, 자바스크립트 챌린지) · France 24(403) · CNBC(403) · Washington Post(연결 실패) · Times of Israel(403) · Axios(403) · Sky News(403) · Bloomberg(403) · VentureBeat(봇 확인 페이지) |
 
-**차단은 우회하지 않는다.** 받아지는 매체로 대조하고, 한 사안을 인용한 매체가 전부 막혔으면 그 사안은 싣지 않는다.
+**차단은 우회하지 않는다.** 받아지는 매체로 대조하고, 한 사안을 인용한 매체가 전부 막혔으면 그 사안은 싣지 않는다. 막힌 매체는 출처 줄에도 쓰지 않는다. 읽지 못한 원문을 근거로 내세우는 것이 된다.
+
+**표에 없는 매체를 쓰려면 먼저 이 표에 넣는다.** 원문이 받아지는지 확인하고 주요와 보조 중 하나로 정한다. 비슷한 매체가 이미 있으면 그 층을 따른다. NBC News 는 CBS News 를 따라 보조다. 표에 없는 이름은 출처 검사가 발표 주체로 보기 때문에, 매체를 표에 안 넣으면 그 항목은 순서 검사와 주요 매체 검사에서 조용히 빠진다.
 
 주의할 것이 하나 더 있다. 매체가 막힌 것과 **우리 추출기가 그 사이트의 마크업을 못 읽는 것**은 다르다. CNN 은 응답이 정상인데 본문이 안 잡혀 한동안 막힌 줄 알았다. 응답 코드가 200 이면 차단이 아니라 추출 문제다.
 
@@ -182,6 +184,12 @@ node scripts/rank-topics.mjs /tmp/domestic.md --covered "용혜인,호르무즈,
 - 복수의 독립 매체 보도를 원칙으로 한다.
 - 단일 매체 보도뿐이면 싣는다. 발표 주체의 1차 출처는 독립 매체로 세지 않는다.
 - 주요 매체가 당연히 보도했을 사안인데 수집 풀에 없으면 그 매체에서 먼저 찾아보고, 그래도 못 찾으면 보조 매체로 싣는다.
+
+  국내는 네이버의 **언론사별 날짜 목록**에서 찾는다. 많이 본 랭킹에 없는 기사도 이 목록에는 다 있다. 2026-W36 물가 기사가 랭킹에는 없었고, 이 목록에는 주요 매체 다섯 곳에 있었다. 언론사 번호는 그 언론사 기사 링크의 `article/<번호>/` 부분이다. 응답은 CP949 로 인코딩되어 있다.
+
+  ```
+  https://news.naver.com/main/list.naver?mode=LPOD&mid=sec&oid=<언론사 번호>&date=<YYYYMMDD>&page=<쪽>
+  ```
 - **출처가 약하다는 표기는 따로 하지 않는다.** 출처 목록에 매체 이름이 그대로 나오므로 독자가 보고 판단한다.
 - 어느 경우에도 **원문 대조는 건너뛰지 않는다**. 출처가 하나여도 그 하나는 반드시 읽는다.
 
