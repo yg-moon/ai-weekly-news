@@ -415,7 +415,7 @@ yg-moon/ai-weekly-news 의 주간 브리핑을 발행한다.
 | `create_new_session_on_fire` | `true` |
 | `notifications` | `{"push": true}` |
 | `initiation` | `human_request` |
-| `model` | `claude-opus-5` |
+| `model` | `claude-opus-5-5` |
 
 **루틴에 저장소를 등록해야 한다.** 등록 자리는 claude.ai/code/routines 의 편집 화면 "Select repositories" 다. `create_trigger` 도구에는 저장소 필드가 없어서 그 경로로 만든 루틴은 저장소가 비어 있다. 모델도 필드가 없어 만든 뒤 `update_trigger` 로 넣는다.
 
