@@ -347,7 +347,7 @@ const CSS = `
 
   /* 비용 페이지 */
   .lede { color:var(--dim); margin:0 0 1.75rem; }
-  .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin:0 0 2.25rem; }
+  .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin:0 0 2.25rem; }
   .tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:.8rem 1rem; }
   .tile .k { display:block; font-size:.75rem; color:var(--muted); }
   .tile .v { display:block; font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
@@ -367,7 +367,7 @@ const CSS = `
   .runs .r { text-align:right; }
   .table-scroll { overflow-x:auto; }
   @media (max-width:30rem) {
-    .tiles { gap:.5rem; }
+    .tiles { grid-template-columns:repeat(2,1fr); gap:.5rem; }
     .tile { padding:.6rem .7rem; }
     .tile .v { font-size:1.2rem; }
     /* 차트는 화면 폭에 맞춰 줄어든다. 글자는 줄어든 만큼 키워 둔다. */
@@ -419,7 +419,7 @@ ${body}
 <footer>
   <p>${FOOTER_NOTE}</p>
   <p>${FOOTER_LIMIT}</p>
-  <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${REPO_URL}/blob/main/LICENSE">CC BY-NC-SA 4.0</a> · <a href="${root}stats/">통계</a></p>
+  <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${root}stats/">통계 대시보드</a> · CC BY-NC-SA 4.0</p>
 </footer>
 </div>
 </body>
@@ -613,7 +613,8 @@ function renderStats(runs) {
   const tiles = runs.length
     ? `<div class="tiles">
   <div class="tile"><span class="k">발행물</span><span class="v">${runs.length}<small>개</small></span></div>
-  <div class="tile"><span class="k">발행물당 평균 비용</span><span class="v">${usd(avg((r) => r.cost_usd))}</span></div>
+  <div class="tile"><span class="k">총 비용</span><span class="v">${usd(runs.reduce((s, r) => s + r.cost_usd, 0))}</span></div>
+  <div class="tile"><span class="k">평균 비용</span><span class="v">${usd(avg((r) => r.cost_usd))}</span></div>
   <div class="tile"><span class="k">평균 소요 시간</span><span class="v">${Math.round(avg(minutes))}<small>분</small></span></div>
 </div>`
     : "";
@@ -621,25 +622,25 @@ function renderStats(runs) {
   // 읽은 헤드라인은 기록이 없으면 비운다.
   const rows = [...runs].reverse().map((r) => `<tr>
   <td>${r.week}</td><td>${r.model}</td>
-  <td class="r">${minutes(r)}분</td><td class="r">${usd(r.cost_usd)}</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td>
+  <td class="r">${usd(r.cost_usd)}</td><td class="r">${minutes(r)}분</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td>
 </tr>`).join("");
 
   const body = runs.length
     ? `${tiles}
-${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "발행물별 비용 (달러)")}
-${barChart(runs, minutes, (v) => `${v}분`, "발행물별 소요 시간 (분)")}
+${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "비용 (달러)")}
+${barChart(runs, minutes, (v) => `${v}분`, "소요 시간 (분)")}
 <div class="table-scroll"><table class="runs">
-<thead><tr><th>발행물</th><th>모델</th><th class="r">소요 시간</th><th class="r">비용</th><th class="r">읽은 헤드라인</th></tr></thead>
+<thead><tr><th>발행물</th><th>모델</th><th class="r">비용</th><th class="r">소요 시간</th><th class="r">읽은 헤드라인</th></tr></thead>
 <tbody>${rows}</tbody>
 </table></div>`
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
 
   return layout({
-    title: `Cost — ${SITE_TITLE}`,
+    title: `비용 — ${SITE_TITLE}`,
     description: "발행물을 AI가 만드는 데 든 비용과 시간.",
     root: "../",
     body: `<p class="crumb"><a href="../">← 목록</a></p>
-<h1 class="issue-title">Cost</h1>
+<h1 class="issue-title">비용</h1>
 <p class="lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
 ${body}`,
   });
