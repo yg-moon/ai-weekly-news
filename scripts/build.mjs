@@ -687,6 +687,28 @@ const runs = loadRuns();
 mkdirSync(join(SITE, "stats"), { recursive: true });
 writeFileSync(join(SITE, "stats", "index.html"), renderStats(runs));
 
+// ---------- 쓰이지 않는 스타일 ----------
+// CSS 에 정의된 클래스가 어느 페이지에도 없으면 빌드를 멈춘다. 마크업의 클래스 이름이
+// 바뀌면 스타일이 오류 없이 떨어져 나간다. 52dcefa 가 번호 배지를 그렇게 지웠다.
+// 아래는 특정 내용이 있을 때만 나오는 클래스라, 지금 콘텐츠에 없어도 정상이다.
+const CONDITIONAL = new Set([
+  "quarter", "group--flow", "group--single", // 분기호·연간호가 있을 때
+  "empty", // 목록이나 기록이 비었을 때
+  "counts", "issue-meta", // 건수가 국내·해외·AI 5건씩이 아닌 호
+]);
+const usedClasses = new Set();
+for (const f of readdirSync(SITE, { recursive: true }))
+  if (f.endsWith(".html"))
+    for (const m of readFileSync(join(SITE, f), "utf8").matchAll(/class="([^"]*)"/g))
+      for (const c of m[1].split(/\s+/)) usedClasses.add(c);
+const cssSelectors = CSS.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\{[^{}]*\}/g, "{}");
+const unusedClasses = [...new Set([...cssSelectors.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]))]
+  .filter((c) => !usedClasses.has(c) && !CONDITIONAL.has(c));
+if (unusedClasses.length) {
+  console.error(`쓰이지 않는 CSS 클래스: ${unusedClasses.join(", ")}. 마크업의 클래스 이름이 바뀌었는지 본다.`);
+  process.exit(1);
+}
+
 console.log(
   all
     .map((p) => `${listTitle(p)} ${years.get(p.year).quarters.get(p.q).length}개`)
