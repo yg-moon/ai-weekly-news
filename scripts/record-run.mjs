@@ -2,15 +2,16 @@
 // 발행 커밋 직전에 돌린다. RUNBOOK_WEEKLY 14절.
 //
 //   node scripts/record-run.mjs 2026-W39
-//   node scripts/record-run.mjs 2026-W27 --backfill
 //
 // 비용은 Claude Code 대화 기록(~/.claude/projects/*/*.jsonl)의 토큰을 API 정가로
 // 환산한다. 클라우드와 로컬이 같은 형식으로 남기므로 어디서 돌려도 같은 기준이다.
 // 세션 조회 값과는 기록 뒤에 나가는 호출만큼만 다르다(2026-09-26 대조).
-// 기록은 가장 최근에 고친 대화 기록 하나와 그 세션의 하위 에이전트 기록을 합한다.
+// 기록은 이 세션의 대화 기록과 그 하위 에이전트 기록을 합한다. 이 세션은
+// CLAUDE_CODE_SESSION_ID 로 찾고, 그 변수가 없으면 가장 최근에 고친 기록을 쓴다.
+// 로컬에는 세션이 여럿 떠 있을 수 있어 가장 최근 기록이 다른 세션 것일 수 있다.
 // 한 호를 한 세션에서 만들어야 그 세션 전체가 곧 그 호의 기록이 된다.
 //
-// 읽은 헤드라인은 2절이 /tmp 에 받아 둔 네 목록의 항목 수다. 이 세션이 시작되기
+// 읽은 헤드라인은 2절이 /tmp/<WEEK>/ 에 받아 둔 네 목록의 항목 수다. 이 세션이 시작되기
 // 전에 만들어진 목록은 다른 주차의 것일 수 있어 세지 않는다.
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -29,10 +30,9 @@ const PRICE = {
 
 const args = process.argv.slice(2);
 const week = args.find((a) => /^\d{4}-W\d{2}$/.test(a));
-const backfill = args.includes("--backfill");
 const given = args.includes("--transcript") ? args[args.indexOf("--transcript") + 1] : null;
 if (!week) {
-  console.error("사용법: node scripts/record-run.mjs <WEEK> [--backfill] [--transcript <jsonl>]");
+  console.error("사용법: node scripts/record-run.mjs <WEEK> [--transcript <jsonl>]");
   process.exit(1);
 }
 
@@ -43,8 +43,16 @@ const fail = (msg) => {
 
 // ---------- 대화 기록 ----------
 
-function latestTranscript() {
+function ownTranscript() {
   const root = join(homedir(), ".claude", "projects");
+  const id = process.env.CLAUDE_CODE_SESSION_ID;
+  if (id) {
+    for (const d of existsSync(root) ? readdirSync(root) : []) {
+      const f = join(root, d, `${id}.jsonl`);
+      if (existsSync(f)) return f;
+    }
+    console.error(`경고: 세션 ${id} 의 대화 기록이 ${root} 에 없다. 가장 최근 기록을 쓴다.`);
+  }
   const all = [];
   for (const d of existsSync(root) ? readdirSync(root) : [])
     for (const f of readdirSync(join(root, d)))
@@ -53,7 +61,7 @@ function latestTranscript() {
   return all.sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
 }
 
-const main = given ?? latestTranscript();
+const main = given ?? ownTranscript();
 const subDir = join(dirname(main), basename(main, ".jsonl"), "subagents");
 const files = [main, ...(existsSync(subDir) ? readdirSync(subDir).filter((f) => f.endsWith(".jsonl")).map((f) => join(subDir, f)) : [])];
 
@@ -97,7 +105,7 @@ for (const { model, u } of calls.values()) {
 
 let headlines = 0;
 for (const s of ["domestic", "world", "tech", "ai"]) {
-  const f = `/tmp/${s}.md`;
+  const f = `/tmp/${week}/${s}.md`;
   if (!existsSync(f) || statSync(f).mtime < new Date(started)) {
     console.error(`경고: ${f} 가 없거나 이 세션보다 오래됐다. 읽은 헤드라인을 비워 둔다.`);
     headlines = null;
@@ -114,7 +122,6 @@ const kst = (t) =>
 
 const run = {
   week,
-  run: backfill ? "backfill" : "scheduled",
   model: Object.entries(costBy).sort((a, b) => b[1] - a[1])[0][0],
   started: kst(started),
   published: kst(new Date()),
@@ -125,5 +132,5 @@ const run = {
 
 mkdirSync("data/runs", { recursive: true });
 writeFileSync(`data/runs/${week}.json`, JSON.stringify(run, null, 2) + "\n");
-console.log(`data/runs/${week}.json`);
+console.log(`data/runs/${week}.json  (대화 기록 ${basename(main)})`);
 console.log(JSON.stringify(run));
