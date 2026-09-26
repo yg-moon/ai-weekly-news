@@ -551,7 +551,7 @@ function renderList(years, p, root, home) {
 }
 
 // ---------- 실행 기록 ----------
-// 한 호를 만드는 데 든 비용과 시간. data/runs 는 record-run.mjs 가 쓴다.
+// 한 발행물을 만드는 데 든 비용과 시간. data/runs 는 record-run.mjs 가 쓴다.
 
 function loadRuns() {
   let files = [];
@@ -612,8 +612,8 @@ function renderStats(runs) {
 
   const tiles = runs.length
     ? `<div class="tiles">
-  <div class="tile"><span class="k">발행</span><span class="v">${runs.length}<small>호</small></span></div>
-  <div class="tile"><span class="k">호당 평균 비용</span><span class="v">${usd(avg((r) => r.cost_usd))}</span></div>
+  <div class="tile"><span class="k">발행물</span><span class="v">${runs.length}<small>개</small></span></div>
+  <div class="tile"><span class="k">발행물당 평균 비용</span><span class="v">${usd(avg((r) => r.cost_usd))}</span></div>
   <div class="tile"><span class="k">평균 소요 시간</span><span class="v">${Math.round(avg(minutes))}<small>분</small></span></div>
 </div>`
     : "";
@@ -626,21 +626,21 @@ function renderStats(runs) {
 
   const body = runs.length
     ? `${tiles}
-${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "호별 비용 (달러)")}
-${barChart(runs, minutes, (v) => `${v}분`, "호별 소요 시간 (분)")}
+${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "발행물별 비용 (달러)")}
+${barChart(runs, minutes, (v) => `${v}분`, "발행물별 소요 시간 (분)")}
 <div class="table-scroll"><table class="runs">
-<thead><tr><th>발간호</th><th>모델</th><th class="r">소요 시간</th><th class="r">비용</th><th class="r">읽은 헤드라인</th></tr></thead>
+<thead><tr><th>발행물</th><th>모델</th><th class="r">소요 시간</th><th class="r">비용</th><th class="r">읽은 헤드라인</th></tr></thead>
 <tbody>${rows}</tbody>
 </table></div>`
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
 
   return layout({
     title: `Cost — ${SITE_TITLE}`,
-    description: "주간호를 AI가 만드는 데 든 비용과 시간.",
+    description: "발행물을 AI가 만드는 데 든 비용과 시간.",
     root: "../",
     body: `<p class="crumb"><a href="../">← 목록</a></p>
 <h1 class="issue-title">Cost</h1>
-<p class="lede">AI가 각 호를 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
+<p class="lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
 ${body}`,
   });
 }
