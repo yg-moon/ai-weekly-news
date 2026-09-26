@@ -425,7 +425,7 @@ ${body}
 <footer>
   <p>${FOOTER_NOTE}</p>
   <p>${FOOTER_LIMIT}</p>
-  <p><a href="${root}stats/">만드는 데 든 비용</a> · <a href="${REPO_URL}">GitHub 저장소</a> · <a href="${REPO_URL}/blob/main/LICENSE">CC BY-NC-SA 4.0</a></p>
+  <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${REPO_URL}/blob/main/LICENSE">CC BY-NC-SA 4.0</a> · <a href="${root}stats/">Stats</a></p>
 </footer>
 </div>
 </body>
@@ -650,12 +650,12 @@ ${legend}
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
 
   return layout({
-    title: `만드는 데 든 비용 — ${SITE_TITLE}`,
-    description: "주간호 한 호를 AI가 만드는 데 든 비용과 시간.",
+    title: `Stats — ${SITE_TITLE}`,
+    description: "주간호를 AI가 만드는 데 든 비용과 시간.",
     root: "../",
     body: `<p class="crumb"><a href="../">← 목록</a></p>
-<h1 class="issue-title">만드는 데 든 비용</h1>
-<p class="lede">주간호 한 호를 AI가 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다. 소요 시간은 작업을 시작해서 발행하기까지입니다.${hasBackfill ? " 백필은 지난 주차를 나중에 채운 것이라 평균에서 뺐습니다." : ""}</p>
+<h1 class="issue-title">Stats</h1>
+<p class="lede">주간호를 AI가 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
 ${body}`,
   });
 }
