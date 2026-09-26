@@ -425,7 +425,7 @@ ${body}
 <footer>
   <p>${FOOTER_NOTE}</p>
   <p>${FOOTER_LIMIT}</p>
-  <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${REPO_URL}/blob/main/LICENSE">CC BY-NC-SA 4.0</a> · <a href="${root}stats/">Stats</a></p>
+  <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${REPO_URL}/blob/main/LICENSE">CC BY-NC-SA 4.0</a> · <a href="${root}stats/">통계</a></p>
 </footer>
 </div>
 </body>
@@ -651,11 +651,11 @@ ${legend}
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
 
   return layout({
-    title: `Stats — ${SITE_TITLE}`,
+    title: `Cost — ${SITE_TITLE}`,
     description: "주간호를 AI가 만드는 데 든 비용과 시간.",
     root: "../",
     body: `<p class="crumb"><a href="../">← 목록</a></p>
-<h1 class="issue-title">Stats</h1>
+<h1 class="issue-title">Cost</h1>
 <p class="lede">AI가 각 호를 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
 ${body}`,
   });
