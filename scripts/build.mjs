@@ -1,4 +1,5 @@
 // content/{week,quarter,year}/*.md → site/
+// data/runs/*.json → site/stats/
 // 프론트매터는 평면 key: value 만 지원한다. 그 이상이 필요해지면 그때 파서를 바꾼다.
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync } from "node:fs";
@@ -7,6 +8,7 @@ import { marked } from "marked";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const CONTENT = join(ROOT, "content");
+const RUNS = join(ROOT, "data", "runs");
 const SITE = join(ROOT, "site");
 
 const SITE_TITLE = "ai-weekly-news";
@@ -149,7 +151,7 @@ function buildItem(slug, num, title, listHtml) {
 
   const ps = (key) => fields[key].map((t) => `<p>${t}</p>`).join("");
   const parts = [
-    `<div class="item-head"><span class="num">${num}</span><h3>${title}</h3></div>`,
+    `<div class="item-head"><span class="r">${num}</span><h3>${title}</h3></div>`,
   ];
   if (fields["날짜"]) parts.push(`<p class="when">${fields["날짜"].join(" ")}</p>`);
   if (fields["무슨 일"]) parts.push(`<div class="what">${ps("무슨 일")}</div>`);
@@ -343,6 +345,41 @@ const CSS = `
     color:var(--muted); background:var(--surface);
   }
 
+  /* 비용 페이지 */
+  .lede { color:var(--dim); margin:0 0 1.75rem; }
+  .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin:0 0 2.25rem; }
+  .tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:.8rem 1rem; }
+  .tile .k { display:block; font-size:.75rem; color:var(--muted); }
+  .tile .v { display:block; font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .tile .v small { font-size:.85rem; font-weight:400; color:var(--dim); margin-left:.15rem; }
+  figure.chart { margin:0 0 2.25rem; }
+  figure.chart figcaption { font-weight:700; font-size:.95rem; margin-bottom:.5rem; }
+  figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
+  .chart .grid { stroke:var(--line); stroke-width:1; }
+  .chart .axis { fill:var(--muted); font-size:11px; font-variant-numeric:tabular-nums; }
+  .chart .val { fill:var(--text); font-size:11px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .chart .bar { fill:var(--accent); }
+  .chart .bar.backfill { fill:url(#hatch); stroke:var(--accent); stroke-width:1; }
+  .chart .hatch { stroke:var(--accent); stroke-width:1.5; }
+  .chart .hit { fill:transparent; }
+  .chart .hit:hover + .bar, .chart .bar:hover { opacity:.8; }
+  .legend { font-size:.8rem; color:var(--muted); margin:.4rem 0 0; }
+  .legend i { display:inline-block; width:.8rem; height:.8rem; border-radius:2px; vertical-align:-.1rem; margin-right:.3rem; background:var(--accent); }
+  .legend i.backfill { background:repeating-linear-gradient(135deg,var(--accent) 0 1.5px,transparent 1.5px 4px); border:1px solid var(--accent); }
+  .legend i + span + i { margin-left:.9rem; }
+  .runs { width:100%; border-collapse:collapse; font-size:.85rem; font-variant-numeric:tabular-nums; }
+  .runs th { text-align:left; font-weight:400; color:var(--muted); font-size:.75rem; padding:.4rem .5rem; border-bottom:1px solid var(--line); }
+  .runs td { padding:.55rem .5rem; border-bottom:1px solid var(--line); white-space:nowrap; }
+  .runs .r { text-align:right; }
+  .table-scroll { overflow-x:auto; }
+  @media (max-width:30rem) {
+    .tiles { gap:.5rem; }
+    .tile { padding:.6rem .7rem; }
+    .tile .v { font-size:1.2rem; }
+    /* 차트는 화면 폭에 맞춰 줄어든다. 글자는 줄어든 만큼 키워 둔다. */
+    .chart .axis, .chart .val { font-size:20px; }
+  }
+
   footer {
     margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line);
     font-size:.82rem; color:var(--muted);
@@ -388,7 +425,7 @@ ${body}
 <footer>
   <p>${FOOTER_NOTE}</p>
   <p>${FOOTER_LIMIT}</p>
-  <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${REPO_URL}/blob/main/LICENSE">CC BY-NC-SA 4.0</a></p>
+  <p><a href="${root}stats/">만드는 데 든 비용</a> · <a href="${REPO_URL}">GitHub 저장소</a> · <a href="${REPO_URL}/blob/main/LICENSE">CC BY-NC-SA 4.0</a></p>
 </footer>
 </div>
 </body>
@@ -519,6 +556,110 @@ function renderList(years, p, root, home) {
   });
 }
 
+// ---------- 실행 기록 ----------
+// 한 호를 만드는 데 든 비용과 시간. data/runs 는 record-run.mjs 가 쓴다.
+// 평균은 정기 실행만으로 낸다. 백필은 대화형으로 여러 호를 이어 만들어 조건이 다르다.
+
+function loadRuns() {
+  let files = [];
+  try {
+    files = readdirSync(RUNS).filter((f) => f.endsWith(".json"));
+  } catch {
+    return [];
+  }
+  return files.map((f) => JSON.parse(readFileSync(join(RUNS, f), "utf8"))).sort((a, b) => a.week.localeCompare(b.week));
+}
+
+const minutes = (r) => Math.round((new Date(r.published) - new Date(r.started)) / 60e3);
+const usd = (x) => `$${x.toFixed(2)}`;
+const RUN_LABEL = { scheduled: "정기", backfill: "백필" };
+const shortWeek = (w) => w.replace(/^\d{4}-/, "");
+
+// 막대 하나에 값 하나. 축은 하나다. 값 표시는 마지막 막대에만 붙이고 나머지는
+// 마우스를 올리면 나온다.
+function barChart(runs, value, fmt, caption) {
+  const W = 640, H = 200, L = 44, R = 8, T = 16, B = 24;
+  const max = Math.max(...runs.map(value));
+  const step = niceStep(max / 3);
+  const top = Math.max(step, Math.ceil(max / step) * step);
+  const y = (v) => T + (H - T - B) * (1 - v / top);
+  const slot = (W - L - R) / Math.max(runs.length, 4);
+  const bw = Math.min(40, slot * 0.6);
+  const every = Math.ceil(runs.length / 13);
+
+  const grid = [];
+  for (let v = 0; v <= top + 1e-9; v += step)
+    grid.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v, true)}</text>`);
+
+  const bars = runs.map((r, i) => {
+    const v = value(r);
+    const x = L + slot * i + (slot - bw) / 2;
+    const y0 = y(0), y1 = Math.min(y(v), y0 - 1);
+    const rad = Math.min(4, (y0 - y1) / 2, bw / 2);
+    const d = `M${x},${y0}V${y1 + rad}Q${x},${y1} ${x + rad},${y1}H${x + bw - rad}Q${x + bw},${y1} ${x + bw},${y1 + rad}V${y0}Z`;
+    const tip = `<title>${r.week} · ${RUN_LABEL[r.run]} · ${fmt(v)}</title>`;
+    const label = i === runs.length - 1 ? `<text class="val" x="${x + bw / 2}" y="${y1 - 5}" text-anchor="middle">${fmt(v)}</text>` : "";
+    const tick = (runs.length - 1 - i) % every === 0 ? `<text class="axis" x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${shortWeek(r.week)}</text>` : "";
+    return `<g><rect class="hit" x="${L + slot * i}" y="${T}" width="${slot}" height="${H - T - B}">${tip}</rect><path class="bar ${r.run}" d="${d}">${tip}</path>${label}${tick}</g>`;
+  });
+
+  return `<figure class="chart"><figcaption>${caption}</figcaption>
+<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${caption}">
+<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line class="hatch" x1="0" y1="0" x2="0" y2="5"/></pattern></defs>
+${grid.join("")}
+${bars.join("")}
+</svg></figure>`;
+}
+
+function niceStep(raw) {
+  const p = 10 ** Math.floor(Math.log10(raw || 1));
+  return [1, 2, 5, 10].map((m) => m * p).find((s) => s >= raw);
+}
+
+function renderStats(runs) {
+  const sched = runs.filter((r) => r.run === "scheduled");
+  const avg = (f) => sched.reduce((s, r) => s + f(r), 0) / sched.length;
+  const hasBackfill = runs.some((r) => r.run === "backfill");
+
+  const tiles = sched.length
+    ? `<div class="tiles">
+  <div class="tile"><span class="k">정기 발행</span><span class="v">${sched.length}<small>호</small></span></div>
+  <div class="tile"><span class="k">호당 평균 비용</span><span class="v">${usd(avg((r) => r.cost_usd))}</span></div>
+  <div class="tile"><span class="k">평균 소요 시간</span><span class="v">${Math.round(avg(minutes))}<small>분</small></span></div>
+</div>`
+    : "";
+
+  const legend = hasBackfill
+    ? `<p class="legend"><i></i><span>정기 실행</span><i class="backfill"></i><span>백필</span></p>`
+    : "";
+
+  const rows = [...runs].reverse().map((r) => `<tr>
+  <td>${r.week}</td><td>${RUN_LABEL[r.run]}</td><td>${r.served_model ?? r.model ?? ""}</td>
+  <td class="r">${minutes(r)}분</td><td class="r">${usd(r.cost_usd)}</td><td class="r">${r.tokens.output.toLocaleString("en-US")}</td>
+</tr>`).join("");
+
+  const body = runs.length
+    ? `${tiles}
+${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "호별 비용 (달러)")}
+${barChart(runs, minutes, (v) => `${v}분`, "호별 소요 시간 (분)")}
+${legend}
+<div class="table-scroll"><table class="runs">
+<thead><tr><th>호</th><th>방식</th><th>모델</th><th class="r">소요</th><th class="r">비용</th><th class="r">출력 토큰</th></tr></thead>
+<tbody>${rows}</tbody>
+</table></div>`
+    : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
+
+  return layout({
+    title: `만드는 데 든 비용 — ${SITE_TITLE}`,
+    description: "주간호 한 호를 AI가 만드는 데 든 비용과 시간.",
+    root: "../",
+    body: `<p class="crumb"><a href="../">← 목록</a></p>
+<h1 class="issue-title">만드는 데 든 비용</h1>
+<p class="lede">주간호 한 호를 AI가 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다. 소요 시간은 작업을 시작해서 발행하기까지입니다.${hasBackfill ? " 백필은 지난 주차를 나중에 채운 것이라 평균에서 뺐습니다." : ""}</p>
+${body}`,
+  });
+}
+
 // ---------- 실행 ----------
 
 const sets = Object.fromEntries(KIND_NAMES.map((k) => [k, load(k)]));
@@ -555,6 +696,10 @@ writeFileSync(
         body: `<div class="empty"><p>아직 발행된 ${KINDS.week.label}가 없습니다.</p></div>`,
       })
 );
+
+const runs = loadRuns();
+mkdirSync(join(SITE, "stats"), { recursive: true });
+writeFileSync(join(SITE, "stats", "index.html"), renderStats(runs));
 
 console.log(
   all
