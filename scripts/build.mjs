@@ -633,9 +633,10 @@ function renderStats(runs) {
     ? `<p class="legend"><i></i><span>정기 실행</span><i class="backfill"></i><span>백필</span></p>`
     : "";
 
+  // 방식 칸은 백필이 있을 때만 둔다. 읽은 헤드라인은 기록이 없으면 비운다.
   const rows = [...runs].reverse().map((r) => `<tr>
-  <td>${r.week}</td><td>${RUN_LABEL[r.run]}</td><td>${r.served_model ?? r.model ?? ""}</td>
-  <td class="r">${minutes(r)}분</td><td class="r">${usd(r.cost_usd)}</td><td class="r">${r.tokens.output.toLocaleString("en-US")}</td>
+  <td>${r.week}</td>${hasBackfill ? `<td>${RUN_LABEL[r.run]}</td>` : ""}<td>${r.model}</td>
+  <td class="r">${minutes(r)}분</td><td class="r">${usd(r.cost_usd)}</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td>
 </tr>`).join("");
 
   const body = runs.length
@@ -644,7 +645,7 @@ ${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "호
 ${barChart(runs, minutes, (v) => `${v}분`, "호별 소요 시간 (분)")}
 ${legend}
 <div class="table-scroll"><table class="runs">
-<thead><tr><th>호</th><th>방식</th><th>모델</th><th class="r">소요</th><th class="r">비용</th><th class="r">출력 토큰</th></tr></thead>
+<thead><tr><th>호</th>${hasBackfill ? "<th>방식</th>" : ""}<th>모델</th><th class="r">소요</th><th class="r">비용</th><th class="r">읽은 헤드라인</th></tr></thead>
 <tbody>${rows}</tbody>
 </table></div>`
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;

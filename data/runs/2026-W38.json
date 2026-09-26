@@ -1,13 +1,11 @@
 {
   "week": "2026-W38",
   "run": "scheduled",
-  "session": "session_01FoRf3Q4p6MRLZ36ea9F8g1",
   "model": "claude-opus-5",
-  "served_model": "claude-opus-5",
   "started": "2026-09-21T08:04:03+09:00",
   "published": "2026-09-21T08:22:47+09:00",
-  "ended": "2026-09-21T08:27:22+09:00",
   "cost_usd": 15.05,
+  "headlines": null,
   "tokens": {
     "input": 136169,
     "output": 83893,

@@ -319,9 +319,18 @@ W=content/week/<WEEK>.md
 
 **항목을 골라 돌리지 않는다.** 검사는 계속 늘어나므로 여기에 목록을 두면 그 목록만 낡는다. 걸린 것을 고치고 다시 돌려 빈 결과를 확인한 뒤 빌드한다.
 
+**실행 기록을 남긴다.** 푸시 직전에 이 세션의 대화 기록으로 비용·시간·모델과 읽은 헤드라인 수를 계산해 `data/runs/<WEEK>.json` 에 쓴다. 발행물과 같은 커밋에 넣는다.
+
+```bash
+node scripts/record-run.mjs <WEEK>            # 백필이면 --backfill
+```
+
+- 기록한 뒤의 푸시와 확인은 빠진다. 한 호에 1% 미만이다.
+- 백필은 한 호를 한 세션에서 만든다. 세션 전체가 그 호의 기록이 된다.
+
 ```bash
 npm ci && npm run build
-git add content/week/<WEEK>.md
+git add content/week/<WEEK>.md data/runs/
 git commit -m "Publish <WEEK> (<MON>~<SUN>)"
 git push origin main
 ```
