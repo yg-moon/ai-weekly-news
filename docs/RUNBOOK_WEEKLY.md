@@ -175,7 +175,7 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --covered "용혜인,호르
 |---|---|
 | The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times · CBS News · NBC News · USA Today · The Independent · TechCrunch · Ars Technica · The Register · The New Stack · BNN Bloomberg | Reuters(401) · AP(403, 자바스크립트 챌린지) · France 24(403) · CNBC(403) · Washington Post(연결 실패) · Times of Israel(403) · Axios(403) · Sky News(403) · Bloomberg(403) · VentureBeat(봇 확인 페이지) |
 
-**차단은 우회하지 않는다.** 받아지는 매체로 대조하고, 한 사안을 인용한 매체가 전부 막혔으면 그 사안은 싣지 않는다. 막힌 매체는 출처 줄에도 쓰지 않는다. 읽지 못한 원문을 근거로 내세우는 것이 된다.
+**차단은 우회하지 않는다.** 받아지는 매체로 대조하고, 한 사안을 인용한 매체가 전부 막혔으면 그 사안은 싣지 않는다. 막힌 매체는 출처 줄에도 쓰지 않는다. 읽지 못한 원문을 근거로 내세우는 것이 된다. **표는 정기 실행 환경에서 잰 결과다. 다른 환경에서 열리더라도 막힌 매체로 다룬다.** 호마다 출처 기준이 같아야 분기호에서 함께 묶을 수 있다.
 
 **표에 없는 매체를 쓰려면 먼저 이 표에 넣는다.** 원문이 받아지는지 확인하고 주요와 보조 중 하나로 정한다. 비슷한 매체가 이미 있으면 그 층을 따른다. NBC News 는 CBS News 를 따라 보조다. 표에 없는 이름은 출처 검사가 발표 주체로 보기 때문에, 매체를 표에 안 넣으면 그 항목은 순서 검사와 주요 매체 검사에서 조용히 빠진다.
 
