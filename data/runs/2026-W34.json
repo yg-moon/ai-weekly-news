@@ -1,0 +1,14 @@
+{
+  "week": "2026-W34",
+  "model": "claude-opus-5-5",
+  "started": "2026-09-26T21:36:21+09:00",
+  "published": "2026-09-26T21:51:21+09:00",
+  "cost_usd": 6.26,
+  "headlines": 908,
+  "tokens": {
+    "input": 136,
+    "output": 58781,
+    "cache_read": 13378165,
+    "cache_write": 300661
+  }
+}
