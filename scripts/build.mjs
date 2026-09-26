@@ -151,7 +151,7 @@ function buildItem(slug, num, title, listHtml) {
 
   const ps = (key) => fields[key].map((t) => `<p>${t}</p>`).join("");
   const parts = [
-    `<div class="item-head"><span class="r">${num}</span><h3>${title}</h3></div>`,
+    `<div class="item-head"><span class="num">${num}</span><h3>${title}</h3></div>`,
   ];
   if (fields["날짜"]) parts.push(`<p class="when">${fields["날짜"].join(" ")}</p>`);
   if (fields["무슨 일"]) parts.push(`<div class="what">${ps("무슨 일")}</div>`);
