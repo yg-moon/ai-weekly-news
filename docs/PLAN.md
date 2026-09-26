@@ -98,7 +98,7 @@ W35~W38 네 주차를 `QUALITY_CHECKS.md` 3절 전부와 독자 읽기로 점검
 
 ## 분기호와 연간호
 
-빈도와 경계, 실행 방식, 내용 규칙까지 정했다. 정한 것은 `INTENT.md` 와 `DECISIONS.md` 에, 절차는 `RUNBOOK_QUARTERLY.md` 에 있다.
+빈도와 경계, 실행 방식, 내용 규칙까지 정했다. 정한 것은 `INTENT.md` 와 `DECISIONS.md` 에, 절차는 `RUNBOOK_QUARTERLY.md` 와 `RUNBOOK_YEARLY.md` 에 있다.
 
 2026-W39 발행일인 2026년 9월 28일이 첫 분기말이지만 **그날 맞춰 내지 않는다.** 형식이 자리잡는 것이 먼저다.
 
