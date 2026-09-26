@@ -1,4 +1,4 @@
-// 이 세션이 한 주간호를 만드는 데 쓴 비용과 시간을 data/runs/<WEEK>.json 으로 쓴다.
+// 이 세션이 한 발행물을 만드는 데 쓴 비용과 시간을 data/runs/<WEEK>.json 으로 쓴다.
 // 발행 커밋 직전에 돌린다. RUNBOOK_WEEKLY 14절.
 //
 //   node scripts/record-run.mjs 2026-W39
