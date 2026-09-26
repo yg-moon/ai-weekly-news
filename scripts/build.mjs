@@ -645,7 +645,7 @@ ${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "호
 ${barChart(runs, minutes, (v) => `${v}분`, "호별 소요 시간 (분)")}
 ${legend}
 <div class="table-scroll"><table class="runs">
-<thead><tr><th>호</th>${hasBackfill ? "<th>방식</th>" : ""}<th>모델</th><th class="r">소요</th><th class="r">비용</th><th class="r">읽은 헤드라인</th></tr></thead>
+<thead><tr><th>발간호</th>${hasBackfill ? "<th>방식</th>" : ""}<th>모델</th><th class="r">소요 시간</th><th class="r">비용</th><th class="r">읽은 헤드라인</th></tr></thead>
 <tbody>${rows}</tbody>
 </table></div>`
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
