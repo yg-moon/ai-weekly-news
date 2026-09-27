@@ -1,0 +1,16 @@
+{
+  "week": "2026-W23",
+  "environment": "cloud",
+  "session": "c0aa0290-9c19-5452-a8e3-bacfee8dbb96",
+  "model": "claude-opus-5-5",
+  "started": "2026-09-27T23:00:10+09:00",
+  "published": "2026-09-27T23:12:06+09:00",
+  "cost_usd": 5.56,
+  "headlines": 1178,
+  "tokens": {
+    "input": 128,
+    "output": 43547,
+    "cache_read": 12520732,
+    "cache_write": 272680
+  }
+}
