@@ -409,6 +409,26 @@ const CSS = `
     .chart:not(.wide) .axis.alt { display:none; }
   }
 
+  /* 주간호 목차. 좁은 화면에서는 제목 아래 상자로, 넓은 화면에서는 본문 왼쪽에 고정한다. */
+  .toc {
+    margin:1.5rem 0 0; padding:.9rem 1rem; background:var(--surface);
+    border:1px solid var(--line); border-radius:var(--radius);
+  }
+  .toc-group + .toc-group { margin-top:.7rem; }
+  .toc-name { margin:0 0 .15rem; font-size:.75rem; font-weight:700; color:var(--accent); }
+  .toc ol { list-style:none; margin:0; padding:0; }
+  .toc li { font-size:.875rem; line-height:1.5; }
+  .toc a { display:flex; gap:.5rem; padding:.2rem 0; color:var(--dim); text-decoration:none; }
+  .toc a:hover { color:var(--text); }
+  .toc .tn { flex:none; width:.8rem; color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; }
+  @media (min-width:78rem) {
+    .toc {
+      position:fixed; top:2.5rem; width:15rem; max-height:calc(100vh - 5rem); overflow-y:auto;
+      left:calc(50% - 20.5rem - 2.5rem - 15rem); margin:0; background:none; border:none; padding:0;
+    }
+    .toc li { font-size:.8rem; }
+  }
+
   footer {
     margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line);
     font-size:.82rem; color:var(--muted);
@@ -543,16 +563,31 @@ function tabs(years, here, root) {
   return `<nav class="tabs">${yearRow}<span class="tabdiv"></span>${quarterRow}${annualChip}</nav>`;
 }
 
+// 주간호 목차. 구조화한 본문에서 분야와 항목 제목을 다시 읽는다. 제목은 " — " 앞까지만 쓴다.
+// 넓은 화면에서는 본문 왼쪽에 고정되고, 좁은 화면에서는 제목 아래에 펼쳐 둔다.
+function toc(html) {
+  const groups = html.split(/(?=<section class="group )/).flatMap((chunk) => {
+    const g = chunk.match(/^<section class="group group--(\w+)"><h2><span class="rule"><\/span>([^<]*)/);
+    if (!g) return [];
+    const items = [...chunk.matchAll(/<article class="item" id="([^"]+)"><div class="item-head"><span class="num">(\d+)<\/span><h3>([\s\S]*?)<\/h3>/g)]
+      .map(([, id, num, title]) => `<li><a href="#${id}"><span class="tn">${num}</span>${title.replace(/<[^>]+>/g, "").split(" — ")[0].trim()}</a></li>`);
+    return items.length ? [`<div class="toc-group group--${g[1]}"><p class="toc-name">${g[2].trim()}</p><ol>${items.join("")}</ol></div>`] : [];
+  });
+  return groups.length ? `<nav class="toc" aria-label="목차">${groups.join("")}</nav>` : "";
+}
+
 function renderDoc(d, years) {
   // 되돌아가는 곳은 그 발행물이 속한 분기 목록이다. 연간호는 분기가 없으므로
   // 그 해에서 가장 나중 분기로 보낸다.
   const p = placeOf(d);
   const back = p.q ? p : periods(years).filter((x) => x.year === p.year).pop();
+  const main = structure(marked.parse(d.body), KINDS[d.kind].groups);
   const body = `
 ${back ? `<p class="crumb"><a href="../../${listPath(back)}">← ${listTitle(back)}</a></p>` : ""}
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
-${structure(marked.parse(d.body), KINDS[d.kind].groups)}`;
+${d.kind === "week" ? toc(main) : ""}
+${main}`;
   return layout({
     title: `${pageTitle(d)} — ${SITE_TITLE}`,
     description: `${d.id} (${period(d.meta)}) ${KINDS[d.kind].suffix}. ${counts(d)}.`,
