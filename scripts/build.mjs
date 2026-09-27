@@ -25,10 +25,6 @@ const SITE = join(ROOT, "site");
 const SITE_TITLE = "ai-weekly-news";
 const SITE_TAGLINE = "지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다.";
 const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
-const FOOTER_NOTE =
-  "최신 속보가 아니라 완결된 주간의 정리입니다. 한 주의 범위는 월요일부터 일요일까지입니다.";
-const FOOTER_LIMIT =
-  "수집과 요약은 AI가 합니다. 사람이 개별 항목을 일일이 검증하지는 않으므로, 각 항목의 출처 링크로 확인해 주세요.";
 
 // 발행물의 종류. 순서가 곧 탭 순서다.
 const KINDS = {
@@ -423,13 +419,11 @@ function layout({ title, description, root, body }) {
   <p class="tagline">${SITE_TAGLINE}</p>
   <p class="badges">
     <span class="badge">매주 월요일 오전 8시 발행 (KST)</span>
-    <span class="badge">AI 자동 생성 · 모든 항목에 출처 링크</span>
+    <span class="badge">AI 수집·요약 · 모든 항목에 출처 링크</span>
   </p>
 </header>
 ${body}
 <footer>
-  <p>${FOOTER_NOTE}</p>
-  <p>${FOOTER_LIMIT}</p>
   <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${root}stats/">통계 대시보드</a> · CC BY-NC-SA 4.0</p>
 </footer>
 </div>
