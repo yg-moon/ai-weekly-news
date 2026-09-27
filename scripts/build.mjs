@@ -419,7 +419,7 @@ function layout({ title, description, root, body }) {
   <p class="tagline">${SITE_TAGLINE}</p>
   <p class="badges">
     <span class="badge">매주 월요일 오전 8시 발행 (KST)</span>
-    <span class="badge">AI 수집·요약 · 모든 항목에 출처 링크</span>
+    <span class="badge">AI 수집 및 요약 · 모든 항목에 출처 링크</span>
   </p>
 </header>
 ${body}
