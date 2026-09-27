@@ -30,7 +30,7 @@ const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
 const KINDS = {
   week: {
     label: "주간호", suffix: "주간 브리핑",
-    groups: { 국내: "home", 해외: "world", AI: "ai" },
+    groups: { 국내: "korea", 해외: "world", AI: "ai" },
   },
   quarter: {
     label: "분기호", suffix: "분기호",
@@ -209,15 +209,15 @@ const CSS = `
   :root {
     --bg:#fbfbf9; --surface:#fff; --sunken:#f4f4f1;
     --text:#191918; --dim:#55554f; --muted:#84847c; --line:#e5e5e0;
-    --home:#0f6b57; --world:#2a5aa8; --ai:#6d3fa8;
-    --accent:var(--home); --radius:12px;
+    --korea:#0f6b57; --world:#2a5aa8; --ai:#6d3fa8;
+    --accent:var(--korea); --radius:12px;
     --indent:2.3rem; --pad:1rem;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:#151517; --surface:#1d1e21; --sunken:#232428;
       --text:#eeeeec; --dim:#b6b6b0; --muted:#8d8d87; --line:#303136;
-      --home:#63c3a6; --world:#82aeee; --ai:#bb9af0;
+      --korea:#63c3a6; --world:#82aeee; --ai:#bb9af0;
     }
   }
   *,*::before,*::after { box-sizing:border-box; }
@@ -257,11 +257,11 @@ const CSS = `
   .issue-meta { color:var(--muted); font-size:.875rem; margin:0 0 1rem; }
 
   /* 분야 */
-  .group { --accent:var(--home); margin-top:3.5rem; }
+  .group { --accent:var(--korea); margin-top:3.5rem; }
   .group--world { --accent:var(--world); }
   .group--ai { --accent:var(--ai); }
   /* 분기호·연간호. 흐름이 본체이고 단발은 보조라 색으로 층을 나눈다. */
-  .group--flow { --accent:var(--home); }
+  .group--flow { --accent:var(--korea); }
   .group--single { --accent:var(--dim); }
   .group--single ul { list-style:none; margin:0; padding:0; }
   .group--single li { padding:.9rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
@@ -865,6 +865,21 @@ const inQuarters = statViews.filter((v) => v.q).flatMap(tableWeeks).sort();
 const expected = runs.map((r) => r.week).sort();
 if (inQuarters.join() !== expected.join() || statViews.some((v) => tableWeeks(v).length !== v.runs.length)) {
   console.error(`기간별 통계 표가 기록과 다르다. 기록 ${expected.length}개, 분기 표 합 ${inQuarters.length}개.`);
+  process.exit(1);
+}
+
+// 주간호 목차가 항목을 빠짐없이 가리키는지 본다. 목차는 빌드가 만든 HTML 을 다시 읽어
+// 만들므로, 항목 마크업이 바뀌면 목차가 오류 없이 비거나 모자랄 수 있다. 원고의 항목
+// 수(보통 15개)와 목차 줄 수, 목차로 돌아가는 제목 링크 수가 모두 같아야 한다.
+const badToc = sets.week.flatMap((d) => {
+  const html = readFileSync(join(SITE, "week", d.id, "index.html"), "utf8");
+  const want = Object.values(d.n).reduce((a, b) => a + b, 0);
+  const lines = (html.match(/<nav class="toc"[\s\S]*?<\/nav>/)?.[0].match(/<li>/g) ?? []).length;
+  const back = (html.match(/class="to-toc"/g) ?? []).length;
+  return lines === want && back === want ? [] : [`${d.id} 항목 ${want} · 목차 ${lines} · 제목 링크 ${back}`];
+});
+if (badToc.length) {
+  console.error(`주간호 목차가 항목과 맞지 않는다: ${badToc.join(", ")}. 항목 마크업이 바뀌었는지 본다.`);
   process.exit(1);
 }
 
