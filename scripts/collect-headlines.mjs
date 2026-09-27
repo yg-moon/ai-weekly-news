@@ -229,7 +229,7 @@ for (const src of picked) {
   }
   for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1)) {
     const day = dt.toISOString().slice(0, 10);
-    const wd = WEEKDAYS[new Date(day + "T00:00:00+09:00").getDay()];
+    const wd = WEEKDAYS[new Date(day + "T00:00:00Z").getUTCDay()];
     // 빈 목록으로 끝나는 날은 하루가 통째로 후보 풀에서 빠진다. 네이버가
     // 정상 응답에 빈 목록을 준 적이 있어 다시 받아 본다. 실패는 stdout 이
     // 아니라 stderr 로 낸다. stdout 은 파일로 보내져 수백 줄에 묻힌다.
