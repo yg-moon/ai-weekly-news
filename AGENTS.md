@@ -41,9 +41,9 @@
 | `docs/INTENT.md` | 프로젝트 목적과 원칙 | 변경 빈도가 낮다. 실행 절차를 다듬는 일로는 건드리지 않는다 |
 | `docs/DECISIONS.md` | 주요 결정사항 및 폐기 기록 | 기준을 바꾸기 전에 먼저 읽는다. 이미 검토하고 버린 선택지가 있다. 지우지 않고 쌓으며, 바뀐 결정은 옛 결정을 새 결정 아래 '버린 것'으로 한 줄로 줄여 옮긴다 |
 | `docs/RUNBOOK_WEEKLY.md` | 주간호 실행 절차 | 주간 발행 작업은 이 문서를 처음부터 끝까지 읽고 그대로 따른다 |
-| `docs/RUNBOOK_QUARTERLY.md` | 분기호 실행 절차 | 주간 런북에서 이어서 돈다 |
+| `docs/RUNBOOK_QUARTERLY.md` | 분기호 실행 절차 | 분기 발행 작업은 이 문서를 처음부터 끝까지 읽고 그대로 따른다 |
 | `docs/RUNBOOK_YEARLY.md` | 연간호 실행 절차 | 분기 런북에서 이어서 돈다 |
-| `docs/ROUTINE.md` | Claude Code 루틴 프롬프트 | 루틴 전용이다. 고치면 등록된 루틴도 같은 내용으로 바꾼다 |
+| `docs/ROUTINE_WEEKLY.md` · `docs/ROUTINE_QUARTERLY.md` | Claude Code 루틴 프롬프트 (주간 · 분기) | 루틴 전용이다. 고치면 등록된 루틴도 같은 내용으로 바꾼다 |
 | `docs/QUALITY_CHECKS.md` | 품질 점검 항목 | 문서를 크게 고친 뒤에 돌린다. 매번 돌리지는 않는다 |
 | `docs/PLAN.md` | 진행 상황 | 길어지는 것이 허용되는 유일한 문서다. 끝난 항목은 지운다 |
 

@@ -34,11 +34,11 @@ const KINDS = {
   },
   quarter: {
     label: "분기호", suffix: "분기호",
-    groups: { 흐름: "flow", 단발: "single" },
+    groups: { 국내: "korea", 해외: "world", AI: "ai" },
   },
   year: {
     label: "연간호", suffix: "연간호",
-    groups: { 흐름: "flow", 단발: "single" },
+    groups: { 국내: "korea", 해외: "world", AI: "ai" },
   },
 };
 const KIND_NAMES = Object.keys(KINDS);
@@ -189,16 +189,10 @@ function structure(html, groups) {
         (whole, num, title, list) => buildItem(slug, num, title.trim(), list) ?? whole
       );
 
-      // 단발처럼 항목이 h3 가 아니면 목록 줄 하나가 곧 항목이다.
-      const items = (body.match(/class="item"/g) ?? []).length;
-      const n = items || (body.match(/<li>/g) ?? []).length;
-
-      // 연간호가 분기호의 단발 줄을 가리킨다. 항목과 같은 앵커 규약을 준다.
-      let i = 0;
-      const anchored = items ? body : body.replace(/<li>/g, () => `<li id="${slug}-${++i}">`);
+      const n = (body.match(/class="item"/g) ?? []).length;
       const chip = n === 5 ? "" : `<span class="n">${n}건</span>`;
       const head = `<h2><span class="rule"></span>${name}${chip}</h2>`;
-      return `<section class="group group--${slug}">${head}${anchored}</section>`;
+      return `<section class="group group--${slug}">${head}${body}</section>`;
     })
     .join("");
 }
@@ -260,12 +254,6 @@ const CSS = `
   .group { --accent:var(--korea); margin-top:3.5rem; }
   .group--world { --accent:var(--world); }
   .group--ai { --accent:var(--ai); }
-  /* 분기호·연간호. 흐름이 본체이고 단발은 보조라 색으로 층을 나눈다. */
-  .group--flow { --accent:var(--korea); }
-  .group--single { --accent:var(--dim); }
-  .group--single ul { list-style:none; margin:0; padding:0; }
-  .group--single li { padding:.9rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
-  .group--single li:first-child { border-top:none; }
   .group > h2 {
     display:flex; align-items:center; gap:.6rem;
     font-size:1.2rem; letter-spacing:-.01em; margin:0 0 .5rem; color:var(--accent);
@@ -592,8 +580,8 @@ function renderDoc(d, years) {
   const p = placeOf(d);
   const back = p.q ? p : periods(years).filter((x) => x.year === p.year).pop();
   const main = structure(marked.parse(d.body), KINDS[d.kind].groups);
-  // 주간호만 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
-  const nav = d.kind === "week" ? toc(main) : "";
+  // 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
+  const nav = toc(main);
   const body = `
 ${back ? `<p class="crumb"><a href="../../${listPath(back)}">← ${listTitle(back)}</a></p>` : ""}
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
@@ -608,12 +596,12 @@ ${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)
   });
 }
 
-// 목록에서 주간호마다 분야별 1위 제목을 한 줄씩 미리 보여 준다.
+// 목록에서 발행물마다 분야별 1위 제목을 한 줄씩 미리 보여 준다.
 function tops(d) {
   const lines = d.body.split(/^## /m).slice(1).flatMap((chunk) => {
     const name = chunk.split("\n")[0].trim();
     const first = chunk.match(/^### \d+\.\s*(.+)$/m);
-    const slug = KINDS.week.groups[name];
+    const slug = KINDS[d.kind].groups[name];
     return first && slug
       ? [`<span class="top group--${slug}"><b>${name}</b><span>${shortTitle(marked.parseInline(first[1]))}</span></span>`]
       : [];
@@ -632,7 +620,7 @@ function renderList(years, p, root, home) {
     <span class="wk">${d.id}${d.kind === "quarter" ? ` ${KINDS[d.kind].label}` : ""}</span>
     <span class="period">${period(d.meta)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
-    ${d.kind === "week" ? tops(d) : ""}
+    ${tops(d)}
   </a></li>`
     )
     .join("");
@@ -888,18 +876,41 @@ if (inQuarters.join() !== expected.join() || statViews.some((v) => tableWeeks(v)
   process.exit(1);
 }
 
-// 주간호 목차가 항목을 빠짐없이 가리키는지 본다. 목차는 빌드가 만든 HTML 을 다시 읽어
+// 목차가 항목을 빠짐없이 가리키는지 본다. 목차는 빌드가 만든 HTML 을 다시 읽어
 // 만들므로, 항목 마크업이 바뀌면 목차가 오류 없이 비거나 모자랄 수 있다. 원고의 항목
 // 수(보통 15개)와 목차 줄 수, 목차로 돌아가는 제목 링크 수가 모두 같아야 한다.
-const badToc = sets.week.flatMap((d) => {
-  const html = readFileSync(join(SITE, "week", d.id, "index.html"), "utf8");
-  const want = Object.values(d.n).reduce((a, b) => a + b, 0);
-  const lines = (html.match(/<nav class="toc"[\s\S]*?<\/nav>/)?.[0].match(/<li>/g) ?? []).length;
-  const back = (html.match(/class="to-toc"/g) ?? []).length;
-  return lines === want && back === want ? [] : [`${d.id} 항목 ${want} · 목차 ${lines} · 제목 링크 ${back}`];
-});
+const badToc = KIND_NAMES.flatMap((kind) =>
+  sets[kind].flatMap((d) => {
+    const html = readFileSync(join(SITE, kind, d.id, "index.html"), "utf8");
+    const want = Object.values(d.n).reduce((a, b) => a + b, 0);
+    const lines = (html.match(/<nav class="toc"[\s\S]*?<\/nav>/)?.[0].match(/<li>/g) ?? []).length;
+    const back = (html.match(/class="to-toc"/g) ?? []).length;
+    return lines === want && back === want ? [] : [`${d.id} 항목 ${want} · 목차 ${lines} · 제목 링크 ${back}`];
+  })
+);
 if (badToc.length) {
-  console.error(`주간호 목차가 항목과 맞지 않는다: ${badToc.join(", ")}. 항목 마크업이 바뀌었는지 본다.`);
+  console.error(`목차가 항목과 맞지 않는다: ${badToc.join(", ")}. 항목 마크업이 바뀌었는지 본다.`);
+  process.exit(1);
+}
+
+// 분기호와 연간호의 근거 링크가 실제 항목을 가리키는지 본다. 분기호는 그 분기의
+// 주간호만, 연간호는 그 해의 분기호만 가리킨다. 앵커가 없는 항목으로 가면 브라우저는
+// 오류 없이 페이지 맨 위를 연다.
+const NAME_OF = Object.fromEntries(Object.entries(KINDS.week.groups).map(([name, slug]) => [slug, name]));
+const SOURCE = { quarter: "week", year: "quarter" };
+const badLinks = ["quarter", "year"].flatMap((kind) =>
+  sets[kind].flatMap((d) =>
+    [...d.body.matchAll(/\]\((\.\.\/\.\.\/(\w+)\/([^/)]+)\/#(\w+)-(\d+))\)/g)].flatMap(([, href, k, id, slug, num]) => {
+      const target = sets[k]?.find((t) => t.id === id);
+      const count = target?.n[NAME_OF[slug]] ?? 0;
+      const inside = k === SOURCE[kind] && placeOf(target ?? { kind: k, id }).year === placeOf(d).year &&
+        (kind === "year" || placeOf(target ?? { kind: k, id }).q === placeOf(d).q);
+      return target && inside && Number(num) <= count ? [] : [`${d.id} → ${href}`];
+    })
+  )
+);
+if (badLinks.length) {
+  console.error(`근거 링크가 가리키는 항목이 없거나 범위 밖이다: ${badLinks.join(", ")}`);
   process.exit(1);
 }
 
@@ -908,7 +919,7 @@ if (badToc.length) {
 // 바뀌면 스타일이 오류 없이 떨어져 나간다. 52dcefa 가 번호 배지를 그렇게 지웠다.
 // 아래는 특정 내용이 있을 때만 나오는 클래스라, 지금 콘텐츠에 없어도 정상이다.
 const CONDITIONAL = new Set([
-  "quarter", "group--flow", "group--single", // 분기호·연간호가 있을 때
+  "quarter", // 분기호가 있을 때
   "empty", // 목록이나 기록이 비었을 때
   "counts", "issue-meta", // 건수가 국내·해외·AI 5건씩이 아닌 호
   "wide", "plot", "yaxis", "scroll", // 한 그래프의 막대가 본문 폭을 넘을 때

@@ -1,6 +1,6 @@
-# ROUTINE
+# ROUTINE_WEEKLY
 
-Claude Code 루틴에 등록하는 실행 프롬프트를 담는다. **Claude Code 루틴 전용이다.**
+주간 루틴에 등록하는 실행 프롬프트를 담는다. **Claude Code 루틴 전용이다.** 분기 루틴은 [`ROUTINE_QUARTERLY.md`](ROUTINE_QUARTERLY.md) 에 있다.
 
 ## 프롬프트
 
