@@ -120,8 +120,12 @@ for (const s of ["domestic", "world", "tech", "ai"]) {
 const kst = (t) =>
   new Date(new Date(t).getTime() + 9 * 3600e3).toISOString().replace(/\.\d+Z$/, "+09:00");
 
+// 세션은 검증용이다. 대화 기록을 찾아 이 값을 다시 계산할 수 있다. 공개돼도 그것만으로
+// 대화 기록에 접근할 수는 없다. 환경은 Claude Code 웹 세션이 CLAUDE_CODE_REMOTE 를 둔다.
 const run = {
   week,
+  environment: process.env.CLAUDE_CODE_REMOTE === "true" ? "cloud" : "local",
+  session: basename(main, ".jsonl"),
   model: Object.entries(costBy).sort((a, b) => b[1] - a[1])[0][0],
   started: kst(started),
   published: kst(new Date()),

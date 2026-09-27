@@ -1,5 +1,7 @@
 {
   "week": "2026-W34",
+  "environment": "local",
+  "session": "14fa4a37-2902-4c09-9dd9-ea8de83c03f3",
   "model": "claude-opus-5-5",
   "started": "2026-09-26T21:36:21+09:00",
   "published": "2026-09-26T21:51:21+09:00",
