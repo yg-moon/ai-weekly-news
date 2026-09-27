@@ -352,7 +352,7 @@ const CSS = `
     color:var(--muted); background:var(--surface);
   }
 
-  /* 비용 페이지 */
+  /* 통계 페이지 */
   .lede { color:var(--dim); margin:0 0 1.75rem; }
   .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin:0 0 2.25rem; }
   .tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:.8rem 1rem; }
@@ -367,7 +367,31 @@ const CSS = `
   .chart .val { fill:var(--text); font-size:11px; font-weight:700; font-variant-numeric:tabular-nums; }
   .chart .bar { fill:var(--accent); }
   .chart .hit { fill:transparent; }
-  .chart .hit:hover + .bar, .chart .bar:hover { opacity:.8; }
+  /* 막대를 누르면 그 막대만 진하게 남기고 값을 띄운다. 마지막 막대의 값은 늘 보인다. */
+  .chart g.b { outline:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .chart .val { visibility:hidden; }
+  .chart g.last .val { visibility:visible; }
+  .chart svg:focus-within g .val { visibility:hidden; }
+  .chart g.b:hover .val, .chart g.b:focus .val { visibility:visible; }
+  .chart g.b:hover .bar { opacity:.8; }
+  .chart svg:focus-within .bar { opacity:.35; }
+  .chart g.b:focus .bar { opacity:1; }
+  /* 막대가 많으면 폭을 고정하고 그래프만 좌우로 스크롤한다. 세로축은 따로 둔다. */
+  .chart .plot { display:flex; }
+  .chart.wide svg { width:auto; height:auto; overflow:hidden; }
+  .chart .yaxis { flex:none; }
+  .chart .scroll { overflow-x:auto; direction:rtl; flex:1; min-width:0; }
+  .chart .scroll svg { direction:ltr; }
+  .runs tr.old { display:none; }
+  .more-toggle { position:absolute; opacity:0; pointer-events:none; }
+  .more-toggle:checked ~ .table-scroll tr.old { display:table-row; }
+  .more-toggle:checked ~ .more { display:none; }
+  .more {
+    display:block; margin-top:.75rem; padding:.6rem; text-align:center; cursor:pointer;
+    font-size:.85rem; color:var(--muted); border:1px solid var(--line); border-radius:var(--radius);
+  }
+  .more:hover { color:var(--text); }
+  .more-toggle:focus-visible ~ .more { outline:2px solid var(--accent); }
   .runs { width:100%; border-collapse:collapse; font-size:.85rem; font-variant-numeric:tabular-nums; }
   .runs th { text-align:left; font-weight:400; color:var(--muted); font-size:.75rem; padding:.4rem .5rem; border-bottom:1px solid var(--line); }
   .runs td { padding:.55rem .5rem; border-bottom:1px solid var(--line); white-space:nowrap; }
@@ -378,7 +402,8 @@ const CSS = `
     .tile { padding:.6rem .7rem; }
     .tile .v { font-size:1.2rem; }
     /* 차트는 화면 폭에 맞춰 줄어든다. 글자는 줄어든 만큼 키워 둔다. */
-    .chart .axis, .chart .val { font-size:20px; }
+    .chart:not(.wide) .axis, .chart:not(.wide) .val { font-size:20px; }
+    .chart:not(.wide) .axis.alt { display:none; }
   }
 
   footer {
@@ -572,21 +597,34 @@ const minutes = (r) => Math.round((new Date(r.published) - new Date(r.started)) 
 const usd = (x) => `$${x.toFixed(2)}`;
 const shortWeek = (w) => w.replace(/^\d{4}-/, "");
 
-// 막대 하나에 값 하나. 축은 하나다. 값 표시는 마지막 막대에만 붙이고 나머지는
-// 마우스를 올리면 나온다.
+// 막대 하나에 값 하나. 축은 하나다. 값 표시는 마지막 막대에만 붙이고, 다른 막대는
+// 누르거나 마우스를 올리면 나온다. 누른 막대만 진하게 남긴다. 스크립트 없이 CSS 의
+// :focus 로 한다.
+//
+// 막대가 본문 폭에 다 안 들어가면 막대 폭을 고정하고 그래프만 좌우로 스크롤한다.
+// 세로축은 따로 떼어 스크롤해도 제자리에 둔다. 처음 화면은 가장 최근 주차인 오른쪽
+// 끝이다(.scroll 의 direction).
+const WRAP = 656; // .wrap 의 max-width 41rem
+const SLOT = 34;
 function barChart(runs, value, fmt, caption) {
-  const W = 640, H = 200, L = 44, R = 8, T = 16, B = 24;
+  const H = 200, L = 44, R = 8, T = 16;
+  const years = new Set(runs.map((r) => r.week.slice(0, 4)));
+  const B = years.size > 1 ? 38 : 24;
+  const wide = runs.length * SLOT + R > WRAP - L;
+  const W = wide ? L + R + runs.length * SLOT : 640;
   const max = Math.max(...runs.map(value));
   const step = niceStep(max / 3);
   const top = Math.max(step, Math.ceil(max / step) * step);
   const y = (v) => T + (H - T - B) * (1 - v / top);
-  const slot = (W - L - R) / Math.max(runs.length, 4);
+  const slot = wide ? SLOT : (W - L - R) / Math.max(runs.length, 4);
   const bw = Math.min(40, slot * 0.6);
-  const every = Math.ceil(runs.length / 13);
+  const every = wide ? 1 : Math.ceil(runs.length / 13);
 
-  const grid = [];
-  for (let v = 0; v <= top + 1e-9; v += step)
-    grid.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v, true)}</text>`);
+  const grid = [], axis = [];
+  for (let v = 0; v <= top + 1e-9; v += step) {
+    grid.push(`<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`);
+    axis.push(`<text class="axis" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v, true)}</text>`);
+  }
 
   const bars = runs.map((r, i) => {
     const v = value(r);
@@ -594,17 +632,28 @@ function barChart(runs, value, fmt, caption) {
     const y0 = y(0), y1 = Math.min(y(v), y0 - 1);
     const rad = Math.min(4, (y0 - y1) / 2, bw / 2);
     const d = `M${x},${y0}V${y1 + rad}Q${x},${y1} ${x + rad},${y1}H${x + bw - rad}Q${x + bw},${y1} ${x + bw},${y1 + rad}V${y0}Z`;
-    const tip = `<title>${r.week} · ${fmt(v)}</title>`;
-    const label = i === runs.length - 1 ? `<text class="val" x="${x + bw / 2}" y="${y1 - 5}" text-anchor="middle">${fmt(v)}</text>` : "";
-    const tick = (runs.length - 1 - i) % every === 0 ? `<text class="axis" x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${shortWeek(r.week)}</text>` : "";
-    return `<g><rect class="hit" x="${L + slot * i}" y="${T}" width="${slot}" height="${H - T - B}">${tip}</rect><path class="bar" d="${d}">${tip}</path>${label}${tick}</g>`;
+    const last = i === runs.length - 1;
+    // 좁은 화면에서는 주차 라벨을 하나 걸러 보인다(.alt). 마지막 막대부터 센다.
+    const k = (runs.length - 1 - i) / every;
+    const tick = Number.isInteger(k) ? `<text class="axis${k % 2 ? " alt" : ""}" x="${x + bw / 2}" y="${H - B + 16}" text-anchor="middle">${shortWeek(r.week)}</text>` : "";
+    // 해가 둘 이상이면 해마다 첫 막대 아래에 연도를 단다. W01 이 W52 뒤에 와도 읽힌다.
+    const year = years.size > 1 && (i === 0 || runs[i - 1].week.slice(0, 4) !== r.week.slice(0, 4))
+      ? `<text class="axis" x="${x}" y="${H - 4}">${r.week.slice(0, 4)}</text>` : "";
+    return `<g class="b${last ? " last" : ""}" tabindex="0" aria-label="${r.week} ${fmt(v)}"><rect class="hit" x="${L + slot * i}" y="${T}" width="${slot}" height="${H - T - B}"/><path class="bar" d="${d}"/><text class="val" x="${x + bw / 2}" y="${y1 - 5}" text-anchor="middle">${fmt(v)}</text>${tick}${year}</g>`;
   });
 
-  return `<figure class="chart"><figcaption>${caption}</figcaption>
+  if (!wide)
+    return `<figure class="chart"><figcaption>${caption}</figcaption>
 <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${caption}">
-${grid.join("")}
+${grid.join("")}${axis.join("")}
 ${bars.join("")}
 </svg></figure>`;
+  return `<figure class="chart wide"><figcaption>${caption}</figcaption>
+<div class="plot"><svg class="yaxis" width="${L}" height="${H}" viewBox="0 0 ${L} ${H}" aria-hidden="true">${axis.join("")}</svg>
+<div class="scroll"><svg width="${W - L}" height="${H}" viewBox="${L} 0 ${W - L} ${H}" role="img" aria-label="${caption}">
+${grid.join("")}
+${bars.join("")}
+</svg></div></div></figure>`;
 }
 
 function niceStep(raw) {
@@ -612,41 +661,82 @@ function niceStep(raw) {
   return [1, 2, 5, 10].map((m) => m * p).find((s) => s >= raw);
 }
 
-function renderStats(runs) {
-  const avg = (f) => runs.reduce((s, r) => s + f(r), 0) / runs.length;
+const hoursMinutes = (m) => (m < 60 ? `${m}분` : `${Math.floor(m / 60)}시간 ${m % 60}분`);
+
+// 통계는 전체·연도·분기마다 페이지가 따로 있다. 목록의 탭과 같이 주소가 기간이고
+// 스크립트를 쓰지 않는다. 기간은 발행물과 같은 13주 분기로 끊는다.
+function statsViews(runs) {
+  const views = [{ path: "stats/", label: "전체", runs }];
+  const place = (r) => ({ year: r.week.slice(0, 4), q: quarterOf(Number(r.week.slice(6))) });
+  for (const y of [...new Set(runs.map((r) => place(r).year))].sort()) {
+    const inYear = runs.filter((r) => place(r).year === y);
+    views.push({ path: `stats/${y}/`, label: `${y}년`, year: y, runs: inYear });
+    for (const q of [...new Set(inYear.map((r) => place(r).q))].sort((a, b) => a - b))
+      views.push({ path: `stats/${y}/Q${q}/`, label: listTitle({ year: y, q }), year: y, q, runs: inYear.filter((r) => place(r).q === q) });
+  }
+  return views;
+}
+
+// 전체 | 연도 | 고른 해의 분기. 전체에서는 분기 칩을 두지 않는다. 어느 해의 분기인지
+// 알 수 없다.
+function statsTabs(views, here, root) {
+  if (views.length === 1) return "";
+  const chip = (v, cls, text) =>
+    v === here ? `<span class="${cls} on" aria-current="page">${text}</span>` : `<a class="${cls}" href="${root}${v.path}">${text}</a>`;
+  const years = views.filter((v) => v.year && !v.q);
+  const quarters = views.filter((v) => v.q && v.year === here.year);
+  const div = `<span class="tabdiv"></span>`;
+  return `<nav class="tabs">${chip(views[0], "tab", "전체")}${div}${years.map((v) => chip(v, "yr", v.year)).join("")}${
+    quarters.length ? div + quarters.map((v) => chip(v, "tab", `Q${v.q}`)).join("") : ""}</nav>`;
+}
+
+function renderStats(views, view) {
+  const { runs } = view;
+  const root = "../".repeat(view.path.split("/").filter(Boolean).length);
+  const sum = (f) => runs.reduce((s, r) => s + f(r), 0);
+  const avg = (f) => sum(f) / runs.length;
 
   const tiles = runs.length
     ? `<div class="tiles">
   <div class="tile"><span class="k">발행물</span><span class="v">${runs.length}<small>개</small></span></div>
-  <div class="tile"><span class="k">총 비용</span><span class="v">${usd(runs.reduce((s, r) => s + r.cost_usd, 0))}</span></div>
+  <div class="tile"><span class="k">총 비용</span><span class="v">${usd(sum((r) => r.cost_usd))}</span></div>
   <div class="tile"><span class="k">평균 비용</span><span class="v">${usd(avg((r) => r.cost_usd))}</span></div>
   <div class="tile"><span class="k">평균 소요 시간</span><span class="v">${Math.round(avg(minutes))}<small>분</small></span></div>
 </div>`
     : "";
 
-  // 읽은 헤드라인은 기록이 없으면 비운다.
-  const rows = [...runs].reverse().map((r) => `<tr>
+  // 읽은 헤드라인은 기록이 없으면 비운다. 표는 최근 13개(한 분기)만 펼쳐 두고 나머지는
+  // "더 보기"로 편다. 체크박스와 CSS 로 하고, 행은 모두 HTML 에 있다. CSS 가 형제
+  // 선택자(~)로 표를 고르므로 체크박스는 표보다 앞에, 라벨은 뒤에 둔다. 순서가 바뀌면
+  // 버튼이 오류 없이 안 먹는다.
+  const SHOWN = 13;
+  const rows = [...runs].reverse().map((r, i) => `<tr${i >= SHOWN ? ' class="old"' : ""}>
   <td>${r.week}</td><td>${r.model}</td>
   <td class="r">${usd(r.cost_usd)}</td><td class="r">${minutes(r)}분</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td>
 </tr>`).join("");
-
+  const more = runs.length > SHOWN
+    ? `<label for="more-runs" class="more">이전 ${runs.length - SHOWN}개 더 보기</label>`
+    : "";
   const body = runs.length
     ? `${tiles}
 ${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "비용 (달러)")}
 ${barChart(runs, minutes, (v) => `${v}분`, "소요 시간 (분)")}
-<div class="table-scroll"><table class="runs">
+${more ? `<input type="checkbox" id="more-runs" class="more-toggle">` : ""}<div class="table-scroll"><table class="runs">
 <thead><tr><th>발행물</th><th>모델</th><th class="r">비용</th><th class="r">소요 시간</th><th class="r">읽은 헤드라인</th></tr></thead>
 <tbody>${rows}</tbody>
-</table></div>`
+</table></div>
+${more}`
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
 
   return layout({
-    title: `비용 및 시간 — ${SITE_TITLE}`,
-    description: "발행물을 AI가 만드는 데 든 비용과 시간.",
-    root: "../",
-    body: `<p class="crumb"><a href="../">← 목록</a></p>
+    title: view.q || view.year ? `비용 및 시간 · ${view.label} — ${SITE_TITLE}` : `비용 및 시간 — ${SITE_TITLE}`,
+    description: `발행물을 AI가 만드는 데 든 비용과 시간. ${view.label}.`,
+    root,
+    body: `<p class="crumb"><a href="${root}">← 목록</a></p>
 <h1 class="issue-title">비용 및 시간</h1>
 <p class="lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
+${statsTabs(views, view, root)}
+${views.length > 1 ? `<h2 class="list">${view.label}</h2>` : ""}
 ${body}`,
   });
 }
@@ -700,8 +790,23 @@ writeFileSync(
 );
 
 const runs = loadRuns();
-mkdirSync(join(SITE, "stats"), { recursive: true });
-writeFileSync(join(SITE, "stats", "index.html"), renderStats(runs));
+const statViews = statsViews(runs);
+for (const v of statViews) {
+  mkdirSync(join(SITE, v.path), { recursive: true });
+  writeFileSync(join(SITE, v.path, "index.html"), renderStats(statViews, v));
+}
+
+// 기간별 통계가 기록을 빠뜨리거나 겹치지 않는지 본다. 분기 페이지의 표를 모두
+// 합치면 기록 전체와 한 번씩 맞아야 한다.
+const tableWeeks = (v) =>
+  [...(readFileSync(join(SITE, v.path, "index.html"), "utf8").match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "")
+    .matchAll(/<tr[^>]*>\s*<td>([^<]+)<\/td>/g)].map((m) => m[1]);
+const inQuarters = statViews.filter((v) => v.q).flatMap(tableWeeks).sort();
+const expected = runs.map((r) => r.week).sort();
+if (inQuarters.join() !== expected.join() || statViews.some((v) => tableWeeks(v).length !== v.runs.length)) {
+  console.error(`기간별 통계 표가 기록과 다르다. 기록 ${expected.length}개, 분기 표 합 ${inQuarters.length}개.`);
+  process.exit(1);
+}
 
 // ---------- 쓰이지 않는 스타일 ----------
 // CSS 에 정의된 클래스가 어느 페이지에도 없으면 빌드를 멈춘다. 마크업의 클래스 이름이
@@ -711,6 +816,8 @@ const CONDITIONAL = new Set([
   "quarter", "group--flow", "group--single", // 분기호·연간호가 있을 때
   "empty", // 목록이나 기록이 비었을 때
   "counts", "issue-meta", // 건수가 국내·해외·AI 5건씩이 아닌 호
+  "wide", "plot", "yaxis", "scroll", // 한 그래프의 막대가 본문 폭을 넘을 때
+  "old", "more-toggle", "more", // 기록이 13개를 넘을 때
 ]);
 const usedClasses = new Set();
 for (const f of readdirSync(SITE, { recursive: true }))
@@ -738,3 +845,4 @@ console.log(
     .map((p) => `${listTitle(p)} ${years.get(p.year).quarters.get(p.q).length}개`)
     .join(" | ") || "발행물 없음"
 );
+console.log(`통계 ${statViews.map((v) => `${v.label} ${v.runs.length}개`).join(" | ")}`);
