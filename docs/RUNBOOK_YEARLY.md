@@ -70,9 +70,15 @@ period_end: 2027-01-03
 
 발행 전 점검은 분기 런북 8절과 같다. 근거 링크가 모두 그 해의 분기호를 가리키는지를 함께 본다.
 
+**실행 기록을 남긴다.** 푸시 직전에 이 세션의 대화 기록으로 비용·시간·모델을 계산해 `data/runs/<Y>.json` 에 쓴다. 발행물과 같은 커밋에 넣는다. 절차와 한계는 주간 런북 14절과 같다.
+
+```bash
+node scripts/record-run.mjs <Y>
+```
+
 ```bash
 npm ci && npm run build
-git add content/year/<Y>.md
+git add content/year/<Y>.md data/runs/
 git commit -m "Publish <Y> annual"
 git push origin main
 ```

@@ -144,9 +144,15 @@ period_end: 2026-09-27
 - 분기 밖에서 온 사실이 섞이지 않았는가.
 - 주간호 10절 상투 표현이 있는가. `QUALITY_CHECKS.md` 3.3 의 명령을 대상 파일만 바꿔 돌린다.
 
+**실행 기록을 남긴다.** 푸시 직전에 이 세션의 대화 기록으로 비용·시간·모델을 계산해 `data/runs/<Y>-Q<분기>.json` 에 쓴다. 발행물과 같은 커밋에 넣는다. 절차와 한계는 주간 런북 14절과 같다.
+
+```bash
+node scripts/record-run.mjs <Y>-Q<분기>
+```
+
 ```bash
 npm ci && npm run build
-git add content/quarter/<Y>-Q<분기>.md
+git add content/quarter/<Y>-Q<분기>.md data/runs/
 git commit -m "Publish <Y>-Q<분기>"
 git push origin main
 ```
