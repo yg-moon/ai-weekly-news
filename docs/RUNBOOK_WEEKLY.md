@@ -168,7 +168,7 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --covered "용혜인,호르
 - 뉴스룸 피드에는 고객 사례와 홍보 글이 많이 섞인다. 새 모델·연구·인수·정책 발표만 후보로 올리고 나머지는 버린다.
 - 뉴스룸은 자사 발표만 담아 업계 맥락과 비판이 없다. Hacker News 프런트가 그 공백을 일부 메운다.
 
-**도구가 거부하는 매체가 있다.** 검색 도구의 `allowed_domains` 에 연합·조선·중앙·동아·한겨레·매경·Reuters·AP·BBC·The Guardian 을 넣으면 호출 전체가 실패한다. 넣지 않는다. 다만 URL 을 알면 원문 받기는 되므로 대조에는 쓴다. Wall Street Journal 은 원문도 막혀 있다(401).
+**도구가 거부하는 매체가 있다.** 검색 도구의 `allowed_domains` 에 연합·조선·중앙·동아·한겨레·매경·Reuters·AP·BBC·The Guardian·The New York Times 를 넣으면 호출 전체가 실패한다. 넣지 않는다. 다만 URL 을 알면 원문 받기는 되므로 대조에는 쓴다. Wall Street Journal 은 원문도 막혀 있다(401).
 
 **BBC 와 The Guardian 은 검색으로 찾지 않는다.** `site:` 로 찾아도 두 매체 기사는 나오지 않는다. 검색에만 기대면 검색이 닿는 매체로 출처가 쏠린다. W31~W38 해외 40건 중 32건이 Al Jazeera 였다. BBC 는 `world` 수집의 위키 인용 URL 에서, The Guardian 은 같은 수집의 날짜 목록에서 찾는다.
 
