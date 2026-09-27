@@ -376,6 +376,9 @@ const CSS = `
   .chart g.b:hover .bar { opacity:.8; }
   .chart svg:focus-within .bar { opacity:.35; }
   .chart g.b:focus .bar { opacity:1; }
+  /* 누른 막대는 클릭을 흘려보낸다. 한 번 더 누르면 아래의 빈 그래프가 눌려 포커스가
+     풀리고 원래대로 돌아온다. */
+  .chart g.b:focus { pointer-events:none; }
   /* 막대가 많으면 폭을 고정하고 그래프만 좌우로 스크롤한다. 세로축은 따로 둔다. */
   .chart .plot { display:flex; }
   .chart.wide svg { width:auto; height:auto; overflow:hidden; }
@@ -590,16 +593,31 @@ function loadRuns() {
   } catch {
     return [];
   }
-  return files.map((f) => JSON.parse(readFileSync(join(RUNS, f), "utf8"))).sort((a, b) => a.week.localeCompare(b.week));
+  return files.map((f) => JSON.parse(readFileSync(join(RUNS, f), "utf8"))).sort((a, b) => runOrder(a) - runOrder(b));
 }
 
 const minutes = (r) => Math.round((new Date(r.published) - new Date(r.started)) / 60e3);
 const usd = (x) => `$${x.toFixed(2)}`;
-const shortWeek = (w) => w.replace(/^\d{4}-/, "");
+const shortWeek = (w) => (/^\d{4}$/.test(w) ? "연간" : w.replace(/^\d{4}-/, ""));
+
+// 기록의 week 는 발행물 ID 다. 주간호 2026-W39, 분기호 2026-Q3, 연간호 2026. 분기호는
+// 그 분기의 마지막 주 바로 뒤에, 연간호는 4분기 분기호 뒤에 놓는다. 4분기는 53주까지
+// 있을 수 있다.
+const runPlace = (r) => {
+  const [y, t] = r.week.split("-");
+  if (!t) return { year: y, q: 4 };
+  return t[0] === "Q" ? { year: y, q: Number(t[1]) } : { year: y, q: quarterOf(Number(t.slice(1))) };
+};
+const runOrder = (r) => {
+  const [y, t] = r.week.split("-");
+  if (!t) return Number(y) * 100 + 53.9;
+  const n = Number(t.slice(1));
+  return Number(y) * 100 + (t[0] === "Q" ? (n === 4 ? 53 : n * 13) + 0.5 : n);
+};
 
 // 막대 하나에 값 하나. 축은 하나다. 값 표시는 마지막 막대에만 붙이고, 다른 막대는
-// 누르거나 마우스를 올리면 나온다. 누른 막대만 진하게 남긴다. 스크립트 없이 CSS 의
-// :focus 로 한다.
+// 누르거나 마우스를 올리면 나온다. 누른 막대만 진하게 남기고, 한 번 더 누르면 풀린다.
+// 스크립트 없이 CSS 의 :focus 로 한다.
 //
 // 막대가 본문 폭에 다 안 들어가면 막대 폭을 고정하고 그래프만 좌우로 스크롤한다.
 // 세로축은 따로 떼어 스크롤해도 제자리에 둔다. 처음 화면은 가장 최근 주차인 오른쪽
@@ -667,7 +685,7 @@ const hoursMinutes = (m) => (m < 60 ? `${m}분` : `${Math.floor(m / 60)}시간 $
 // 스크립트를 쓰지 않는다. 기간은 발행물과 같은 13주 분기로 끊는다.
 function statsViews(runs) {
   const views = [{ path: "stats/", label: "전체", runs }];
-  const place = (r) => ({ year: r.week.slice(0, 4), q: quarterOf(Number(r.week.slice(6))) });
+  const place = runPlace;
   for (const y of [...new Set(runs.map((r) => place(r).year))].sort()) {
     const inYear = runs.filter((r) => place(r).year === y);
     views.push({ path: `stats/${y}/`, label: `${y}년`, year: y, runs: inYear });
@@ -705,17 +723,18 @@ function renderStats(views, view) {
 </div>`
     : "";
 
-  // 읽은 헤드라인은 기록이 없으면 비운다. 표는 최근 13개(한 분기)만 펼쳐 두고 나머지는
-  // "더 보기"로 편다. 체크박스와 CSS 로 하고, 행은 모두 HTML 에 있다. CSS 가 형제
+  // 읽은 헤드라인은 기록이 없으면 비운다. 표는 최근 16개만 펼쳐 두고 나머지는 "더보기"로
+  // 편다. 한 분기는 53주인 해의 4분기가 주간호 14개, 분기호, 연간호로 16개가 최대라
+  // 분기 화면에는 버튼이 안 생긴다. 체크박스와 CSS 로 하고, 행은 모두 HTML 에 있다. CSS 가 형제
   // 선택자(~)로 표를 고르므로 체크박스는 표보다 앞에, 라벨은 뒤에 둔다. 순서가 바뀌면
   // 버튼이 오류 없이 안 먹는다.
-  const SHOWN = 13;
+  const SHOWN = 16;
   const rows = [...runs].reverse().map((r, i) => `<tr${i >= SHOWN ? ' class="old"' : ""}>
   <td>${r.week}</td><td>${r.model}</td>
   <td class="r">${usd(r.cost_usd)}</td><td class="r">${minutes(r)}분</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td>
 </tr>`).join("");
   const more = runs.length > SHOWN
-    ? `<label for="more-runs" class="more">이전 ${runs.length - SHOWN}개 더 보기</label>`
+    ? `<label for="more-runs" class="more">더보기</label>`
     : "";
   const body = runs.length
     ? `${tiles}
@@ -817,7 +836,7 @@ const CONDITIONAL = new Set([
   "empty", // 목록이나 기록이 비었을 때
   "counts", "issue-meta", // 건수가 국내·해외·AI 5건씩이 아닌 호
   "wide", "plot", "yaxis", "scroll", // 한 그래프의 막대가 본문 폭을 넘을 때
-  "old", "more-toggle", "more", // 기록이 13개를 넘을 때
+  "old", "more-toggle", "more", // 기록이 16개를 넘을 때
 ]);
 const usedClasses = new Set();
 for (const f of readdirSync(SITE, { recursive: true }))

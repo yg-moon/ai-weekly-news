@@ -29,10 +29,13 @@ const PRICE = {
 };
 
 const args = process.argv.slice(2);
-const week = args.find((a) => /^\d{4}-W\d{2}$/.test(a));
+// 주간호(2026-W39), 분기호(2026-Q3), 연간호(2026)를 기록한다. 필드 이름 week 는 주간호만
+// 기록하던 때의 것이고, 값은 발행물 ID 다.
+const week = args.find((a) => /^\d{4}(-W\d{2}|-Q[1-4])?$/.test(a));
+const quarterly = !/-W/.test(week ?? "");
 const given = args.includes("--transcript") ? args[args.indexOf("--transcript") + 1] : null;
 if (!week) {
-  console.error("사용법: node scripts/record-run.mjs <WEEK> [--transcript <jsonl>]");
+  console.error("사용법: node scripts/record-run.mjs <WEEK|QUARTER|YEAR> [--transcript <jsonl>]");
   process.exit(1);
 }
 
@@ -103,8 +106,9 @@ for (const { model, u } of calls.values()) {
 
 // ---------- 읽은 헤드라인 ----------
 
-let headlines = 0;
-for (const s of ["domestic", "world", "tech", "ai", "aimedia"]) {
+// 분기호와 연간호는 헤드라인을 받지 않고 주간호·분기호를 읽는다. 비워 둔다.
+let headlines = quarterly ? null : 0;
+for (const s of quarterly ? [] : ["domestic", "world", "tech", "ai", "aimedia"]) {
   const f = `/tmp/${week}/${s}.md`;
   if (!existsSync(f) || statSync(f).mtime < new Date(started)) {
     console.error(`경고: ${f} 가 없거나 이 세션보다 오래됐다. 읽은 헤드라인을 비워 둔다.`);
