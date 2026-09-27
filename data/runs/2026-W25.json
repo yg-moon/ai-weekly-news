@@ -4,13 +4,13 @@
   "session": "6757530c-50a8-5b0b-a43c-746115bdb38c",
   "model": "claude-opus-5-5",
   "started": "2026-09-27T22:59:58+09:00",
-  "published": "2026-09-27T23:17:33+09:00",
-  "cost_usd": 6.93,
+  "published": "2026-09-27T23:20:17+09:00",
+  "cost_usd": 8.05,
   "headlines": 1133,
   "tokens": {
-    "input": 120,
-    "output": 74101,
-    "cache_read": 12829767,
-    "cache_write": 360530
+    "input": 138,
+    "output": 82142,
+    "cache_read": 16292005,
+    "cache_write": 393266
   }
 }
