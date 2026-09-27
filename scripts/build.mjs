@@ -344,6 +344,11 @@ const CSS = `
   .archive a:hover { background:var(--surface); }
   .archive .wk { font-weight:700; font-variant-numeric:tabular-nums; }
   .archive .period { color:var(--dim); font-size:.9rem; }
+  .tops { width:100%; display:flex; flex-direction:column; margin-top:.2rem; }
+  .top { display:flex; align-items:baseline; gap:.6rem; min-width:0; font-size:.85rem; line-height:1.6; color:var(--dim); }
+  .top b { flex:none; width:1.6rem; font-size:.78rem; color:var(--accent); }
+  /* 한 줄을 넘으면 말줄임표로 자른다. 전체 제목은 본문에 있다. */
+  .top span { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .archive .counts { width:100%; color:var(--muted); font-size:.78rem; }
   .archive li.quarter .wk { color:var(--accent); }
   .archive li.quarter + li { border-top-color:var(--dim); }
@@ -567,14 +572,17 @@ function tabs(years, here, root) {
   return `<nav class="tabs">${yearRow}<span class="tabdiv"></span>${quarterRow}${annualChip}</nav>`;
 }
 
-// 주간호 목차. 구조화한 본문에서 분야와 항목 제목을 다시 읽는다. 제목은 " — " 앞까지만 쓴다.
+// 목차와 목록에 쓰는 짧은 제목. 태그를 걷고 " — " 앞까지만 둔다.
+const shortTitle = (html) => html.replace(/<[^>]+>/g, "").split(" — ")[0].trim();
+
+// 주간호 목차. 구조화한 본문에서 분야와 항목 제목을 다시 읽는다.
 // 넓은 화면에서는 본문 왼쪽에 고정되고, 좁은 화면에서는 제목 아래에 펼쳐 둔다.
 function toc(html) {
   const groups = html.split(/(?=<section class="group )/).flatMap((chunk) => {
     const g = chunk.match(/^<section class="group group--(\w+)"><h2><span class="rule"><\/span>([^<]*)/);
     if (!g) return [];
     const items = [...chunk.matchAll(/<article class="item" id="([^"]+)"><div class="item-head"><span class="num">(\d+)<\/span><h3>([\s\S]*?)<\/h3>/g)]
-      .map(([, id, num, title]) => `<li><a href="#${id}"><span class="tn">${num}</span>${title.replace(/<[^>]+>/g, "").split(" — ")[0].trim()}</a></li>`);
+      .map(([, id, num, title]) => `<li><a href="#${id}"><span class="tn">${num}</span>${shortTitle(title)}</a></li>`);
     return items.length ? [`<div class="toc-group group--${g[1]}"><p class="toc-name">${g[2].trim()}</p><ol>${items.join("")}</ol></div>`] : [];
   });
   return groups.length ? `<nav class="toc" id="toc" aria-label="목차">${groups.join("")}</nav>` : "";
@@ -602,6 +610,19 @@ ${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)
   });
 }
 
+// 목록에서 주간호마다 분야별 1위 제목을 한 줄씩 미리 보여 준다.
+function tops(d) {
+  const lines = d.body.split(/^## /m).slice(1).flatMap((chunk) => {
+    const name = chunk.split("\n")[0].trim();
+    const first = chunk.match(/^### \d+\.\s*(.+)$/m);
+    const slug = KINDS.week.groups[name];
+    return first && slug
+      ? [`<span class="top group--${slug}"><b>${name}</b><span>${shortTitle(marked.parseInline(first[1]))}</span></span>`]
+      : [];
+  });
+  return lines.length ? `<span class="tops">${lines.join("")}</span>` : "";
+}
+
 // 한 분기의 목록. 홈은 가장 나중 분기와 같은 내용이고 root 와 제목만 다르다.
 function renderList(years, p, root, home) {
   const cards = years
@@ -613,6 +634,7 @@ function renderList(years, p, root, home) {
     <span class="wk">${d.id}${d.kind === "quarter" ? ` ${KINDS[d.kind].label}` : ""}</span>
     <span class="period">${period(d.meta)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
+    ${d.kind === "week" ? tops(d) : ""}
   </a></li>`
     )
     .join("");
