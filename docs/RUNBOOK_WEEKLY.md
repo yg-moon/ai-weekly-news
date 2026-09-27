@@ -407,7 +407,7 @@ LAST=$(node -e 'const y=+process.argv[1],d=new Date(Date.UTC(y,0,1)).getUTCDay()
 
 ## 플랫폼별 실행
 
-절차 자체는 위가 전부다. 아래는 스케줄러를 거는 방법만 다룬다.
+절차 자체는 위가 전부다. 특정 제품에서만 되는 것은 이 절에 모은다.
 
 ### 공통
 
