@@ -254,8 +254,9 @@ function collectFeeds(list, from, to) {
       continue;
     }
     // 최근 글만 담는 피드는 지난 주차를 덮지 못한다. 0건과 구분되지 않아 여기서 알린다.
+    // 주 앞쪽 하루이틀이 빠지는 것은 짧은 피드의 평소 모습이라, 주 전체가 밖일 때만 알린다.
     const oldest = items.reduce((m, i) => (i.day < m ? i.day : m), "9999");
-    if (items.length && oldest > from)
+    if (items.length && oldest > to)
       console.error(`경고: ai ${name} 피드가 ${oldest} 부터만 담는다. 대상 주를 덮지 못해 이 출처가 빠진다.`);
     const hit = items
       .filter((i) => i.day >= from && i.day <= to)
