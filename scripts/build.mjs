@@ -420,6 +420,8 @@ const CSS = `
   .toc li { font-size:.875rem; line-height:1.5; }
   .toc a { display:flex; gap:.5rem; padding:.2rem 0; color:var(--dim); text-decoration:none; }
   .toc a:hover { color:var(--text); }
+  .toc { scroll-margin-top:1rem; }
+  .item h3 a.to-toc { color:inherit; text-decoration:none; -webkit-tap-highlight-color:transparent; }
   .toc .tn { flex:none; width:.8rem; color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; }
   @media (min-width:78rem) {
     .toc {
@@ -427,6 +429,8 @@ const CSS = `
       left:calc(50% - 20.5rem - 2.5rem - 15rem); margin:0; background:none; border:none; padding:0;
     }
     .toc li { font-size:.8rem; }
+    /* 목차가 늘 옆에 있으니 제목은 눌러도 움직이지 않는다. */
+    .item h3 a.to-toc { pointer-events:none; }
   }
 
   footer {
@@ -573,7 +577,7 @@ function toc(html) {
       .map(([, id, num, title]) => `<li><a href="#${id}"><span class="tn">${num}</span>${title.replace(/<[^>]+>/g, "").split(" — ")[0].trim()}</a></li>`);
     return items.length ? [`<div class="toc-group group--${g[1]}"><p class="toc-name">${g[2].trim()}</p><ol>${items.join("")}</ol></div>`] : [];
   });
-  return groups.length ? `<nav class="toc" aria-label="목차">${groups.join("")}</nav>` : "";
+  return groups.length ? `<nav class="toc" id="toc" aria-label="목차">${groups.join("")}</nav>` : "";
 }
 
 function renderDoc(d, years) {
@@ -582,12 +586,14 @@ function renderDoc(d, years) {
   const p = placeOf(d);
   const back = p.q ? p : periods(years).filter((x) => x.year === p.year).pop();
   const main = structure(marked.parse(d.body), KINDS[d.kind].groups);
+  // 주간호만 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
+  const nav = d.kind === "week" ? toc(main) : "";
   const body = `
 ${back ? `<p class="crumb"><a href="../../${listPath(back)}">← ${listTitle(back)}</a></p>` : ""}
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
-${d.kind === "week" ? toc(main) : ""}
-${main}`;
+${nav}
+${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)([\s\S]*?)<\/h3>/g, '$1<a class="to-toc" href="#toc">$2</a></h3>') : main}`;
   return layout({
     title: `${pageTitle(d)} — ${SITE_TITLE}`,
     description: `${d.id} (${period(d.meta)}) ${KINDS[d.kind].suffix}. ${counts(d)}.`,
