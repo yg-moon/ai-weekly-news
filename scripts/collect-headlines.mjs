@@ -2,12 +2,13 @@
 // 검색으로 후보를 찾으면 검색어가 결과를 정하므로, 후보 풀은 이 목록에서 시작한다.
 // RUNBOOK_WEEKLY 2절 참고.
 //
-//   node scripts/collect-headlines.mjs 2026-08-31 2026-09-06 [domestic|world|tech]
+//   node scripts/collect-headlines.mjs 2026-08-31 2026-09-06 [domestic|world|tech|ai|aimedia]
 //
 // domestic  네이버 뉴스 랭킹 — 날짜별·언론사별 많이 본 기사
-// world     Wikipedia Portal:Current events(날짜별) + The Guardian 피드
+// world     Wikipedia Portal:Current events(날짜별, 인용 URL 포함) + The Guardian 날짜 목록
 // tech      Hacker News 프런트 페이지 — 날짜별 기술 화제
 // ai        AI 연구소·기업 뉴스룸 1차 출처
+// aimedia   TechCrunch·The Verge 날짜별 AI 기사 — AI 의 보도량을 센다
 
 import { execFileSync } from "node:child_process";
 
@@ -28,7 +29,7 @@ const WEEKDAYS = ["일","월","화","수","목","금","토"];
 
 // ---------- 공통 ----------
 
-function get(url, { binary = false } = {}) {
+function get(url, { binary = false, min = 3000 } = {}) {
   // Node 의 fetch 는 일부 호스트에서 403 을 받는다. curl 로 받는다.
   let last;
   for (let i = 0; i < 3; i++) {
@@ -38,7 +39,7 @@ function get(url, { binary = false } = {}) {
         ["-sSL", "-m", "25", "-A", UA, "-H", "Accept-Language: ko-KR,ko;q=0.9,en;q=0.8", url],
         { maxBuffer: 64 * 1024 * 1024 }
       );
-      if (buf.length < 3000) throw new Error(`응답이 짧다 (${buf.length}B)`);
+      if (buf.length < min) throw new Error(`응답이 짧다 (${buf.length}B)`);
       return binary ? buf : buf.toString("utf8");
     } catch (e) {
       last = e;
@@ -101,7 +102,11 @@ function wikipediaDay(day) {
     let n;
     while ((n = li.exec(m[2]))) {
       const t = clean(n[1]);
-      if (t.length > 25) items.push({ title: t, url: "" });
+      // 사안마다 인용 기사 URL 을 남긴다. 검색 도구는 BBC·The Guardian 을 돌려주지
+      // 않아서, 두 매체의 기사는 여기서 찾는다.
+      const cites = [...n[1].matchAll(/<a rel="mw:ExtLink[^"]*" href="([^"]+)" class="external text">/g)]
+        .map((c) => c[1].replace(/&amp;/g, "&"));
+      if (t.length > 25) items.push({ title: t, url: cites.join("\n  ") });
     }
     if (items.length) out.push({ group, items });
   }
@@ -134,8 +139,80 @@ const FEEDS = [
 ];
 
 // 해외 보조. Wikipedia 가 약한 경제·기업 사안을 메운다.
-// 8.5일치를 담아 주간 회고를 겨우 덮는다. BBC(3.3일)와 CNN(피드 고장)은 쓰지 않는다.
-const WORLD_FEEDS = [["The Guardian", "https://www.theguardian.com/world/rss", "rss"]];
+// 피드는 최근 8.5일치뿐이라 지난 주차에서 비었다. 날짜 목록은 과거 날짜도 준다.
+function guardianDay(day) {
+  const [yy, mm, dd] = day.split("-").map(Number);
+  const path = `${yy}/${MONTHS[mm - 1].slice(0, 3).toLowerCase()}/${String(dd).padStart(2, "0")}`;
+  const html = get(`https://www.theguardian.com/world/${path}/all`);
+  const items = [];
+  const re = new RegExp(`<a href="(https://www\\.theguardian\\.com/[a-z/-]+/${path}/[^"]+)" class="fc-item__link"[^>]*>([\\s\\S]*?)</a>`, "g");
+  for (const m of html.matchAll(re))
+    if (!items.some((i) => i.url === m[1])) items.push({ title: clean(m[2]), url: m[1] });
+  return items;
+}
+
+// ---------- AI 테크 매체 ----------
+// 뉴스룸은 회사마다 한 번 발표해서 "얼마나 크게 다뤄졌는가"를 셀 수 없다.
+// 테크 매체의 날짜별 AI 기사로 며칠에 걸쳐 몇 개 매체가 다뤘는지 센다.
+// Ars Technica 는 날짜 페이지에 인기 기사가 매일 섞여 세는 데 쓰지 않는다.
+
+const kstDay = (iso) => new Date(new Date(iso).getTime() + 9 * 3600e3).toISOString().slice(0, 10);
+
+function techcrunch(from, to) {
+  const a = new Date(from + "T00:00:00+09:00").toISOString().slice(0, 19);
+  const b = new Date(new Date(to + "T00:00:00+09:00").getTime() + 864e5).toISOString().slice(0, 19);
+  const out = [];
+  for (let page = 1; ; page++) {
+    // 기사가 없는 구간은 "[]" 두 글자다.
+    const body = get(`https://techcrunch.com/wp-json/wp/v2/posts?categories=577047203&after=${a}&before=${b}&per_page=100&page=${page}&_fields=date_gmt,title,link`, { min: 2 });
+    const posts = JSON.parse(body);
+    for (const p of posts) {
+      const title = clean(p.title.rendered);
+      // 행사 홍보 글은 기사가 아니다.
+      if (/TechCrunch Disrupt|StrictlyVC|Disrupt 20\d\d/.test(title)) continue;
+      out.push({ title, url: p.link, day: kstDay(p.date_gmt + "Z") });
+    }
+    if (posts.length < 100) break;
+  }
+  return out;
+}
+
+// 사이트맵의 날짜는 발행 시각이 아니라 수정 시각이다. 대부분 발행 당일이지만
+// 뒤늦게 고친 기사는 날짜가 밀린다.
+function verge(from, to) {
+  const months = new Set();
+  for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1))
+    months.add(`${dt.getUTCFullYear()}/${dt.getUTCMonth() + 1}`);
+  const out = [];
+  for (const mo of months) {
+    const xml = get(`https://www.theverge.com/sitemaps/entries/${mo}`);
+    for (const m of xml.matchAll(/<loc>(https:\/\/www\.theverge\.com\/ai-artificial-intelligence\/\d+\/([^<]+))<\/loc><lastmod>([^<]+)/g)) {
+      const day = kstDay(m[3]);
+      if (day >= from && day <= to) out.push({ title: m[2].replace(/-/g, " "), url: m[1], day });
+    }
+  }
+  return out;
+}
+
+function aimedia(from, to) {
+  const all = [];
+  for (const [name, fn] of [["TechCrunch", techcrunch], ["The Verge", verge]]) {
+    try {
+      for (const i of fn(from, to)) all.push({ ...i, name });
+    } catch (e) {
+      console.error(`경고: aimedia ${name} 를 못 받았다 (${e.message}). 보도량 세기에서 이 매체가 빠진다.`);
+    }
+  }
+  const out = [];
+  for (const day of [...new Set(all.map((i) => i.day))].sort()) {
+    const wd = WEEKDAYS[new Date(day + "T00:00:00Z").getUTCDay()];
+    for (const name of ["TechCrunch", "The Verge"]) {
+      const items = all.filter((i) => i.day === day && i.name === name);
+      if (items.length) out.push({ group: `${day} (${wd}) · ${name}`, items });
+    }
+  }
+  return out;
+}
 
 function parseRss(xml) {
   const out = [];
@@ -187,9 +264,10 @@ function collectFeeds(list, from, to) {
 
 const ai = (from, to) => collectFeeds(FEEDS, from, to);
 
-// 해외는 날짜별 Wikipedia 를 뼈대로 하고 Guardian 피드를 덧붙인다.
+// 해외는 날짜별 Wikipedia 를 뼈대로 하고 Guardian 날짜 목록을 덧붙인다.
 function world(from, to) {
   const out = [];
+  const guardian = [];
   for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1)) {
     const day = dt.toISOString().slice(0, 10);
     try {
@@ -198,21 +276,27 @@ function world(from, to) {
       out.push({ group: `${day} — 수집 실패: ${e.message}`, items: [] });
       console.error(`경고: world ${day} 를 못 받았다 (${e.message}). 이 날의 사안이 후보 풀에서 빠진다.`);
     }
+    try {
+      const items = guardianDay(day);
+      if (items.length) guardian.push({ group: `${day} · The Guardian`, items });
+    } catch (e) {
+      console.error(`경고: world The Guardian ${day} 를 못 받았다 (${e.message}).`);
+    }
   }
-  return out.concat(collectFeeds(WORLD_FEEDS, from, to));
+  return out.concat(guardian);
 }
 
 // ---------- 실행 ----------
 
 const SOURCES = { domestic, tech };
-const RANGE_SOURCES = { world, ai };
+const RANGE_SOURCES = { world, ai, aimedia };
 
 const args = process.argv.slice(2);
 const ALL = { ...SOURCES, ...RANGE_SOURCES };
 const [from, to] = args.filter((a) => !ALL[a]);
 const want = args.filter((a) => ALL[a]);
 if (!from || !to) {
-  console.error("usage: node scripts/collect-headlines.mjs <YYYY-MM-DD> <YYYY-MM-DD> [domestic|world|tech]");
+  console.error("usage: node scripts/collect-headlines.mjs <YYYY-MM-DD> <YYYY-MM-DD> [domestic|world|tech|ai|aimedia]");
   process.exit(1);
 }
 const picked = want.length ? want : Object.keys(ALL);

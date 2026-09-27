@@ -11,7 +11,7 @@
 // 로컬에는 세션이 여럿 떠 있을 수 있어 가장 최근 기록이 다른 세션 것일 수 있다.
 // 한 호를 한 세션에서 만들어야 그 세션 전체가 곧 그 호의 기록이 된다.
 //
-// 읽은 헤드라인은 2절이 /tmp/<WEEK>/ 에 받아 둔 네 목록의 항목 수다. 이 세션이 시작되기
+// 읽은 헤드라인은 2절이 /tmp/<WEEK>/ 에 받아 둔 다섯 목록의 항목 수다. 이 세션이 시작되기
 // 전에 만들어진 목록은 다른 주차의 것일 수 있어 세지 않는다.
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -104,7 +104,7 @@ for (const { model, u } of calls.values()) {
 // ---------- 읽은 헤드라인 ----------
 
 let headlines = 0;
-for (const s of ["domestic", "world", "tech", "ai"]) {
+for (const s of ["domestic", "world", "tech", "ai", "aimedia"]) {
   const f = `/tmp/${week}/${s}.md`;
   if (!existsSync(f) || statSync(f).mtime < new Date(started)) {
     console.error(`경고: ${f} 가 없거나 이 세션보다 오래됐다. 읽은 헤드라인을 비워 둔다.`);

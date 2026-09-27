@@ -51,7 +51,7 @@ read MON SUN < <(node -e 'const [y,w]=process.argv[1].split("-W").map(Number),j=
 
 ```bash
 mkdir -p /tmp/<WEEK>
-for s in domestic world tech ai; do
+for s in domestic world tech ai aimedia; do
   node scripts/collect-headlines.mjs <대상주 월요일> <대상주 일요일> $s > /tmp/<WEEK>/$s.md
 done
 ```
@@ -59,8 +59,8 @@ done
 | 분야 | 출처 | 무엇을 주는가 |
 |---|---|---|
 | 국내 | 네이버 뉴스 랭킹 | 날짜별·주요 언론사 15곳별 많이 본 기사 5건씩 |
-| 해외 | Wikipedia Portal:Current events + The Guardian 피드 | 날짜별로 분류·정리된 국제 사안과 출처 |
-| AI | 연구소·기업 뉴스룸 7곳(`ai`) + Hacker News 프런트(`tech`) | 1차 발표와 날짜별 기술 화제 |
+| 해외 | Wikipedia Portal:Current events + The Guardian 날짜 목록 | 날짜별로 분류·정리된 국제 사안과 인용 기사 URL |
+| AI | 연구소·기업 뉴스룸 7곳(`ai`) + TechCrunch·The Verge AI 기사(`aimedia`) + Hacker News 프런트(`tech`) | 1차 발표, 날짜·매체별 보도, 기술 화제 |
 
 **네이버 랭킹 아카이브는 2020년 11월 중순까지다.** 그보다 앞선 날짜를 요청하면 오늘 랭킹이 대신 온다. `collect-headlines.mjs` 가 페이지의 날짜 이동 목록으로 가려내 수집 실패로 처리한다. 2020-11-15 는 밖이고 2020-11-22 는 받아진다.
 
@@ -82,7 +82,7 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --top 40
 |---|---|
 | 국내 | 도구로 빈도를 뽑고 묶는다. 한글 토큰이라 잘 맞는다 |
 | 해외 | 도구로 빈도를 뽑고 묶는다. 영어는 고유명사만 센다 |
-| AI | **목록 전체를 읽는다.** 항목이 200여 건으로 적고 제목이 짧아 빈도가 흩어진다. 고유명사가 두 단어로 쪼개져(Hugging Face, GPT-6 Astra) 빈도에 안 잡힌다. 도구는 보조로만 쓴다 |
+| AI | **목록 전체를 읽고 `aimedia` 에서 센다.** 사안마다 며칠에 걸쳐 몇 개 매체가 다뤘는지 센다. 기사 수는 TechCrunch 가 절반을 넘어 매체 수로 센다. 뉴스룸과 HN 은 후보를 보탤 뿐 보도량이 아니다. HN 은 개발자 관심사로 치우쳐 제품 출시를 부풀린다 |
 
 **'많이 본'과 '많이 보도된'은 다르다.** 네이버 랭킹은 독자 클릭 기준이라 정치 논란과 사건사고가 유리하고 재정·정책 기사가 불리하다. 랭킹에 거의 없어도 모든 신문이 1면에 올린 사안이 있다. 랭킹은 후보를 빠짐없이 찾는 도구이고, 순위는 4절 기준으로 매긴다.
 
@@ -169,6 +169,8 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --covered "용혜인,호르
 - 뉴스룸은 자사 발표만 담아 업계 맥락과 비판이 없다. Hacker News 프런트가 그 공백을 일부 메운다.
 
 **도구가 거부하는 매체가 있다.** 검색 도구의 `allowed_domains` 에 연합·조선·중앙·동아·한겨레·매경·Reuters·AP·BBC·The Guardian 을 넣으면 호출 전체가 실패한다. 넣지 않는다. 다만 URL 을 알면 원문 받기는 되므로 대조에는 쓴다. Wall Street Journal 은 원문도 막혀 있다(401).
+
+**BBC 와 The Guardian 은 검색으로 찾지 않는다.** `site:` 로 찾아도 두 매체 기사는 나오지 않는다. 검색에만 기대면 검색이 닿는 매체로 출처가 쏠린다. W31~W38 해외 40건 중 32건이 Al Jazeera 였다. BBC 는 `world` 수집의 위키 인용 URL 에서, The Guardian 은 같은 수집의 날짜 목록에서 찾는다.
 
 **봇 차단으로 원문을 받을 수 없는 매체가 있다.** 2026-W37 실측에 2026-09-23 실측을 더했다. 주요 매체 목록은 이 결과로 정했다.
 

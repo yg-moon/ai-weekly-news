@@ -107,7 +107,7 @@ grep -rnE '이지 [^ ]* 아니|가 아니라|이 아니라|가 아니다|이 아
 
 ```bash
 sed -n '/^### 7. 매체/,/^### 8\./p' docs/RUNBOOK_WEEKLY.md
-grep -n 'const PRIMARY\|const FEEDS\|const WORLD_FEEDS' -A 20 scripts/collect-headlines.mjs
+grep -n 'const PRIMARY\|const FEEDS' -A 20 scripts/collect-headlines.mjs
 ```
 
 - 국내 주요 매체 목록이 `PRIMARY` 와 같은가.
@@ -177,7 +177,7 @@ node scripts/check-sources.mjs "$W"
 
 1차 출처 → 주요 매체 → 보조 매체 순이어야 한다(`RUNBOOK_WEEKLY.md` 11절). 분류는 7절 표에서 읽어 오므로 표를 고치면 검사도 따라 바뀐다.
 
-순서 말고 두 가지를 더 짚는다. 국내·해외 항목에 주요 매체가 하나도 없으면 걸린다. 주요 매체에서 먼저 찾았는지 확인한다(`RUNBOOK_WEEKLY.md` 8절). 7절 차단 표의 매체를 쓰면 걸린다. 그 링크는 빼고, 그 매체에만 있던 사실은 받아지는 원문으로 다시 대조하거나 뺀다.
+순서 말고 두 가지를 더 짚는다. 그 분야의 주요 매체가 하나도 없으면 걸린다. 해외 항목에 국내 매체만 있어도 걸리고, AI 는 연구소 1차 출처도 주요로 본다. 주요 매체에서 먼저 찾았는지 확인한다(`RUNBOOK_WEEKLY.md` 8절). 7절 차단 표의 매체를 쓰면 걸린다. 그 링크는 빼고, 그 매체에만 있던 사실은 받아지는 원문으로 다시 대조하거나 뺀다.
 
 **아래에 딸려 나오는 목록을 함께 읽는다.** 7절 표에 없는 이름은 발표 주체로 보는데, 매체 이름을 잘못 적었을 때도 여기로 떨어진다. 매체가 섞여 있으면 7절 표에 넣는다.
 

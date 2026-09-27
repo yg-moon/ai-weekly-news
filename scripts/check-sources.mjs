@@ -1,6 +1,7 @@
 // 출처 줄을 본다. 세 가지를 짚는다.
 //   - 순서: 1차 출처 → 주요 매체 → 보조 매체 (RUNBOOK_WEEKLY 11절)
-//   - 국내·해외 항목에 주요 매체가 하나도 없는 것 (8절)
+//   - 그 분야의 주요 매체가 하나도 없는 것 (8절). 해외 항목에 국내 주요 매체만 있어도 걸린다.
+//     AI 는 연구소 1차 출처도 주요 자리로 본다
 //   - 원문을 받을 수 없는 매체를 쓴 것 (3절, 7절 차단 표)
 //
 //   node scripts/check-sources.mjs content/week/2026-W38.md
@@ -19,13 +20,15 @@ const cell = (s) =>
   s.split("·").map((x) => x.replace(/\([^)]*\)/g, "").trim()).filter(Boolean);
 
 const main = new Set();
+const mainBy = {};
 const sub = new Set();
 const blocked = new Set();
 for (const line of section.split("\n")) {
   const c = line.split("|").map((x) => x.trim());
   if (c.length < 4) continue;
   if (["국내", "해외", "AI"].includes(c[1])) {
-    for (const n of cell(c[2])) if (!n.includes("1차 출처")) main.add(n);
+    mainBy[c[1]] = new Set();
+    for (const n of cell(c[2])) if (!n.includes("1차 출처")) main.add(n), mainBy[c[1]].add(n);
     for (const n of cell(c[3])) sub.add(n);
   }
   // 차단 표의 매체도 매체다. 주요 목록에 없으면 보조로 본다.
@@ -63,9 +66,11 @@ for (const file of process.argv.slice(2)) {
       bad++;
       console.log(file + ": " + names.map((n, i) => `${n}(${TIER[ranks[i]]})`).join(" / "));
     }
-    // AI 는 연구소 1차 출처가 주요 자리에 있다(7절 표). 국내·해외는 주요 매체가 있어야 한다.
-    if (field !== "AI" && !ranks.includes(1))
-      flags.push(`${file} [${field}] 주요 매체 없음: ${names.join(" / ")}`);
+    // 주요 매체는 그 분야 것이어야 한다. AI 는 연구소 1차 출처가 주요 자리에 있다(7절 표).
+    const own = mainBy[field];
+    const base = (n) => n.replace(/\s*\(Wikipedia\)$/, "");
+    if (own && !names.some((n, i) => own.has(base(n)) || (field === "AI" && ranks[i] === 0)))
+      flags.push(`${file} [${field}] ${field} 주요 매체 없음: ${names.join(" / ")}`);
     // 위키백과 링크는 위키백과를 받은 것이라 인용된 매체가 막혀 있어도 해당하지 않는다.
     for (const n of names)
       if (blocked.has(n)) flags.push(`${file} [${field}] 받을 수 없는 매체: ${n}`);
