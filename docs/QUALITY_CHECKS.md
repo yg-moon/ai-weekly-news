@@ -227,6 +227,22 @@ if(!hit) console.log("(없음)");' "$W"
 
 문단 여럿이 날짜로 시작하면 사안이 아니라 기사를 날짜순으로 옮긴 것이다(`RUNBOOK_WEEKLY.md` 11절). 갈래로 다시 묶는다. 시점은 `날짜` 필드가 이미 답한다.
 
+### 3.3.4 도입 문단의 구성 설명
+
+```bash
+node -e '
+const t=require("fs").readFileSync(process.argv[1],"utf8");
+let hit=0;
+for(const s of t.split(/\n## /).slice(1)){
+  const intro=s.split(/\n### /)[0].split("\n").slice(1).join(" ").trim();
+  for(const x of intro.split(/(?<=다\.)\s+/))
+    if(/(?:다섯|네|세|두|한|[1-5]) ?건|건 중|나머지 (?:둘|셋|넷)|(?:둘|셋|넷)(?:은|는|이|가) /.test(x)){ console.log("구성:", s.split("\n")[0], "→", x); hit++; }
+}
+if(!hit) console.log("(없음)");' "$W"
+```
+
+도입 문단이 건수나 묶음으로 말하면 사건 대신 구성을 설명한 것이다(`RUNBOOK_WEEKLY.md` 12절). "나머지 셋은 …" 은 "나머지는 …" 으로 쓰고, "세 건을 차지했다"·"다섯 건 중 셋이 …" 는 사건 이름으로 다시 쓴다. 사건 자체의 건수("총격 세 건")면 그대로 둔다.
+
 ### 3.4 대상 주를 벗어난 날짜
 
 ```bash
