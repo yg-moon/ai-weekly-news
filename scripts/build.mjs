@@ -275,12 +275,10 @@ const CSS = `
     margin-left:auto; font-size:.75rem; font-weight:400; color:var(--muted);
     border:1px solid var(--line); border-radius:999px; padding:.1rem .55rem; background:var(--surface);
   }
-  /* 분야 도입 문단 */
-  .group > p { color:var(--dim); font-size:.95rem; margin:0 0 .5rem var(--indent); }
 
   /* 항목 */
   .item { padding:1.75rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
-  .group > h2 + .item, .group > p + .item { border-top:none; padding-top:.75rem; }
+  .group > h2 + .item { border-top:none; padding-top:.75rem; }
   .item-head { display:flex; gap:.7rem; align-items:baseline; }
   .num {
     flex:none; min-width:1.6rem; height:1.6rem; padding:0 .35rem;
