@@ -481,7 +481,7 @@ function layout({ title, description, root, body }) {
 </header>
 ${body}
 <footer>
-  <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${root}stats/">통계 대시보드</a> · CC BY-NC-SA 4.0</p>
+  <p><a href="${REPO_URL}">GitHub 저장소</a> · <a href="${root}stats/">통계 대시보드</a></p>
 </footer>
 </div>
 </body>
