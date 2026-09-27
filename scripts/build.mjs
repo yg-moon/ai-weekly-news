@@ -654,6 +654,17 @@ ${body}`,
 // ---------- 실행 ----------
 
 const sets = Object.fromEntries(KIND_NAMES.map((k) => [k, load(k)]));
+
+// 다른 항목을 번호로 가리키면 빌드를 멈춘다. "(국내 2번)" 은 분기호가 항목을 떼어
+// 다시 묶으면 가리킬 곳이 없다. 2026-W31~W38 에서 16곳이 나와 모두 고쳤다.
+const crossRefs = Object.values(sets).flat().flatMap((p) =>
+  [...p.body.matchAll(/(?:국내|해외|AI) ?[1-5] ?번(?!째)/g)].map((m) => `${p.kind}/${p.id} "${m[0]}"`)
+);
+if (crossRefs.length) {
+  console.error(`다른 항목을 번호로 가리켰다: ${crossRefs.join(", ")}. 그 사안을 이름과 사실로 다시 쓴다.`);
+  process.exit(1);
+}
+
 const years = timeline(sets);
 const all = periods(years);
 
