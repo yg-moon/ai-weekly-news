@@ -29,7 +29,7 @@
 ```bash
 Y=${WEEK%%-*}                       # 발행한 주차의 ISO 연도
 N=${WEEK##*-W}                      # 발행한 주차 번호
-LAST=$(date -d "$Y-12-28" +%V)      # 그 해의 마지막 ISO 주차
+LAST=$(node -e 'const y=+process.argv[1],d=new Date(Date.UTC(y,0,1)).getUTCDay(),leap=y%4==0&&(y%100!=0||y%400==0);console.log(d==4||(leap&&d==3)?53:52)' "$Y")   # 그 해의 마지막 ISO 주차
 ```
 
 - 대상은 **방금 발행한 주차가 속한 분기**다. 오늘 날짜로 정하지 않는다.

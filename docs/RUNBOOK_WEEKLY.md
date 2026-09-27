@@ -370,7 +370,7 @@ echo "목록: $(curl -s "$SITE/" | grep -c "week/<WEEK>/")건"
 
 ```bash
 Y=${WEEK%%-*}                       # 예: 2026
-LAST=$(date -d "$Y-12-28" +%V)      # 그 해의 마지막 ISO 주차. 2026 이면 53
+LAST=$(node -e 'const y=+process.argv[1],d=new Date(Date.UTC(y,0,1)).getUTCDay(),leap=y%4==0&&(y%100!=0||y%400==0);console.log(d==4||(leap&&d==3)?53:52)' "$Y")   # 그 해의 마지막 ISO 주차. 2026 이면 53
 ```
 
 - 판정 기준은 **발행한 주차**다. W13 주간호는 W14 월요일에 발행되므로, 오늘 날짜로 판정하면 분기의 마지막 입력이 갖춰지기 전에 돈다.
