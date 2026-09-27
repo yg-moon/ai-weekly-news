@@ -147,7 +147,7 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --covered "용혜인,호르
 | 분야 | 주요 | 보조 |
 |---|---|---|
 | 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · KBS · SBS · MBC · JTBC · YTN · 연합뉴스 · 연합뉴스TV (15곳) | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴시스 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
-| 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times | CBS News · NBC News · USA Today · The Independent · Gulf News |
+| 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · NPR · The New York Times | Al Jazeera · CBS News · NBC News · USA Today · The Independent · Gulf News |
 | AI | 연구소 1차 출처(아래) · TechCrunch · The Verge · Ars Technica | The Register · The New Stack · BNN Bloomberg · The Information · Semafor |
 
 국내 사안은 **한국어 원문을 우선한다.** 번역을 거치지 않아 표현과 수치가 정확하고, 영문판에 없는 사안이 많다.
