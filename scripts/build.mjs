@@ -6,6 +6,17 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync } from "nod
 import { join, basename } from "node:path";
 import { marked } from "marked";
 
+// 취소선을 쓰지 않는다. GFM 은 한 문단의 물결표 두 개 사이를 취소선으로 바꾸는데,
+// 한국어는 범위를 "6억~12억" 처럼 물결표로 쓴다. 2026-W32 에서 문장 일부에 줄이 그어졌다.
+marked.use({
+  renderer: {
+    del({ raw, tokens }) {
+      const t = raw.match(/^~+/)[0];
+      return `${t}${this.parser.parseInline(tokens)}${t}`;
+    },
+  },
+});
+
 const ROOT = new URL("..", import.meta.url).pathname;
 const CONTENT = join(ROOT, "content");
 const RUNS = join(ROOT, "data", "runs");
@@ -704,6 +715,14 @@ for (const f of readdirSync(SITE, { recursive: true }))
 const cssSelectors = CSS.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\{[^{}]*\}/g, "{}");
 const unusedClasses = [...new Set([...cssSelectors.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]))]
   .filter((c) => !usedClasses.has(c) && !CONDITIONAL.has(c));
+// 취소선이 다시 생기면 빌드를 멈춘다. 마크다운 변환기를 바꾸거나 올릴 때 위 설정이 빠질 수 있다.
+const struck = readdirSync(SITE, { recursive: true }).filter(
+  (f) => f.endsWith(".html") && readFileSync(join(SITE, f), "utf8").includes("<del>")
+);
+if (struck.length) {
+  console.error(`취소선이 렌더링됐다: ${struck.join(", ")}. 물결표가 취소선으로 바뀌었는지 본다.`);
+  process.exit(1);
+}
 if (unusedClasses.length) {
   console.error(`쓰이지 않는 CSS 클래스: ${unusedClasses.join(", ")}. 마크업의 클래스 이름이 바뀌었는지 본다.`);
   process.exit(1);
