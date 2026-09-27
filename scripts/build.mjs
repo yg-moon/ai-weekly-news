@@ -641,11 +641,11 @@ ${barChart(runs, minutes, (v) => `${v}분`, "소요 시간 (분)")}
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
 
   return layout({
-    title: `비용 — ${SITE_TITLE}`,
+    title: `비용 및 시간 — ${SITE_TITLE}`,
     description: "발행물을 AI가 만드는 데 든 비용과 시간.",
     root: "../",
     body: `<p class="crumb"><a href="../">← 목록</a></p>
-<h1 class="issue-title">비용</h1>
+<h1 class="issue-title">비용 및 시간</h1>
 <p class="lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
 ${body}`,
   });
