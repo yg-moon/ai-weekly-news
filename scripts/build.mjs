@@ -334,8 +334,10 @@ const CSS = `
   .tops { width:100%; display:flex; flex-direction:column; margin-top:.2rem; }
   .top { display:flex; align-items:baseline; gap:.6rem; min-width:0; font-size:.85rem; line-height:1.6; color:var(--dim); }
   .top b { flex:none; width:1.6rem; font-size:.78rem; color:var(--accent); }
-  /* 한 줄을 넘으면 말줄임표로 자른다. 전체 제목은 본문에 있다. */
-  .top span { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* 두 줄을 넘으면 말줄임표로 자른다. 전체 제목은 본문에 있다. */
+  .top span, .toc .tt {
+    min-width:0; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
+  }
   .archive .counts { width:100%; color:var(--muted); font-size:.78rem; }
   .archive li.quarter .wk { color:var(--accent); }
   .archive li.quarter + li { border-top-color:var(--dim); }
@@ -559,8 +561,8 @@ function tabs(years, here, root) {
   return `<nav class="tabs">${yearRow}<span class="tabdiv"></span>${quarterRow}${annualChip}</nav>`;
 }
 
-// 목차와 목록에 쓰는 짧은 제목. 태그를 걷고 " — " 앞까지만 둔다.
-const shortTitle = (html) => html.replace(/<[^>]+>/g, "").split(" — ")[0].trim();
+// 목차와 목록에 쓰는 제목. 태그만 걷고 전체를 둔다. 길면 CSS 가 두 줄에서 자른다.
+const plainTitle = (html) => html.replace(/<[^>]+>/g, "").trim();
 
 // 주간호 목차. 구조화한 본문에서 분야와 항목 제목을 다시 읽는다.
 // 넓은 화면에서는 본문 왼쪽에 고정되고, 좁은 화면에서는 제목 아래에 펼쳐 둔다.
@@ -569,7 +571,7 @@ function toc(html) {
     const g = chunk.match(/^<section class="group group--(\w+)"><h2><span class="rule"><\/span>([^<]*)/);
     if (!g) return [];
     const items = [...chunk.matchAll(/<article class="item" id="([^"]+)"><div class="item-head"><span class="num">(\d+)<\/span><h3>([\s\S]*?)<\/h3>/g)]
-      .map(([, id, num, title]) => `<li><a href="#${id}"><span class="tn">${num}</span>${shortTitle(title)}</a></li>`);
+      .map(([, id, num, title]) => `<li><a href="#${id}"><span class="tn">${num}</span><span class="tt">${plainTitle(title)}</span></a></li>`);
     return items.length ? [`<div class="toc-group group--${g[1]}"><p class="toc-name">${g[2].trim()}</p><ol>${items.join("")}</ol></div>`] : [];
   });
   return groups.length ? `<nav class="toc" id="toc" aria-label="목차">${groups.join("")}</nav>` : "";
@@ -604,7 +606,7 @@ function tops(d) {
     const first = chunk.match(/^### \d+\.\s*(.+)$/m);
     const slug = KINDS[d.kind].groups[name];
     return first && slug
-      ? [`<span class="top group--${slug}"><b>${name}</b><span>${shortTitle(marked.parseInline(first[1]))}</span></span>`]
+      ? [`<span class="top group--${slug}"><b>${name}</b><span>${plainTitle(marked.parseInline(first[1]))}</span></span>`]
       : [];
   });
   return lines.length ? `<span class="tops">${lines.join("")}</span>` : "";
