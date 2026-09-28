@@ -894,7 +894,7 @@ if (badToc.length) {
 }
 
 // 분기호와 연간호의 근거 링크가 실제 항목을 가리키는지 본다. 분기호는 그 분기의
-// 주간호만, 연간호는 그 해의 분기호만 가리킨다. 앵커가 없는 항목으로 가면 브라우저는
+// 주간호와 바로 앞 분기호만, 연간호는 그 해의 분기호만 가리킨다. 앵커가 없는 항목으로 가면 브라우저는
 // 오류 없이 페이지 맨 위를 연다.
 const NAME_OF = Object.fromEntries(Object.entries(KINDS.week.groups).map(([name, slug]) => [slug, name]));
 const SOURCE = { quarter: "week", year: "quarter" };
@@ -903,8 +903,11 @@ const badLinks = ["quarter", "year"].flatMap((kind) =>
     [...d.body.matchAll(/\]\((\.\.\/\.\.\/(\w+)\/([^/)]+)\/#(\w+)-(\d+))\)/g)].flatMap(([, href, k, id, slug, num]) => {
       const target = sets[k]?.find((t) => t.id === id);
       const count = target?.n[NAME_OF[slug]] ?? 0;
-      const inside = k === SOURCE[kind] && placeOf(target ?? { kind: k, id }).year === placeOf(d).year &&
-        (kind === "year" || placeOf(target ?? { kind: k, id }).q === placeOf(d).q);
+      const at = placeOf({ kind: k, id }), here = placeOf(d);
+      const prev = here.q > 1 ? `${here.year}-Q${here.q - 1}` : `${here.year - 1}-Q4`;
+      const inside = k === SOURCE[kind]
+        ? at.year === here.year && (kind === "year" || at.q === here.q)
+        : kind === "quarter" && k === "quarter" && id === prev;
       return target && inside && Number(num) <= count ? [] : [`${d.id} → ${href}`];
     })
   )
