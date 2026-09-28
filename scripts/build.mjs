@@ -467,7 +467,7 @@ function layout({ title, description, root, body }) {
 </header>
 ${body}
 <footer>
-  <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">통계 대시보드</a></p>
+  <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">제작 기록</a></p>
 </footer>
 </div>
 </body>
@@ -797,11 +797,11 @@ ${more}`
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
 
   return layout({
-    title: view.q || view.year ? `비용 및 시간 · ${view.label} — ${SITE_TITLE}` : `비용 및 시간 — ${SITE_TITLE}`,
+    title: view.q || view.year ? `제작 기록 · ${view.label} — ${SITE_TITLE}` : `제작 기록 — ${SITE_TITLE}`,
     description: `발행물을 AI가 만드는 데 든 비용과 시간. ${view.label}.`,
     root,
     body: `<p class="crumb"><a href="${root}">← 목록</a></p>
-<h1 class="issue-title">비용 및 시간</h1>
+<h1 class="issue-title">제작 기록</h1>
 <p class="lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
 ${statsTabs(views, view, root)}
 ${views.length > 1 ? `<h2 class="list">${view.label}</h2>` : ""}

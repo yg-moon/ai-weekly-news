@@ -20,7 +20,7 @@
 ## 제작 방식
 
 - 사람이 설계한 절차에 따라 AI가 수집하고 요약합니다. 각 항목의 출처 링크에서 원문을 확인할 수 있습니다.
-- 발행마다 든 비용과 시간은 [통계 대시보드](https://yg-moon.github.io/ai-weekly-news/stats/)에 공개합니다.
+- 발행마다 든 비용과 시간은 [제작 기록](https://yg-moon.github.io/ai-weekly-news/stats/) 페이지에 공개합니다.
 
 ## 저장소 구성
 
