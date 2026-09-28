@@ -347,7 +347,21 @@ const CSS = `
   }
 
   /* 통계 페이지 */
-  .lede { color:var(--dim); margin:0 0 1.75rem; }
+  .period-now { margin:0 0 .25rem; font-size:.85rem; color:var(--muted); }
+  h2.sec { font-size:1.15rem; margin:2rem 0 .3rem; }
+  .sec-lede { color:var(--dim); font-size:.9rem; margin:0 0 1.25rem; }
+  .ogs { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+  .og-h { margin:0 0 .5rem; font-weight:700; font-size:.9rem; color:var(--accent); }
+  .og-h span { margin-left:.4rem; font-weight:400; font-size:.75rem; color:var(--muted); }
+  .or { display:grid; grid-template-columns:6.5rem 1fr 3.6rem; gap:.5rem; align-items:center; padding:.15rem 0; font-size:.8rem; }
+  .on { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .ob { height:.5rem; border-radius:3px; background:var(--sunken); overflow:hidden; }
+  .ob i { display:block; height:100%; background:var(--accent); }
+  .ov { text-align:right; font-variant-numeric:tabular-nums; }
+  .ov small { margin-left:.3rem; font-size:.7rem; color:var(--muted); }
+  .om summary { margin-top:.35rem; font-size:.75rem; color:var(--muted); cursor:pointer; }
+  .om[open] summary { margin-bottom:.3rem; }
+  @media (max-width:40rem) { .ogs { grid-template-columns:1fr; gap:1.75rem; } }
   .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin:0 0 2.25rem; }
   .tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:.8rem 1rem; }
   .tile .k { display:block; font-size:.75rem; color:var(--muted); }
@@ -470,7 +484,7 @@ function layout({ title, description, root, body }) {
 </header>
 ${body}
 <footer>
-  <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">제작 기록</a></p>
+  <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">통계</a></p>
 </footer>
 </div>
 </body>
@@ -760,6 +774,40 @@ function statsTabs(views, here, root) {
     quarters.length ? div + quarters.map((v) => chip(v, "tab", `Q${v.q}`)).join("") : ""}</nav>`;
 }
 
+// 인용 매체. 주간호 항목의 출처 줄에 오른 매체를 분야별로 센다. 한 항목에서 같은 매체는
+// 한 번만 센다. 분기호·연간호의 출처는 주간호 링크라 세지 않는다.
+const OUTLETS_SHOWN = 6;
+function outletStats(view) {
+  const docs = sets.week.filter((d) => {
+    const p = placeOf(d);
+    return (!view.year || p.year === view.year) && (!view.q || p.q === view.q);
+  });
+  if (!docs.length) return "";
+  const groups = Object.entries(KINDS.week.groups).map(([name, slug]) => {
+    const count = new Map();
+    let items = 0;
+    for (const d of docs) {
+      const sec = d.body.split(/^## /m).find((c) => c.startsWith(name));
+      for (const it of (sec ?? "").split(/^### /m).slice(1)) {
+        items++;
+        const line = it.match(/\*\*출처\*\*\s*:?\s*(.*)/)?.[1] ?? "";
+        for (const n of new Set([...line.matchAll(/\[([^\]]+)\]\(/g)].map((m) => m[1]).filter((n) => !/^\d+$/.test(n))))
+          count.set(n, (count.get(n) ?? 0) + 1);
+      }
+    }
+    const list = [...count].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const max = list[0]?.[1] ?? 1;
+    const row = ([n, v]) => `<div class="or"><span class="on">${n}</span><span class="ob"><i style="width:${Math.max(2, Math.round((v / max) * 100))}%"></i></span><span class="ov">${v}<small>${Math.round((v / items) * 100)}%</small></span></div>`;
+    const rest = list.slice(OUTLETS_SHOWN);
+    return `<div class="og group--${slug}"><p class="og-h">${name}<span>항목 ${items}건 · 매체 ${list.length}곳</span></p>
+${list.slice(0, OUTLETS_SHOWN).map(row).join("")}
+${rest.length ? `<details class="om"><summary>그 밖 ${rest.length}곳</summary>${rest.map(row).join("")}</details>` : ""}</div>`;
+  });
+  return `<h2 class="sec">인용 매체</h2>
+<p class="sec-lede">주간호 항목의 출처에 오른 매체입니다. 한 항목에서 같은 매체는 한 번만 셉니다. 비율은 그 분야 항목 가운데 해당 매체를 인용한 항목의 비율입니다. AI 는 보도량을 TechCrunch·The Verge 두 곳에서 세기 때문에 두 매체의 비율이 높습니다.</p>
+<div class="ogs">${groups.join("")}</div>`;
+}
+
 function renderStats(views, view) {
   const { runs } = view;
   const root = "../".repeat(view.path.split("/").filter(Boolean).length);
@@ -800,15 +848,17 @@ ${more}`
     : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
 
   return layout({
-    title: view.q || view.year ? `제작 기록 · ${view.label} — ${SITE_TITLE}` : `제작 기록 — ${SITE_TITLE}`,
-    description: `발행물을 AI가 만드는 데 든 비용과 시간. ${view.label}.`,
+    title: view.q || view.year ? `통계 · ${view.label} — ${SITE_TITLE}` : `통계 — ${SITE_TITLE}`,
+    description: `발행물을 만드는 데 든 비용과 시간, 인용한 매체. ${view.label}.`,
     root,
     body: `<p class="crumb"><a href="${root}">← 목록</a></p>
-<h1 class="issue-title">제작 기록</h1>
-<p class="lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
+<h1 class="issue-title">통계</h1>
 ${statsTabs(views, view, root)}
-${views.length > 1 ? `<h2 class="list">${view.label}</h2>` : ""}
-${body}`,
+${view.year ? `<p class="period-now">${view.label}</p>` : ""}
+<h2 class="sec">발행 비용과 시간</h2>
+<p class="sec-lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
+${body}
+${outletStats(view)}`,
   });
 }
 
