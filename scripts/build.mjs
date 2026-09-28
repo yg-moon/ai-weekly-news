@@ -890,6 +890,21 @@ if (longTitles.length) {
   process.exit(1);
 }
 
+// 한 이름은 한 표기로만 쓴다(주간 런북 10절). AI 기업과 AI 모델·제품은 영문, 빅테크는 한글이다.
+// 출처 줄은 매체 이름이라 보지 않는다. 솔·루나·뮤즈처럼 일반어와 겹치는 이름은 오탐이 나서 뺐다.
+const HANGUL_AI = /(?<![가-힣])(앤트로픽|오픈AI|클로드|오퍼스|소네트|하이쿠|페이블|미토스|제미나이|젬마|챗GPT|코덱스|코파일럿|딥마인드|딥시크|미스트랄|허깅페이스|퍼플렉시티|알파폴드|알파지놈|싱킹머신즈)/g;
+const LATIN_BIGTECH = /\b(Google|Microsoft|Meta|NVIDIA|Nvidia|Apple|Amazon|SpaceX)\b(?! [A-Z0-9])/g;
+const mixedNames = Object.values(sets).flat().flatMap((p) =>
+  p.body.split("\n")
+    .filter((l) => !/^- \*\*(출처|근거)\*\*/.test(l))
+    .flatMap((l) => [...l.matchAll(HANGUL_AI), ...l.matchAll(LATIN_BIGTECH)])
+    .map((m) => `${p.kind}/${p.id} "${m[0]}"`)
+);
+if (mixedNames.length) {
+  console.error(`이름 표기가 규칙과 다르다: ${mixedNames.join(", ")}`);
+  process.exit(1);
+}
+
 const years = timeline(sets);
 const all = periods(years);
 
