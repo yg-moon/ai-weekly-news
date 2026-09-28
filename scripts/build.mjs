@@ -925,7 +925,7 @@ if (badLinks.length) {
 // - 1~3번 흐름은 서로 다른 주(연간호는 분기) 둘 이상에 근거가 있다.
 // - 한 항목의 근거는 주마다 하나다. 같은 주 항목을 더 붙여 흐름을 키우지 않는다.
 // - 한 주간호 항목은 한 번만 쓴다. 한 사안을 흐름과 단발에 나눠 싣지 않는다.
-// - 전개는 여섯 문장, 무슨 일은 한 문장까지다.
+// - 전개는 여섯 문장, 무슨 일은 한 문장까지다. 전개는 두 문단으로 나눈다.
 const sentences = (t) => (t.match(/다\.["”’')]*(?=\s|$)/g) ?? []).length;
 const badShape = ["quarter", "year"].flatMap((kind) =>
   sets[kind].flatMap((d) => {
@@ -935,7 +935,8 @@ const badShape = ["quarter", "year"].flatMap((kind) =>
       for (const item of chunk.split(/^### /m).slice(1)) {
         const num = Number(item.match(/^(\d+)\./)?.[1]);
         const at = `${field} ${num}`;
-        const line = (label) => item.match(new RegExp(`\\*\\*${label}\\*\\*\\s*:?\\s*(.*)`))?.[1] ?? "";
+        // 필드는 다음 필드 줄 앞까지다. 전개처럼 문단을 나눈 필드도 통째로 읽는다.
+        const line = (label) => item.match(new RegExp(`\\*\\*${label}\\*\\*\\s*:?\\s*([\\s\\S]*?)(?=\\n- \\*\\*|$)`))?.[1] ?? "";
         const links = [...line("근거").matchAll(/\]\(\.\.\/\.\.\/(\w+)\/([^/)]+)\/#(\w+-\d+)\)/g)].map(([, k, id, a]) => ({ k, id, a }));
         const own = links.filter((l) => l.k === SOURCE[kind]);
         const ids = own.map((l) => l.id);
@@ -947,6 +948,7 @@ const badShape = ["quarter", "year"].flatMap((kind) =>
           else seen.set(key, at);
         }
         if (sentences(line("전개")) > 6) out.push(`${at}: 전개가 ${sentences(line("전개"))}문장이다(6까지)`);
+        if (line("전개") && !/\n\s*\n/.test(line("전개").trim())) out.push(`${at}: 전개가 한 문단이다(두 문단으로 나눈다)`);
         if (sentences(line("무슨 일")) > 1) out.push(`${at}: 무슨 일이 ${sentences(line("무슨 일"))}문장이다(1까지)`);
       }
     }
