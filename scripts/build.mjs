@@ -976,8 +976,8 @@ if (badToc.length) {
 }
 
 // 분기호와 연간호의 근거 링크가 실제 항목을 가리키는지 본다. 분기호는 그 분기의
-// 주간호와 바로 앞 분기호만, 연간호는 그 해의 분기호만 가리킨다. 앵커가 없는 항목으로 가면 브라우저는
-// 오류 없이 페이지 맨 위를 연다.
+// 주간호와 앞선 분기호만, 연간호는 그 해의 분기호와 앞선 연간호만 가리킨다. 앵커가 없는 항목으로 가면
+// 브라우저는 오류 없이 페이지 맨 위를 연다.
 const NAME_OF = Object.fromEntries(Object.entries(KINDS.week.groups).map(([name, slug]) => [slug, name]));
 const SOURCE = { quarter: "week", year: "quarter" };
 const badLinks = ["quarter", "year"].flatMap((kind) =>
@@ -986,10 +986,10 @@ const badLinks = ["quarter", "year"].flatMap((kind) =>
       const target = sets[k]?.find((t) => t.id === id);
       const count = target?.n[NAME_OF[slug]] ?? 0;
       const at = placeOf({ kind: k, id }), here = placeOf(d);
-      const prev = here.q > 1 ? `${here.year}-Q${here.q - 1}` : `${here.year - 1}-Q4`;
+      const earlier = Number(at.year) < Number(here.year) || (at.year === here.year && at.q < here.q);
       const inside = k === SOURCE[kind]
         ? at.year === here.year && (kind === "year" || at.q === here.q)
-        : kind === "quarter" && k === "quarter" && id === prev;
+        : k === kind && earlier;
       return target && inside && Number(num) <= count ? [] : [`${d.id} → ${href}`];
     })
   )
@@ -1004,6 +1004,7 @@ if (badLinks.length) {
 // - 1~3번 흐름은 서로 다른 주(연간호는 분기) 둘 이상에 근거가 있다.
 // - 한 항목의 근거는 주마다 하나다. 같은 주 항목을 더 붙여 흐름을 키우지 않는다.
 // - 한 주간호 항목은 한 번만 쓴다. 한 사안을 흐름과 단발에 나눠 싣지 않는다.
+// - 지난 분기호(연간호는 지난 연간호) 링크는 흐름에만, 근거 맨 앞에 하나까지 단다.
 // - 전개는 여섯 문장, 무슨 일은 한 문장까지다. 전개는 두 문단으로 나눈다.
 const sentences = (t) => (t.match(/다\.["”’')]*(?=\s|$)/g) ?? []).length;
 const badShape = ["quarter", "year"].flatMap((kind) =>
@@ -1018,6 +1019,10 @@ const badShape = ["quarter", "year"].flatMap((kind) =>
         const line = (label) => item.match(new RegExp(`\\*\\*${label}\\*\\*\\s*:?\\s*([\\s\\S]*?)(?=\\n- \\*\\*|$)`))?.[1] ?? "";
         const links = [...line("근거").matchAll(/\]\(\.\.\/\.\.\/(\w+)\/([^/)]+)\/#(\w+-\d+)\)/g)].map(([, k, id, a]) => ({ k, id, a }));
         const own = links.filter((l) => l.k === SOURCE[kind]);
+        const past = links.filter((l) => l.k === kind);
+        if (past.length > 1) out.push(`${at}: 지난 ${kind === "quarter" ? "분기호" : "연간호"} 링크가 ${past.length}개다(하나까지)`);
+        if (past.length && links[0].k !== kind) out.push(`${at}: 지난 ${kind === "quarter" ? "분기호" : "연간호"} 링크가 근거 맨 앞이 아니다`);
+        if (past.length && num > 3) out.push(`${at}: 단발에 지난 ${kind === "quarter" ? "분기호" : "연간호"} 링크가 있다`);
         const ids = own.map((l) => l.id);
         if (new Set(ids).size !== ids.length) out.push(`${at}: 근거에 같은 ${kind === "quarter" ? "주" : "분기"}가 두 번 있다`);
         if (num <= 3 && new Set(ids).size < 2) out.push(`${at}: 흐름인데 근거가 ${kind === "quarter" ? "두 주" : "두 분기"}에 걸치지 않는다`);
