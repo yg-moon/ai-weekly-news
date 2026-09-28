@@ -804,7 +804,7 @@ ${list.slice(0, OUTLETS_SHOWN).map(row).join("")}
 ${rest.length ? `<details class="om"><summary>그 밖 ${rest.length}곳</summary>${rest.map(row).join("")}</details>` : ""}</div>`;
   });
   return `<h2 class="sec">인용 매체</h2>
-<p class="sec-lede">주간호 항목의 출처에 오른 매체입니다. 한 항목에서 같은 매체는 한 번만 셉니다. 비율은 그 분야 항목 가운데 해당 매체를 인용한 항목의 비율입니다. AI 는 보도량을 TechCrunch·The Verge 두 곳에서 세기 때문에 두 매체의 비율이 높습니다.</p>
+<p class="sec-lede">주간호 항목에서 출처로 인용한 매체의 목록입니다.</p>
 <div class="ogs">${groups.join("")}</div>`;
 }
 
@@ -855,8 +855,8 @@ ${more}`
 <h1 class="issue-title">통계</h1>
 ${statsTabs(views, view, root)}
 ${view.year ? `<p class="period-now">${view.label}</p>` : ""}
-<h2 class="sec">발행 비용과 시간</h2>
-<p class="sec-lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 사용한 토큰을 API 정가로 환산한 값이며 실제 청구액이 아닙니다.</p>
+<h2 class="sec">발행 비용 및 시간</h2>
+<p class="sec-lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 API 정가 환산이며 실제 청구액이 아닙니다.</p>
 ${body}
 ${outletStats(view)}`,
   });
