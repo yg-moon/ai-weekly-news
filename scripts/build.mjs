@@ -876,6 +876,20 @@ if (crossRefs.length) {
   process.exit(1);
 }
 
+// 항목 제목은 한 사안을 짧게 쓴다(주간 런북 11절). 한글은 1자, 영문·숫자·공백은 반 자로 세어
+// 26자를 넘거나 " — " 부제를 달면 빌드를 멈춘다.
+const titleWidth = (t) => [...t].reduce((w, c) => w + (/[\uac00-\ud7a3]/.test(c) ? 1 : 0.5), 0);
+const longTitles = Object.values(sets).flat().flatMap((p) =>
+  [...p.body.matchAll(/^### \d+\.\s*(.+)$/gm)]
+    .map((m) => m[1].trim())
+    .filter((t) => titleWidth(t) > 26 || t.includes(" — "))
+    .map((t) => `${p.kind}/${p.id} "${t}" (${titleWidth(t)}자)`)
+);
+if (longTitles.length) {
+  console.error(`제목이 길거나 부제가 있다:\n  ${longTitles.join("\n  ")}`);
+  process.exit(1);
+}
+
 const years = timeline(sets);
 const all = periods(years);
 
