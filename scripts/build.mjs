@@ -917,6 +917,44 @@ if (badLinks.length) {
   process.exit(1);
 }
 
+// 분기호와 연간호의 항목 모양을 본다. 2026-Q2·Q3 첫 발행에서 흐름이 주제 묶음으로
+// 불어나고 전개가 연표가 된 것을 막는다(분기 런북 3·5절).
+// - 1~3번 흐름은 서로 다른 주(연간호는 분기) 둘 이상에 근거가 있다.
+// - 한 항목의 근거는 주마다 하나다. 같은 주 항목을 더 붙여 흐름을 키우지 않는다.
+// - 한 주간호 항목은 한 번만 쓴다. 한 사안을 흐름과 단발에 나눠 싣지 않는다.
+// - 전개는 여섯 문장, 무슨 일은 한 문장까지다.
+const sentences = (t) => (t.match(/다\.["”’')]*(?=\s|$)/g) ?? []).length;
+const badShape = ["quarter", "year"].flatMap((kind) =>
+  sets[kind].flatMap((d) => {
+    const out = [], seen = new Map();
+    for (const chunk of d.body.split(/^## /m).slice(1)) {
+      const field = chunk.split("\n")[0].trim();
+      for (const item of chunk.split(/^### /m).slice(1)) {
+        const num = Number(item.match(/^(\d+)\./)?.[1]);
+        const at = `${field} ${num}`;
+        const line = (label) => item.match(new RegExp(`\\*\\*${label}\\*\\*\\s*:?\\s*(.*)`))?.[1] ?? "";
+        const links = [...line("근거").matchAll(/\]\(\.\.\/\.\.\/(\w+)\/([^/)]+)\/#(\w+-\d+)\)/g)].map(([, k, id, a]) => ({ k, id, a }));
+        const own = links.filter((l) => l.k === SOURCE[kind]);
+        const ids = own.map((l) => l.id);
+        if (new Set(ids).size !== ids.length) out.push(`${at}: 근거에 같은 ${kind === "quarter" ? "주" : "분기"}가 두 번 있다`);
+        if (num <= 3 && new Set(ids).size < 2) out.push(`${at}: 흐름인데 근거가 ${kind === "quarter" ? "두 주" : "두 분기"}에 걸치지 않는다`);
+        for (const l of own) {
+          const key = `${l.id}#${l.a}`;
+          if (seen.has(key)) out.push(`${at}: ${key} 를 ${seen.get(key)} 에서 이미 썼다`);
+          else seen.set(key, at);
+        }
+        if (sentences(line("전개")) > 6) out.push(`${at}: 전개가 ${sentences(line("전개"))}문장이다(6까지)`);
+        if (sentences(line("무슨 일")) > 1) out.push(`${at}: 무슨 일이 ${sentences(line("무슨 일"))}문장이다(1까지)`);
+      }
+    }
+    return out.map((m) => `${d.id} ${m}`);
+  })
+);
+if (badShape.length) {
+  console.error(`분기호·연간호 항목이 런북과 맞지 않는다:\n  ${badShape.join("\n  ")}`);
+  process.exit(1);
+}
+
 // ---------- 쓰이지 않는 스타일 ----------
 // CSS 에 정의된 클래스가 어느 페이지에도 없으면 빌드를 멈춘다. 마크업의 클래스 이름이
 // 바뀌면 스타일이 오류 없이 떨어져 나간다. 52dcefa 가 번호 배지를 그렇게 지웠다.
