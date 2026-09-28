@@ -165,9 +165,10 @@ function buildItem(slug, num, title, listHtml) {
   if (fields["전개"]) parts.push(`<div class="what">${ps("전개")}</div>`);
   if (fields["왜 중요한가"])
     parts.push(`<div class="why"><p class="lbl">왜 중요한가</p>${ps("왜 중요한가")}</div>`);
+  // 분기호·연간호의 근거 링크도 화면에서는 주간호와 같이 "출처"로 부른다.
   for (const label of ["출처", "근거"])
     if (fields[label])
-      parts.push(`<p class="src"><span class="lbl">${label}</span>${sources(fields[label].join(" "))}</p>`);
+      parts.push(`<p class="src"><span class="lbl">출처</span>${sources(fields[label].join(" "))}</p>`);
 
   // 분기 인사이트가 개별 항목을 가리킨다. 앵커는 `<분야>-<번호>` 다.
   return `<article class="item" id="${slug}-${num}">${parts.join("")}</article>`;
