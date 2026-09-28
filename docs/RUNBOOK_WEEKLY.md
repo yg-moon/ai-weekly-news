@@ -230,7 +230,7 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --covered "용혜인,호르
 - 한 이름은 한 표기로만 쓴다. 영문과 한글이 섞이면 같은 대상인지 한 번 더 확인하게 된다.
   - **AI 기업과 AI 모델·제품·칩은 영문으로 쓴다.** 예: Anthropic, OpenAI, DeepMind, xAI, DeepSeek, Mistral, Hugging Face, Cursor, Claude, Opus, Fable, Mythos, ChatGPT, Codex, GPT-6 Sol, Gemini, Gemma, Muse, Grok, Llama, Copilot, Blackwell. 요금제와 모델 등급도 원래 이름대로 쓴다(Pro·Max, Flash, Instant).
   - **빅테크와 그 밖의 회사는 한글로 쓴다.** 예: 구글, 메타, 마이크로소프트, 애플, 아마존, 엔비디아, 스페이스X, 세일즈포스. 그래서 "구글의 Gemini", "구글 DeepMind" 처럼 쓴다.
-  - 사람 이름은 한글로 쓴다(올트먼, 아모데이).
+  - 사람 이름은 한글로 쓰고 연합뉴스 표기를 따른다(올트먼, 아모데이, 허사비스, 베선트). 앞선 호에 나온 사람은 그 표기를 그대로 쓴다.
   - 영문 이름 뒤 조사는 띄우지 않는다("OpenAI는", "xAI의").
   - 빌드가 자주 섞이는 표기를 검사한다. 목록에 없는 이름도 같은 규칙을 따른다.
 - 확인하지 못한 것은 확인하지 못했다고 쓴다. 그럴듯하게 채워 넣지 않는다.
