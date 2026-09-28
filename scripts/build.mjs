@@ -617,7 +617,7 @@ function renderList(years, p, root, home) {
     .map(
       (d) => `
   <li class="${d.kind}"><a href="${root}${d.kind}/${d.id}/">
-    <span class="wk">${d.id}${d.kind === "quarter" ? ` ${KINDS[d.kind].label}` : ""}</span>
+    <span class="wk">${d.id}</span>
     <span class="period">${period(d.meta)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
     ${tops(d)}
