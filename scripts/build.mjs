@@ -2,7 +2,7 @@
 // data/runs/*.json → site/stats/
 // 프론트매터는 평면 key: value 만 지원한다. 그 이상이 필요해지면 그때 파서를 바꾼다.
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync, cpSync } from "node:fs";
 import { join, basename } from "node:path";
 import { marked } from "marked";
 
@@ -25,6 +25,8 @@ const SITE = join(ROOT, "site");
 const SITE_TITLE = "ai-weekly-news";
 const SITE_TAGLINE = "지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다.";
 const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
+// 링크 미리보기 이미지는 절대 주소여야 한다.
+const SITE_URL = "https://yg-moon.github.io/ai-weekly-news/";
 
 // 발행물의 종류. 순서가 곧 탭 순서다.
 const KINDS = {
@@ -174,6 +176,11 @@ function buildItem(slug, num, title, listHtml) {
   return `<article class="item" id="${slug}-${num}">${parts.join("")}</article>`;
 }
 
+const KIND_HEADS = {
+  flow: `<p class="kind-h"><b>흐름</b>여러 주에 걸쳐 이어진 일</p>`,
+  single: `<p class="kind-h"><b>단발</b>흐름으로 묶이지 않은 큰 일</p>`,
+};
+
 function structure(html, groups) {
   // 구획으로 먼저 자른다. 항목 앵커에 구획 이름이 들어가므로 항목보다 구획을 먼저 알아야 한다.
   const chunks = html.split(/(?=<h2[^>]*>)/);
@@ -185,9 +192,20 @@ function structure(html, groups) {
       const slug = groups[name] ?? "other";
 
       // 항목: <h3>N. 제목</h3> + 바로 뒤 <ul>
+      // 분기호·연간호는 흐름(전개)과 단발(날짜 없는 무슨 일)이 번호를 이어 쓴다. 번호가
+      // 한 줄 순위로 읽히지 않게 각 묶음의 첫 항목 앞에 이름을 단다.
+      const seen = new Set();
       const body = chunk.slice(m[0].length).replace(
         /<h3[^>]*>\s*(\d+)\.\s*([\s\S]*?)<\/h3>\s*<ul>([\s\S]*?)<\/ul>/g,
-        (whole, num, title, list) => buildItem(slug, num, title.trim(), list) ?? whole
+        (whole, num, title, list) => {
+          const item = buildItem(slug, num, title.trim(), list);
+          if (!item) return whole;
+          const k = /<strong>전개<\/strong>/.test(list) ? "flow"
+            : !/<strong>날짜<\/strong>/.test(list) ? "single" : null;
+          if (!k || seen.has(k)) return item;
+          seen.add(k);
+          return KIND_HEADS[k] + item;
+        }
       );
 
       const n = (body.match(/class="item"/g) ?? []).length;
@@ -233,6 +251,9 @@ const CSS = `
   header.site { padding-bottom:1.5rem; border-bottom:1px solid var(--line); margin-bottom:2.25rem; }
   header.site h1 { margin:0 0 .4rem; font-size:1.4rem; letter-spacing:-.02em; }
   header.site h1 a { color:inherit; text-decoration:none; }
+  /* 발행물과 통계 페이지는 사이트 이름만 둔다. 소개는 목록에만 있다. */
+  header.site.compact { padding-bottom:.9rem; margin-bottom:1.75rem; }
+  header.site.compact h1 { margin:0; font-size:1.05rem; }
   .tagline { margin:0 0 .8rem; color:var(--dim); font-size:.95rem; }
   .badges { margin:0; display:flex; flex-wrap:wrap; gap:.4rem; }
   .badge {
@@ -268,6 +289,12 @@ const CSS = `
   /* 항목 */
   .item { padding:1.75rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
   .group > h2 + .item { border-top:none; padding-top:.75rem; }
+  /* 분기호·연간호의 흐름·단발 이름. 단발 이름이 두 묶음을 가르는 선을 갖는다. */
+  .kind-h { margin:0; font-size:.78rem; color:var(--muted); }
+  .kind-h b { color:var(--accent); margin-right:.5rem; }
+  .group > h2 + .kind-h { margin-top:.5rem; }
+  .item + .kind-h { border-top:1px solid var(--line); padding-top:1.75rem; }
+  .kind-h + .item { border-top:none; padding-top:.6rem; }
   /* 번호 배지는 제목 첫 줄의 가운데에 맞춘다. 제목 줄 높이는 1.2rem × 1.55 다. */
   .item-head { display:flex; gap:.7rem; align-items:flex-start; }
   .num {
@@ -396,6 +423,8 @@ const CSS = `
   .chart.wide svg { width:auto; height:auto; overflow:hidden; }
   .chart .yaxis { flex:none; }
   .chart .scroll { overflow-x:auto; direction:rtl; flex:1; min-width:0; }
+  /* 왼쪽 끝이 잘린 라벨이 버그처럼 보이지 않게 흐리게 사라지게 한다. 더 있다는 표시다. */
+  .chart .scroll { -webkit-mask-image:linear-gradient(to right, transparent, #000 1.5rem); mask-image:linear-gradient(to right, transparent, #000 1.5rem); }
   .chart .scroll svg { direction:ltr; }
   .runs tr.old { display:none; }
   .more-toggle { position:absolute; opacity:0; pointer-events:none; }
@@ -445,6 +474,13 @@ const CSS = `
     .item h3 a.to-toc { pointer-events:none; }
   }
 
+  /* 이전 호·다음 호 */
+  .pager { display:flex; gap:1rem; margin-top:3.5rem; padding-top:1.25rem; border-top:1px solid var(--line); }
+  .pager a { display:flex; flex-direction:column; text-decoration:none; color:var(--text); font-weight:700; font-variant-numeric:tabular-nums; line-height:1.5; }
+  .pager a:hover { color:var(--accent); }
+  .pager small { font-size:.75rem; font-weight:400; color:var(--muted); }
+  .pager .next { margin-left:auto; text-align:right; }
+
   footer {
     margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line);
     font-size:.82rem; color:var(--muted);
@@ -455,7 +491,8 @@ const CSS = `
 
   @media (max-width:30rem) {
     :root { --indent:0rem; --pad:.9rem; }
-    .why { margin-right:0; }
+    /* 왼쪽처럼 오른쪽도 본문 밖으로 같은 만큼 낸다. 글은 본문과 같은 폭이다. */
+    .why { margin-right:calc((var(--pad) + 3px) * -1); }
     /* 좁은 화면은 본문을 들여 쓰지 않는다. 배지를 제목 글 속에 띄워 제목 둘째 줄이
        본문과 같은 왼쪽 선에서 시작하게 한다. */
     .item-head { display:block; margin-bottom:.2rem; }
@@ -466,7 +503,7 @@ const CSS = `
   }
 `;
 
-function layout({ title, description, root, body }) {
+function layout({ title, description, root, body, full = false }) {
   return `<!doctype html>
 <html lang="ko">
 <head>
@@ -477,18 +514,24 @@ function layout({ title, description, root, body }) {
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${description}">
 <meta property="og:type" content="website">
+<meta property="og:image" content="${SITE_URL}og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="${root}favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="${root}apple-touch-icon.png">
 <style>${CSS}</style>
 </head>
 <body>
 <div class="wrap">
-<header class="site">
+${full ? `<header class="site">
   <h1><a href="${root}">${SITE_TITLE}</a></h1>
   <p class="tagline">${SITE_TAGLINE}</p>
   <p class="badges">
     <span class="badge">매주 월요일 오전 8시 발행 (KST)</span>
     <span class="badge">AI 수집 및 요약 · 모든 항목에 출처 링크</span>
   </p>
-</header>
+</header>` : `<header class="site compact"><h1><a href="${root}">${SITE_TITLE}</a></h1></header>`}
 ${body}
 <footer>
   <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">통계</a></p>
@@ -598,6 +641,17 @@ function toc(html) {
   return groups.length ? `<nav class="toc" id="toc" aria-label="목차">${groups.join("")}</nav>` : "";
 }
 
+// 같은 종류의 바로 앞뒤 발행물. ID 는 문자열 순서가 곧 시간 순서다.
+function pager(d) {
+  const ids = sets[d.kind].map((x) => x.id).sort();
+  const i = ids.indexOf(d.id);
+  const [prev, next] = [ids[i - 1], ids[i + 1]];
+  if (!prev && !next) return "";
+  return `<nav class="pager" aria-label="이전 호와 다음 호">${
+    prev ? `<a class="prev" href="../${prev}/"><small>이전 호</small>← ${prev}</a>` : ""}${
+    next ? `<a class="next" href="../${next}/"><small>다음 호</small>${next} →</a>` : ""}</nav>`;
+}
+
 function renderDoc(d, years) {
   // 되돌아가는 곳은 그 발행물이 속한 분기 목록이다. 연간호는 분기가 없으므로
   // 그 해에서 가장 나중 분기로 보낸다.
@@ -611,7 +665,8 @@ ${back ? `<p class="crumb"><a href="../../${listPath(back)}">← ${listTitle(bac
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
 ${nav}
-${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)([\s\S]*?)<\/h3>/g, '$1<a class="to-toc" href="#toc">$2</a></h3>') : main}`;
+${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)([\s\S]*?)<\/h3>/g, '$1<a class="to-toc" href="#toc">$2</a></h3>') : main}
+${pager(d)}`;
   return layout({
     title: `${pageTitle(d)} — ${SITE_TITLE}`,
     description: `${d.id} (${period(d.meta)}) ${KINDS[d.kind].suffix}. ${counts(d)}.`,
@@ -652,6 +707,7 @@ function renderList(years, p, root, home) {
     title: home ? `${SITE_TITLE} — 주간 뉴스 브리핑` : `${listTitle(p)} — ${SITE_TITLE}`,
     description: SITE_TAGLINE,
     root,
+    full: true,
     body: `${tabs(years, p, root)}\n<h2 class="list">${listTitle(p)}</h2>\n<ul class="archive">${cards}\n</ul>`,
   });
 }
@@ -918,6 +974,8 @@ const all = periods(years);
 
 rmSync(SITE, { recursive: true, force: true });
 mkdirSync(SITE, { recursive: true });
+// 파비콘과 링크 미리보기 이미지. 만든 방법은 static/README.md 에 있다.
+cpSync(join(ROOT, "static"), SITE, { recursive: true, filter: (f) => !f.endsWith("README.md") });
 
 // 발행물 경로는 종류별로 그대로 둔다. 이미 나간 주소가 깨지면 안 된다.
 for (const kind of KIND_NAMES)
@@ -943,6 +1001,7 @@ writeFileSync(
         title: `${SITE_TITLE} — 주간 뉴스 브리핑`,
         description: SITE_TAGLINE,
         root: "./",
+        full: true,
         body: `<div class="empty"><p>아직 발행된 ${KINDS.week.label}가 없습니다.</p></div>`,
       })
 );
