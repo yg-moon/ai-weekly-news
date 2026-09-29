@@ -361,6 +361,7 @@ const CSS = `
   .ov small { margin-left:.3rem; font-size:.7rem; color:var(--muted); }
   .om summary { margin-top:.35rem; font-size:.75rem; color:var(--muted); cursor:pointer; }
   .om[open] summary { margin-bottom:.3rem; }
+  .og-note { margin:1.25rem 0 0; font-size:.8rem; color:var(--muted); }
   @media (max-width:40rem) { .ogs { grid-template-columns:1fr; gap:1.75rem; } }
   .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin:0 0 2.25rem; }
   .tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:.8rem 1rem; }
@@ -805,7 +806,8 @@ ${rest.length ? `<details class="om"><summary>그 밖 ${rest.length}곳</summary
   });
   return `<h2 class="sec">인용 매체</h2>
 <p class="sec-lede">주간호 항목에서 출처로 인용한 매체의 목록입니다.</p>
-<div class="ogs">${groups.join("")}</div>`;
+<div class="ogs">${groups.join("")}</div>
+<p class="og-note">숫자는 그 매체를 출처로 단 항목 수, 퍼센트는 그 분야 항목 가운데 차지하는 비율입니다. 한 항목이 여러 매체를 출처로 달기 때문에 퍼센트를 더하면 100%를 넘습니다.</p>`;
 }
 
 function renderStats(views, view) {
