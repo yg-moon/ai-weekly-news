@@ -268,13 +268,14 @@ const CSS = `
   /* 항목 */
   .item { padding:1.75rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
   .group > h2 + .item { border-top:none; padding-top:.75rem; }
-  .item-head { display:flex; gap:.7rem; align-items:baseline; }
+  /* 번호 배지는 제목 첫 줄의 가운데에 맞춘다. 제목 줄 높이는 1.2rem × 1.55 다. */
+  .item-head { display:flex; gap:.7rem; align-items:flex-start; }
   .num {
     flex:none; min-width:1.6rem; height:1.6rem; padding:0 .35rem;
     display:inline-flex; align-items:center; justify-content:center;
     border-radius:.5rem; background:var(--accent); color:var(--bg);
     font-size:.8rem; font-weight:700; font-variant-numeric:tabular-nums;
-    transform:translateY(.15rem);
+    margin-top:calc((1.2rem * 1.55 - 1.6rem) / 2);
   }
   .item h3 { margin:0; font-size:1.2rem; line-height:1.55; letter-spacing:-.01em; }
   .when {
@@ -282,6 +283,8 @@ const CSS = `
     font-variant-numeric:tabular-nums;
   }
   .what { margin-left:var(--indent); }
+  /* 날짜 줄이 없는 분기호·연간호는 제목 바로 밑에 본문이 온다. */
+  .item-head + .what { margin-top:.6rem; }
   .what p { margin:0; color:var(--dim); }
   .what p + p { margin-top:.85rem; }
   .why {
@@ -453,7 +456,10 @@ const CSS = `
   @media (max-width:30rem) {
     :root { --indent:0rem; --pad:.9rem; }
     .why { margin-right:0; }
-    .item-head { margin-bottom:.2rem; }
+    /* 좁은 화면은 본문을 들여 쓰지 않는다. 배지를 제목 글 속에 띄워 제목 둘째 줄이
+       본문과 같은 왼쪽 선에서 시작하게 한다. */
+    .item-head { display:block; margin-bottom:.2rem; }
+    .item-head .num { float:left; margin-right:.55rem; }
   }
   @media (min-width:36rem) {
     .archive .counts { width:auto; margin-left:auto; }
