@@ -440,6 +440,8 @@ const CSS = `
   .runs th { text-align:left; font-weight:400; color:var(--muted); font-size:.75rem; padding:.4rem .5rem; border-bottom:1px solid var(--line); }
   .runs td { padding:.55rem .5rem; border-bottom:1px solid var(--line); white-space:nowrap; }
   .runs .r { text-align:right; }
+  /* 모델은 모든 호가 같아 보조 정보다. 맨 오른쪽에 흐리게 둔다. */
+  .runs .m { padding-left:1.25rem; color:var(--muted); }
   .table-scroll { overflow-x:auto; }
   @media (max-width:30rem) {
     .tiles { grid-template-columns:repeat(2,1fr); gap:.5rem; }
@@ -894,8 +896,8 @@ function renderStats(views, view) {
   // 버튼이 오류 없이 안 먹는다.
   const SHOWN = 16;
   const rows = [...runs].reverse().map((r, i) => `<tr${i >= SHOWN ? ' class="old"' : ""}>
-  <td>${r.week}</td><td>${r.model}</td>
-  <td class="r">${usd(r.cost_usd)}</td><td class="r">${minutes(r)}분</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td>
+  <td>${r.week}</td>
+  <td class="r">${usd(r.cost_usd)}</td><td class="r">${minutes(r)}분</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td><td class="m">${r.model}</td>
 </tr>`).join("");
   const more = runs.length > SHOWN
     ? `<label for="more-runs" class="more">더보기</label>`
@@ -905,7 +907,7 @@ function renderStats(views, view) {
 ${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "비용 (달러)")}
 ${barChart(runs, minutes, (v) => `${v}분`, "소요 시간 (분)")}
 ${more ? `<input type="checkbox" id="more-runs" class="more-toggle">` : ""}<div class="table-scroll"><table class="runs">
-<thead><tr><th>발행물</th><th>모델</th><th class="r">비용</th><th class="r">소요 시간</th><th class="r">읽은 헤드라인</th></tr></thead>
+<thead><tr><th>발행물</th><th class="r">비용</th><th class="r">소요 시간</th><th class="r">읽은 헤드라인</th><th class="m">모델</th></tr></thead>
 <tbody>${rows}</tbody>
 </table></div>
 ${more}`
