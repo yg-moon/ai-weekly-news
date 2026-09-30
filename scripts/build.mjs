@@ -523,6 +523,7 @@ function layout({ title, description, root, body, full = false }) {
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="${root}favicon.svg" type="image/svg+xml">
+<link rel="icon" href="${root}favicon-96.png" type="image/png" sizes="96x96">
 <link rel="apple-touch-icon" href="${root}apple-touch-icon.png">
 <style>${CSS}</style>
 </head>
