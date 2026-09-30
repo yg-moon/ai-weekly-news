@@ -250,7 +250,9 @@ const CSS = `
   /* 머리말 */
   header.site { padding-bottom:1.5rem; border-bottom:1px solid var(--line); margin-bottom:2.25rem; }
   header.site h1 { margin:0 0 .4rem; font-size:1.4rem; letter-spacing:-.02em; }
-  header.site h1 a { color:inherit; text-decoration:none; }
+  header.site h1 a { color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:.5em; }
+  /* 파비콘과 같은 그림이다. 글자 크기를 따라 커지고 작아진다. */
+  .logo { width:1.2em; height:1.2em; flex:none; }
   /* 발행물과 통계 페이지는 사이트 이름만 둔다. 소개는 목록에만 있다. */
   header.site.compact { padding-bottom:.9rem; margin-bottom:1.75rem; }
   header.site.compact h1 { margin:0; font-size:1.05rem; }
@@ -527,13 +529,13 @@ function layout({ title, description, root, body, full = false }) {
 <body>
 <div class="wrap">
 ${full ? `<header class="site">
-  <h1><a href="${root}">${SITE_TITLE}</a></h1>
+  <h1><a href="${root}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1>
   <p class="tagline">${SITE_TAGLINE}</p>
   <p class="badges">
     <span class="badge">매주 월요일 오전 8시 발행 (KST)</span>
     <span class="badge">AI 수집 및 요약 · 모든 항목에 출처 링크</span>
   </p>
-</header>` : `<header class="site compact"><h1><a href="${root}">${SITE_TITLE}</a></h1></header>`}
+</header>` : `<header class="site compact"><h1><a href="${root}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1></header>`}
 ${body}
 <footer>
   <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">통계</a></p>
