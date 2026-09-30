@@ -31,11 +31,27 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      # 이번 푸시로 바뀐 발행물의 외부 링크를 연다. 깨진 링크가 있으면 배포하지 않는다.
+      # 이미 나간 호의 링크가 나중에 죽어도 새 호를 막지 않도록 바뀐 파일만 본다.
+      # 수동 실행 때는 가장 최근 주간호를 본다.
+      - name: Check links
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            files=$(git diff --name-only --diff-filter=AM "$BEFORE" "$GITHUB_SHA" -- content 2>/dev/null | grep '\.md$' || true)
+          else
+            files=$(ls content/week/*.md | sort | tail -1)
+          fi
+          if [ -z "$files" ]; then echo "바뀐 발행물이 없다"; exit 0; fi
+          node scripts/check-links.mjs $files
       - run: npm run build
       # Pages는 저장소 설정에서 미리 켜 두어야 한다. configure-pages 의
       # enablement 파라미터는 GITHUB_TOKEN 권한 부족으로 동작하지 않는다.
