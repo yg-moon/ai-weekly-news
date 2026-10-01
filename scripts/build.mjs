@@ -86,7 +86,8 @@ const TEXT = {
       return ma === mb ? `${EN_MONTHS[ma - 1]} ${da}–${db}` : `${EN_MONTHS[ma - 1]} ${da} – ${EN_MONTHS[mb - 1]} ${db}`;
     },
     listTitle: (p) => `${p.year} Q${p.q}`,
-    tagline: "The past week in five stories each: Korea · World · AI.",
+    // 세 분야 이름은 줄이 바뀌어도 함께 넘어가게 붙인다(\u00a0). 좁은 폰에서 "AI." 만 떨어졌다.
+    tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI.",
     badges: ["Every Monday, 8 AM KST", "Collected and summarized by AI · Sources for every item"],
     home: "Weekly News Briefing",
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats",
@@ -346,7 +347,7 @@ const CSS = `
   .badges { margin:0; display:flex; flex-wrap:wrap; gap:.4rem; }
   .badge {
     padding:.15rem .6rem; border-radius:999px; border:1px solid var(--line);
-    background:var(--surface); font-size:.75rem; color:var(--muted); white-space:nowrap;
+    background:var(--surface); font-size:.75rem; color:var(--muted); max-width:100%;
   }
   .crumb { font-size:.875rem; margin:0 0 1.5rem; }
   .crumb a { color:var(--muted); text-decoration:none; }
