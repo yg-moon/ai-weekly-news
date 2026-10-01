@@ -182,6 +182,8 @@ period_end: 2026-09-27
   node scripts/check-links.mjs --report content/week/*.md content/quarter/*.md
   ```
 
+**영문판을 만든다.** 점검을 마친 한국어 원고를 [`TRANSLATION_EN.md`](TRANSLATION_EN.md) 대로 옮겨 `content/en/quarter/<Y>-Q<분기>.md` 에 쓰고, `node scripts/en-fill.mjs quarter <Y>-Q<분기>` 로 마무리한다. 두 언어판은 한 커밋으로 함께 발행한다. 빌드가 두 원고를 맞춰 보므로 어긋난 채로는 배포되지 않는다.
+
 **실행 기록을 남긴다.** 푸시 직전에 이 세션의 대화 기록으로 비용·시간·모델을 계산해 `data/runs/<Y>-Q<분기>.json` 에 쓴다. 발행물과 같은 커밋에 넣는다. 절차와 한계는 주간 런북 14절과 같다.
 
 ```bash
@@ -190,7 +192,7 @@ node scripts/record-run.mjs <Y>-Q<분기>
 
 ```bash
 npm ci && npm run build
-git add content/quarter/<Y>-Q<분기>.md data/runs/
+git add content/quarter/<Y>-Q<분기>.md content/en/quarter/<Y>-Q<분기>.md data/runs/
 git commit -m "Publish <Y>-Q<분기>"
 git push origin main
 ```
@@ -205,9 +207,11 @@ SITE=https://yg-moon.github.io/ai-weekly-news
 curl -s "$SITE/quarter/<Y>-Q<분기>/" -o /tmp/pub.html -w '응답: %{http_code}\n'
 echo "항목: $(grep -c '<article class="item"' /tmp/pub.html)건"
 echo "목록: $(curl -s "$SITE/<Y>/Q<분기>/" | grep -c "quarter/<Y>-Q<분기>/")건"
+curl -s "$SITE/en/quarter/<Y>-Q<분기>/" -o /tmp/pub-en.html -w '영문 응답: %{http_code}\n'
+echo "영문 항목: $(grep -c '<article class="item"' /tmp/pub-en.html)건"
 ```
 
-응답 200, 항목 15건, 목록 1건이어야 한다. 하나라도 다르면 배포가 아직 안 끝났거나 빌드가 그 분기를 빠뜨린 것이다. 잠시 뒤 다시 보고, 그래도 같으면 CI 로그를 읽는다.
+응답 200, 항목 15건, 목록 1건이어야 한다. 영문도 응답 200, 항목 15건이어야 한다. 하나라도 다르면 배포가 아직 안 끝났거나 빌드가 그 분기를 빠뜨린 것이다. 잠시 뒤 다시 보고, 그래도 같으면 CI 로그를 읽는다.
 
 ## 9. 연말 연간호
 

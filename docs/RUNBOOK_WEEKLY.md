@@ -335,6 +335,8 @@ W=content/week/<WEEK>.md
 
 **항목을 골라 돌리지 않는다.** 검사는 계속 늘어나므로 여기에 목록을 두면 그 목록만 낡는다. 걸린 것을 고치고 다시 돌려 빈 결과를 확인한 뒤 빌드한다.
 
+**영문판을 만든다.** 기계 검사를 통과한 한국어 원고를 [`TRANSLATION_EN.md`](TRANSLATION_EN.md) 대로 옮겨 `content/en/week/<WEEK>.md` 에 쓰고, `node scripts/en-fill.mjs week <WEEK>` 로 마무리한다. 두 언어판은 한 커밋으로 함께 발행한다. 빌드가 두 원고를 맞춰 보므로 어긋난 채로는 배포되지 않는다.
+
 **실행 기록을 남긴다.** 푸시 직전에 이 세션의 대화 기록으로 비용·시간·모델과 읽은 헤드라인 수를 계산해 `data/runs/<WEEK>.json` 에 쓴다. 발행물과 같은 커밋에 넣는다.
 
 ```bash
@@ -346,7 +348,7 @@ node scripts/record-run.mjs <WEEK>
 
 ```bash
 npm ci && npm run build
-git add content/week/<WEEK>.md data/runs/
+git add content/week/<WEEK>.md content/en/week/<WEEK>.md data/runs/
 git commit -m "Publish <WEEK> (<MON>~<SUN>)"
 git push origin main
 ```
@@ -364,11 +366,13 @@ SITE=https://yg-moon.github.io/ai-weekly-news
 curl -s "$SITE/week/<WEEK>/" -o /tmp/pub.html -w '응답: %{http_code}\n'
 echo "항목: $(grep -c '<article class="item"' /tmp/pub.html)건"
 echo "목록: $(curl -s "$SITE/<Y>/Q<분기>/" | grep -c "week/<WEEK>/")건"
+curl -s "$SITE/en/week/<WEEK>/" -o /tmp/pub-en.html -w '영문 응답: %{http_code}\n'
+echo "영문 항목: $(grep -c '<article class="item"' /tmp/pub-en.html)건"
 ```
 
 `<분기>` 는 그 주차가 속한 분기다(분기 런북 1절 표). 홈은 가장 나중 분기만 보여 주므로 지난 분기 주차는 홈에서 0건이다.
 
-응답 200, 항목 15건, 목록 1건이어야 한다. 하나라도 다르면 배포가 아직 안 끝났거나 빌드가 그 주차를 빠뜨린 것이다. 잠시 뒤 다시 보고, 그래도 같으면 CI 로그를 읽는다.
+응답 200, 항목 15건, 목록 1건이어야 한다. 영문도 응답 200, 항목 15건이어야 한다. 하나라도 다르면 배포가 아직 안 끝났거나 빌드가 그 주차를 빠뜨린 것이다. 잠시 뒤 다시 보고, 그래도 같으면 CI 로그를 읽는다.
 
 ### 15. 분기호는 따로 돈다
 

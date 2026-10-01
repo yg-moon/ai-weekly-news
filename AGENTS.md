@@ -46,6 +46,7 @@
 | `docs/RUNBOOK_QUARTERLY.md` | 분기호 실행 절차 | 분기 발행 작업은 이 문서를 처음부터 끝까지 읽고 그대로 따른다 |
 | `docs/RUNBOOK_YEARLY.md` | 연간호 실행 절차 | 분기 런북에서 이어서 돈다 |
 | `docs/ROUTINE_WEEKLY.md` · `docs/ROUTINE_QUARTERLY.md` | Claude Code 루틴 프롬프트 (주간 · 분기) | 루틴 전용이다. 고치면 등록된 루틴도 같은 내용으로 바꾼다 |
+| `docs/TRANSLATION_EN.md` | 영문판 번역 규칙 | 영문판을 만들거나 고칠 때 읽는다 |
 | `docs/QUALITY_CHECKS.md` | 품질 점검 항목 | 문서를 크게 고친 뒤에 돌린다. 매번 돌리지는 않는다 |
 | `docs/PLAN.md` | 진행 상황 | 길어지는 것이 허용되는 유일한 문서다. 끝난 항목은 지운다 |
 
