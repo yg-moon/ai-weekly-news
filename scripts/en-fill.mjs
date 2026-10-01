@@ -1,4 +1,4 @@
-// 영문 원고를 마무리한다. node scripts/en-fill.mjs <week|quarter> <ID>
+// 영문 원고를 마무리한다. node scripts/en-fill.mjs <week|quarter|year> <ID>
 // 1. 출처·근거 줄 자리(SRC, BASIS)를 한국어 원본의 줄로 채운다. 한국 매체는 영문 이름으로,
 //    근거 링크 이름의 분야는 영문으로 바꾼다(W35 국내 3 → W35 Korea 3).
 // 2. 링크 주소 밖의 곧은 따옴표를 둥근 따옴표로 바꾼다.
@@ -8,8 +8,8 @@ import { createHash } from "node:crypto";
 import { OUTLETS_EN } from "./outlets-en.mjs";
 
 const [kind, id] = process.argv.slice(2);
-if (!["week", "quarter"].includes(kind) || !id) {
-  console.error("사용법: node scripts/en-fill.mjs <week|quarter> <ID>");
+if (!["week", "quarter", "year"].includes(kind) || !id) {
+  console.error("사용법: node scripts/en-fill.mjs <week|quarter|year> <ID>");
   process.exit(1);
 }
 const koPath = `content/${kind}/${id}.md`, enPath = `content/en/${kind}/${id}.md`;
