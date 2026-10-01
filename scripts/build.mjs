@@ -592,6 +592,9 @@ const CSS = `
     margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line);
     font-size:.82rem; color:var(--muted);
   }
+  /* 목록 뒤에서는 줄이도록 한다. 마지막 발행물의 아래 여백(1rem)에 4rem 이 더해져 항목 사이 간격의
+     두 배를 넘었다. 바닥글의 선이 항목 사이의 선처럼 이어지게 한다. */
+  .archive + footer { margin-top:1rem; }
   footer a { color:var(--muted); }
   footer p { margin:0 0 .5rem; }
   footer p:last-child { margin:0; }
