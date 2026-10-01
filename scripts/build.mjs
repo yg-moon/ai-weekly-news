@@ -22,7 +22,7 @@ const CONTENT = join(ROOT, "content");
 const RUNS = join(ROOT, "data", "runs");
 const SITE = join(ROOT, "site");
 
-const SITE_TITLE = "ai-weekly-news";
+const SITE_TITLE = "AI Weekly News";
 const SITE_TAGLINE = "지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다.";
 const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
 // 링크 미리보기 이미지는 절대 주소여야 한다.

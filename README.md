@@ -1,4 +1,4 @@
-# ai-weekly-news
+# AI Weekly News
 
 ### Website: [yg-moon.github.io/ai-weekly-news](https://yg-moon.github.io/ai-weekly-news/)
 
