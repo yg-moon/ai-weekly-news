@@ -63,6 +63,19 @@ const TEXT = {
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
+    og: "og.png",
+    st: {
+      back: "← 목록", all: "전체", yearLabel: (y) => `${y}년`,
+      tiles: ["발행물", "개", "총 비용", "평균 비용", "평균 소요 시간", "분"],
+      min: (v) => `${v}분`, cost: "비용 (달러)", time: "소요 시간 (분)",
+      more: "더보기", th: ["발행물", "비용", "소요 시간", "읽은 헤드라인", "모델"], empty: "아직 기록이 없습니다.",
+      sec: "발행 비용 및 시간",
+      lede: "AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 API 정가 환산이며 실제 청구액이 아닙니다.",
+      desc: (label) => `발행물을 만드는 데 든 비용과 시간, 인용한 매체. ${label}.`,
+      outlets: "인용 매체", outletsLede: "주간호 항목에서 출처로 인용한 매체의 목록입니다.",
+      outletHead: (items, n) => `항목 ${items}건 · 매체 ${n}곳`, rest: (n) => `그 밖 ${n}곳`,
+      outletNote: "숫자는 그 매체를 출처로 단 항목 수, 퍼센트는 그 분야 항목 가운데 차지하는 비율입니다. 한 항목이 여러 매체를 출처로 달기 때문에 퍼센트를 더하면 100%를 넘습니다.",
+    },
   },
   en: {
     dir: "en/", locale: "en_US", name: "ENG",
@@ -80,15 +93,31 @@ const TEXT = {
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Single", "Big stories that stand alone"],
     count: (n) => `${n} items`,
     pager: ["Previous and next issues", "Previous", "Next"],
-    // 영문 독자는 한국어 기사를 못 읽을 수 있다. 출처가 한국어 기사면 알린다.
-    korean: ["in Korean", "some in Korean"],
+    og: "og-en.png",
+    st: {
+      back: "← All issues", all: "All", yearLabel: (y) => y,
+      tiles: ["Issues", "", "Total cost", "Average cost", "Average time", "min"],
+      min: (v) => `${v} min`, cost: "Cost (USD)", time: "Time (minutes)",
+      more: "Show more", th: ["Issue", "Cost", "Time", "Headlines read", "Model"], empty: "No records yet.",
+      sec: "Cost and time per issue",
+      lede: "How much it cost the AI to make each issue, and how long it took. Costs are at API list prices, not the amount actually billed.",
+      desc: (label) => `Cost and time to make each issue, and the outlets cited. ${label}.`,
+      outlets: "Outlets cited", outletsLede: "The outlets cited as sources in weekly items.",
+      outletHead: (items, n) => `${items} items · ${n} outlets`, rest: (n) => `${n} more`,
+      outletNote: "The number is how many items cite that outlet. The percentage is its share of all items in that section. One item often cites several outlets, so the percentages add up to more than 100%.",
+    },
   },
 };
 const LANG_NAMES = Object.keys(TEXT);
 // 영문 원고의 라벨. 화면과 검사는 한국어 라벨 이름으로 다룬다.
 const FIELD_EN = { Date: "날짜", "What happened": "무슨 일", "Why it matters": "왜 중요한가", Sources: "출처", Development: "전개", Basis: "근거" };
-// 출처가 한국어 기사인지. 국내 항목의 출처는 거의 모두 네이버 뉴스다.
-const isKorean = (url) => /(\.kr|naver\.com|hankookilbo\.com)$/.test(new URL(url).host);
+// 한국 매체의 영문 이름. 각 매체의 영문판이 쓰는 이름이다. 영문 원고의 출처 줄과 영문
+// 통계의 인용 매체가 이 이름을 쓴다. 나머지 매체는 원래 영문 이름이다.
+const OUTLETS_EN = {
+  경향신문: "Kyunghyang Shinmun", 국민일보: "Kookmin Ilbo", 동아일보: "Dong-A Ilbo", 서울신문: "Seoul Shinmun",
+  연합뉴스: "Yonhap", 연합뉴스TV: "Yonhap News TV", 조선일보: "Chosun Ilbo", 중앙일보: "JoongAng Ilbo",
+  한겨레: "Hankyoreh", 한국일보: "Hankook Ilbo",
+};
 
 // ---------- 파싱 ----------
 
@@ -215,13 +244,8 @@ function buildItem(slug, num, title, listHtml, T) {
     parts.push(`<div class="why"><p class="lbl">${T.why}</p>${ps("왜 중요한가")}</div>`);
   // 분기호·연간호의 근거 링크도 화면에서는 주간호와 같이 "출처"로 부른다.
   for (const label of ["출처", "근거"])
-    if (fields[label]) {
-      const html = fields[label].join(" ");
-      const urls = [...html.matchAll(/href="(https?:[^"]+)"/g)].map((x) => x[1]);
-      const ko = urls.filter(isKorean).length;
-      const note = T.korean && ko ? ` <em>· ${T.korean[ko === urls.length ? 0 : 1]}</em>` : "";
-      parts.push(`<p class="src"><span class="lbl">${T.src}</span>${sources(html)}${note}</p>`);
-    }
+    if (fields[label])
+      parts.push(`<p class="src"><span class="lbl">${T.src}</span>${sources(fields[label].join(" "))}</p>`);
 
   // 분기 인사이트가 개별 항목을 가리킨다. 앵커는 `<분야>-<번호>` 다.
   return `<article class="item" id="${slug}-${num}">${parts.join("")}</article>`;
@@ -613,7 +637,7 @@ function layout({ title, description, root, body, full = false, lang = "ko", pat
 <meta property="og:description" content="${description}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="${T.locale}">
-<meta property="og:image" content="${SITE_URL}og.png">
+<meta property="og:image" content="${SITE_URL}${T.og}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -635,7 +659,7 @@ ${full ? `<header class="site">
 </header>` : `<header class="site compact">${masthead}</header>`}
 ${body}
 <footer>
-  <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">${T.stats}</a></p>
+  <p><a href="${REPO_URL}">GitHub</a> · <a href="${home}stats/">${T.stats}</a></p>
 </footer>
 </div>
 </body>
@@ -837,7 +861,7 @@ function loadRuns() {
 
 const minutes = (r) => Math.round((new Date(r.published) - new Date(r.started)) / 60e3);
 const usd = (x) => `$${x.toFixed(2)}`;
-const shortWeek = (w) => (/^\d{4}$/.test(w) ? "연간" : w.replace(/^\d{4}-/, ""));
+const shortWeek = (w, annual) => (/^\d{4}$/.test(w) ? annual : w.replace(/^\d{4}-/, ""));
 
 // 기록의 week 는 발행물 ID 다. 주간호 2026-W39, 분기호 2026-Q3, 연간호 2026. 분기호는
 // 그 분기의 마지막 주 바로 뒤에, 연간호는 4분기 분기호 뒤에 놓는다. 4분기는 53주까지
@@ -863,7 +887,7 @@ const runOrder = (r) => {
 // 끝이다(.scroll 의 direction).
 const WRAP = 656; // .wrap 의 max-width 41rem
 const SLOT = 34;
-function barChart(runs, value, fmt, caption) {
+function barChart(runs, value, fmt, caption, annual) {
   const H = 200, L = 44, R = 8, T = 16;
   const years = new Set(runs.map((r) => r.week.slice(0, 4)));
   const B = years.size > 1 ? 38 : 24;
@@ -892,7 +916,7 @@ function barChart(runs, value, fmt, caption) {
     const last = i === runs.length - 1;
     // 좁은 화면에서는 주차 라벨을 하나 걸러 보인다(.alt). 마지막 막대부터 센다.
     const k = (runs.length - 1 - i) / every;
-    const tick = Number.isInteger(k) ? `<text class="axis${k % 2 ? " alt" : ""}" x="${x + bw / 2}" y="${H - B + 16}" text-anchor="middle">${shortWeek(r.week)}</text>` : "";
+    const tick = Number.isInteger(k) ? `<text class="axis${k % 2 ? " alt" : ""}" x="${x + bw / 2}" y="${H - B + 16}" text-anchor="middle">${shortWeek(r.week, annual)}</text>` : "";
     // 해가 둘 이상이면 해마다 첫 막대 아래에 연도를 단다. W01 이 W52 뒤에 와도 읽힌다.
     const year = years.size > 1 && (i === 0 || runs[i - 1].week.slice(0, 4) !== r.week.slice(0, 4))
       ? `<text class="axis" x="${x}" y="${H - 4}">${r.week.slice(0, 4)}</text>` : "";
@@ -934,23 +958,29 @@ function statsViews(runs) {
   return views;
 }
 
+const viewLabel = (v, lang) =>
+  !v.year ? TEXT[lang].st.all : !v.q ? TEXT[lang].st.yearLabel(v.year) : listTitle(v, lang);
+
 // 전체 | 연도 | 고른 해의 분기. 전체에서는 분기 칩을 두지 않는다. 어느 해의 분기인지
 // 알 수 없다.
-function statsTabs(views, here, root) {
+function statsTabs(views, here, root, lang) {
   if (views.length === 1) return "";
   const chip = (v, cls, text) =>
     v === here ? `<span class="${cls} on" aria-current="page">${text}</span>` : `<a class="${cls}" href="${root}${v.path}">${text}</a>`;
   const years = views.filter((v) => v.year && !v.q);
   const quarters = views.filter((v) => v.q && v.year === here.year);
   const div = `<span class="tabdiv"></span>`;
-  return `<nav class="tabs">${chip(views[0], "tab", "전체")}${div}${years.map((v) => chip(v, "yr", v.year)).join("")}${
+  return `<nav class="tabs">${chip(views[0], "tab", TEXT[lang].st.all)}${div}${years.map((v) => chip(v, "yr", v.year)).join("")}${
     quarters.length ? div + quarters.map((v) => chip(v, "tab", `Q${v.q}`)).join("") : ""}</nav>`;
 }
 
 // 인용 매체. 주간호 항목의 출처 줄에 오른 매체를 분야별로 센다. 한 항목에서 같은 매체는
 // 한 번만 센다. 분기호·연간호의 출처는 주간호 링크라 세지 않는다.
 const OUTLETS_SHOWN = 6;
-function outletStats(view) {
+function outletStats(view, lang) {
+  const S = TEXT[lang].st;
+  const display = (n) => (lang === "en" ? OUTLETS_EN[n] ?? n : n);
+  const groupName = Object.fromEntries(Object.entries(TEXT[lang].groups).map(([name, slug]) => [slug, name]));
   const docs = sets.week.filter((d) => {
     const p = placeOf(d);
     return (!view.year || p.year === view.year) && (!view.q || p.q === view.q);
@@ -968,32 +998,36 @@ function outletStats(view) {
           count.set(n, (count.get(n) ?? 0) + 1);
       }
     }
-    const list = [...count].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const list = [...count].map(([n, v]) => [display(n), v]).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
     const max = list[0]?.[1] ?? 1;
     const row = ([n, v]) => `<div class="or"><span class="on">${n}</span><span class="ob"><i style="width:${Math.max(2, Math.round((v / max) * 100))}%"></i></span><span class="ov">${v}<small>${Math.round((v / items) * 100)}%</small></span></div>`;
     const rest = list.slice(OUTLETS_SHOWN);
-    return `<div class="og group--${slug}"><p class="og-h">${name}<span>항목 ${items}건 · 매체 ${list.length}곳</span></p>
+    return `<div class="og group--${slug}"><p class="og-h">${groupName[slug]}<span>${S.outletHead(items, list.length)}</span></p>
 ${list.slice(0, OUTLETS_SHOWN).map(row).join("")}
-${rest.length ? `<details class="om"><summary>그 밖 ${rest.length}곳</summary>${rest.map(row).join("")}</details>` : ""}</div>`;
+${rest.length ? `<details class="om"><summary>${S.rest(rest.length)}</summary>${rest.map(row).join("")}</details>` : ""}</div>`;
   });
-  return `<h2 class="sec">인용 매체</h2>
-<p class="sec-lede">주간호 항목에서 출처로 인용한 매체의 목록입니다.</p>
+  return `<h2 class="sec">${S.outlets}</h2>
+<p class="sec-lede">${S.outletsLede}</p>
 <div class="ogs">${groups.join("")}</div>
-<p class="og-note">숫자는 그 매체를 출처로 단 항목 수, 퍼센트는 그 분야 항목 가운데 차지하는 비율입니다. 한 항목이 여러 매체를 출처로 달기 때문에 퍼센트를 더하면 100%를 넘습니다.</p>`;
+<p class="og-note">${S.outletNote}</p>`;
 }
 
-function renderStats(views, view) {
+function renderStats(views, view, lang = "ko") {
   const { runs } = view;
-  const root = "../".repeat(view.path.split("/").filter(Boolean).length);
+  const T = TEXT[lang], S = T.st;
+  const root = "../".repeat((T.dir + view.path).split("/").filter(Boolean).length);
+  const base = root + T.dir;
+  const label = viewLabel(view, lang);
   const sum = (f) => runs.reduce((s, r) => s + f(r), 0);
   const avg = (f) => sum(f) / runs.length;
+  const unit = (u) => (u ? `<small>${u}</small>` : "");
 
   const tiles = runs.length
     ? `<div class="tiles">
-  <div class="tile"><span class="k">발행물</span><span class="v">${runs.length}<small>개</small></span></div>
-  <div class="tile"><span class="k">총 비용</span><span class="v">${usd(sum((r) => r.cost_usd))}</span></div>
-  <div class="tile"><span class="k">평균 비용</span><span class="v">${usd(avg((r) => r.cost_usd))}</span></div>
-  <div class="tile"><span class="k">평균 소요 시간</span><span class="v">${Math.round(avg(minutes))}<small>분</small></span></div>
+  <div class="tile"><span class="k">${S.tiles[0]}</span><span class="v">${runs.length}${unit(S.tiles[1])}</span></div>
+  <div class="tile"><span class="k">${S.tiles[2]}</span><span class="v">${usd(sum((r) => r.cost_usd))}</span></div>
+  <div class="tile"><span class="k">${S.tiles[3]}</span><span class="v">${usd(avg((r) => r.cost_usd))}</span></div>
+  <div class="tile"><span class="k">${S.tiles[4]}</span><span class="v">${Math.round(avg(minutes))}${unit(S.tiles[5])}</span></div>
 </div>`
     : "";
 
@@ -1005,34 +1039,36 @@ function renderStats(views, view) {
   const SHOWN = 16;
   const rows = [...runs].reverse().map((r, i) => `<tr${i >= SHOWN ? ' class="old"' : ""}>
   <td>${r.week}</td>
-  <td class="r">${usd(r.cost_usd)}</td><td class="r">${minutes(r)}분</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td><td class="m">${r.model}</td>
+  <td class="r">${usd(r.cost_usd)}</td><td class="r">${S.min(minutes(r))}</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td><td class="m">${r.model}</td>
 </tr>`).join("");
   const more = runs.length > SHOWN
-    ? `<label for="more-runs" class="more">더보기</label>`
+    ? `<label for="more-runs" class="more">${S.more}</label>`
     : "";
   const body = runs.length
     ? `${tiles}
-${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), "비용 (달러)")}
-${barChart(runs, minutes, (v) => `${v}분`, "소요 시간 (분)")}
+${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), S.cost, T.annual)}
+${barChart(runs, minutes, S.min, S.time, T.annual)}
 ${more ? `<input type="checkbox" id="more-runs" class="more-toggle">` : ""}<div class="table-scroll"><table class="runs">
-<thead><tr><th>발행물</th><th class="r">비용</th><th class="r">소요 시간</th><th class="r">읽은 헤드라인</th><th class="m">모델</th></tr></thead>
+<thead><tr><th>${S.th[0]}</th><th class="r">${S.th[1]}</th><th class="r">${S.th[2]}</th><th class="r">${S.th[3]}</th><th class="m">${S.th[4]}</th></tr></thead>
 <tbody>${rows}</tbody>
 </table></div>
 ${more}`
-    : `<div class="empty"><p>아직 기록이 없습니다.</p></div>`;
+    : `<div class="empty"><p>${S.empty}</p></div>`;
 
   return layout({
-    title: view.q || view.year ? `통계 · ${view.label} — ${SITE_TITLE}` : `통계 — ${SITE_TITLE}`,
-    description: `발행물을 만드는 데 든 비용과 시간, 인용한 매체. ${view.label}.`,
+    title: view.q || view.year ? `${T.stats} · ${label} — ${SITE_TITLE}` : `${T.stats} — ${SITE_TITLE}`,
+    description: S.desc(label),
     root,
-    body: `<p class="crumb"><a href="${root}">← 목록</a></p>
-<h1 class="issue-title">통계</h1>
-${statsTabs(views, view, root)}
-${view.year ? `<p class="period-now">${view.label}</p>` : ""}
-<h2 class="sec">발행 비용 및 시간</h2>
-<p class="sec-lede">AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 API 정가 환산이며 실제 청구액이 아닙니다.</p>
+    lang,
+    path: view.path,
+    body: `<p class="crumb"><a href="${base}">${S.back}</a></p>
+<h1 class="issue-title">${T.stats}</h1>
+${statsTabs(views, view, base, lang)}
+${view.year ? `<p class="period-now">${label}</p>` : ""}
+<h2 class="sec">${S.sec}</h2>
+<p class="sec-lede">${S.lede}</p>
 ${body}
-${outletStats(view)}`,
+${outletStats(view, lang)}`,
   });
 }
 
@@ -1045,6 +1081,10 @@ const sets = SETS.ko;
 // 하나라도 다르면 빌드를 멈춘다. 원본이 영문판을 만든 뒤에 고쳐졌으면 경고만 한다.
 // 영문 원고의 source 는 번역할 때 읽은 원본 파일의 sha256 앞 12자리다.
 const linksOf = (d) => [...d.body.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]).join("\n");
+// 출처 줄의 매체 이름. 영문판은 OUTLETS_EN 의 이름을 쓴다.
+const outletsOf = (d, en) =>
+  d.body.split("\n").filter((l) => /^- \*\*(출처|Sources)\*\*/.test(l))
+    .flatMap((l) => [...l.matchAll(/\[([^\]]+)\]\(/g)].map((m) => (en ? OUTLETS_EN[m[1]] ?? m[1] : m[1])));
 const shapeOf = (d) => Object.entries(d.n).map(([g, n]) => `${TEXT[d.lang].groups[g] ?? g} ${n}`).join(", ");
 const badTranslations = [], staleTranslations = [];
 for (const kind of KIND_NAMES)
@@ -1054,6 +1094,7 @@ for (const kind of KIND_NAMES)
     if (!ko) badTranslations.push(`${at}: 한국어 원본이 없다`);
     else if (shapeOf(d) !== shapeOf(ko)) badTranslations.push(`${at}: 구획·항목 수가 원본과 다르다 (${shapeOf(d)} / 원본 ${shapeOf(ko)})`);
     else if (linksOf(d) !== linksOf(ko)) badTranslations.push(`${at}: 링크가 원본과 다르다`);
+    else if (outletsOf(d).join() !== outletsOf(ko, true).join()) badTranslations.push(`${at}: 출처 매체 이름이 OUTLETS_EN 과 다르다`);
     else if (d.meta.source !== createHash("sha256").update(readFileSync(join(CONTENT, kind, `${d.id}.md`))).digest("hex").slice(0, 12))
       staleTranslations.push(at);
   }
@@ -1114,6 +1155,11 @@ const PAGES = Object.fromEntries(LANG_NAMES.map((l) => [l, new Set([
   ...(l === "ko" || periods(YEARS[l]).length ? [""] : []),
 ])]));
 
+// 통계는 두 언어판에 모두 있다. 숫자는 같고 화면 문구만 다르다.
+const runs = loadRuns();
+const statViews = statsViews(runs);
+for (const l of LANG_NAMES) for (const v of statViews) PAGES[l].add(v.path);
+
 rmSync(SITE, { recursive: true, force: true });
 mkdirSync(SITE, { recursive: true });
 // 파비콘과 링크 미리보기 이미지. 만든 방법은 static/README.md 에 있다.
@@ -1159,12 +1205,11 @@ writeFileSync(
       })
 );
 
-const runs = loadRuns();
-const statViews = statsViews(runs);
-for (const v of statViews) {
-  mkdirSync(join(SITE, v.path), { recursive: true });
-  writeFileSync(join(SITE, v.path, "index.html"), renderStats(statViews, v));
-}
+for (const lang of LANG_NAMES)
+  for (const v of statViews) {
+    mkdirSync(join(SITE, TEXT[lang].dir, v.path), { recursive: true });
+    writeFileSync(join(SITE, TEXT[lang].dir, v.path, "index.html"), renderStats(statViews, v, lang));
+  }
 
 // 기간별 통계가 기록을 빠뜨리거나 겹치지 않는지 본다. 분기 페이지의 표를 모두
 // 합치면 기록 전체와 한 번씩 맞아야 한다.

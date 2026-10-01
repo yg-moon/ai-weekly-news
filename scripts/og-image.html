@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- 링크 미리보기 이미지(static/og.png)의 원본. 1200×630 으로 캡처한다(static/README.md). -->
+<!-- 링크 미리보기 이미지(static/og.png, 영문판은 ?lang=en 으로 열어 static/og-en.png)의 원본.
+     1200×630 으로 캡처한다(static/README.md). -->
 <html lang="ko"><head><meta charset="utf-8">
 <style>
   @font-face { font-family:P; font-weight:400; src:url(Pretendard-Regular.woff2); }
@@ -17,9 +18,16 @@
 </style></head><body>
   <svg class="mark" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#191918"/><rect x="7" y="8" width="18" height="4" rx="2" fill="#63c3a6"/><rect x="7" y="14" width="14" height="4" rx="2" fill="#82aeee"/><rect x="7" y="20" width="10" height="4" rx="2" fill="#bb9af0"/></svg>
   <h1>AI Weekly News</h1>
-  <p>지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다.</p>
+  <p data-en="The past week in five stories each: Korea · World · AI.">지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다.</p>
   <div class="foot">
-    <div class="rows"><span style="background:#0f6b57">국내 5</span><span style="background:#2a5aa8">해외 5</span><span style="background:#6d3fa8">AI 5</span></div>
-    <div class="url">매주 월요일 · 모든 항목에 출처 링크</div>
+    <div class="rows"><span style="background:#0f6b57" data-en="Korea 5">국내 5</span><span style="background:#2a5aa8" data-en="World 5">해외 5</span><span style="background:#6d3fa8">AI 5</span></div>
+    <div class="url" data-en="Every Monday · Sources for every item">매주 월요일 · 모든 항목에 출처 링크</div>
   </div>
+  <script>
+    if (new URLSearchParams(location.search).get("lang") === "en") {
+      document.documentElement.lang = "en";
+      document.body.style.letterSpacing = "0";
+      for (const el of document.querySelectorAll("[data-en]")) el.textContent = el.dataset.en;
+    }
+  </script>
 </body></html>
