@@ -3,6 +3,7 @@
 // 프론트매터는 평면 key: value 만 지원한다. 그 이상이 필요해지면 그때 파서를 바꾼다.
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync, cpSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join, basename } from "node:path";
 import { marked } from "marked";
 
@@ -45,6 +46,50 @@ const KINDS = {
 };
 const KIND_NAMES = Object.keys(KINDS);
 
+// 언어판. 한국어판이 원본이고 영문판은 그 번역이다. 영문 원고는 content/en/ 에 같은
+// 파일 이름으로 두고, 페이지는 site/en/ 아래에 한국어판과 같은 경로로 낸다.
+const EN_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const TEXT = {
+  ko: {
+    dir: "", locale: "ko_KR", name: "KOR",
+    groups: KINDS.week.groups,
+    suffix: Object.fromEntries(KIND_NAMES.map((k) => [k, KINDS[k].suffix])),
+    period: (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`,
+    listTitle: (p) => `${p.year}년 ${p.q}분기`,
+    tagline: SITE_TAGLINE,
+    badges: ["매주 월요일 오전 8시 발행 (KST)", "AI 수집 및 요약 · 모든 항목에 출처 링크"],
+    home: "주간 뉴스 브리핑",
+    why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계",
+    flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
+    count: (n) => `${n}건`,
+    pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
+  },
+  en: {
+    dir: "en/", locale: "en_US", name: "ENG",
+    groups: { Korea: "korea", World: "world", AI: "ai" },
+    suffix: { week: "Weekly Briefing", quarter: "Quarterly Review", year: "Annual Review" },
+    period: ({ period_start: a, period_end: b }) => {
+      const [, ma, da] = a.split("-").map(Number), [, mb, db] = b.split("-").map(Number);
+      return ma === mb ? `${EN_MONTHS[ma - 1]} ${da}–${db}` : `${EN_MONTHS[ma - 1]} ${da} – ${EN_MONTHS[mb - 1]} ${db}`;
+    },
+    listTitle: (p) => `${p.year} Q${p.q}`,
+    tagline: "The past week's news from Korea, the world and AI, in five stories each.",
+    badges: ["Every Monday, 8 a.m. KST", "Collected and summarized by AI · Sources for every item", "Translated by AI from the Korean edition"],
+    home: "Weekly News Briefing",
+    why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats (in Korean)",
+    flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Single", "Big stories that stand alone"],
+    count: (n) => `${n} items`,
+    pager: ["Previous and next issues", "Previous", "Next"],
+    // 영문 독자는 한국어 기사를 못 읽을 수 있다. 출처가 한국어 기사면 알린다.
+    korean: ["in Korean", "some in Korean"],
+  },
+};
+const LANG_NAMES = Object.keys(TEXT);
+// 영문 원고의 라벨. 화면과 검사는 한국어 라벨 이름으로 다룬다.
+const FIELD_EN = { Date: "날짜", "What happened": "무슨 일", "Why it matters": "왜 중요한가", Sources: "출처", Development: "전개", Basis: "근거" };
+// 출처가 한국어 기사인지. 국내 항목의 출처는 거의 모두 네이버 뉴스다.
+const isKorean = (url) => /(\.kr|naver\.com|hankookilbo\.com)$/.test(new URL(url).host);
+
 // ---------- 파싱 ----------
 
 function parseFrontmatter(text) {
@@ -60,20 +105,21 @@ function parseFrontmatter(text) {
 }
 
 // 아직 만들지 않은 종류는 폴더가 없다. 그때는 빈 목록이다.
-function load(kind) {
+function load(kind, lang = "ko") {
+  const from = join(CONTENT, TEXT[lang].dir, kind);
   let files;
   try {
-    files = readdirSync(join(CONTENT, kind));
+    files = readdirSync(from);
   } catch {
     return [];
   }
   return files
     .filter((f) => f.endsWith(".md"))
     .map((f) => {
-      const { meta, body } = parseFrontmatter(readFileSync(join(CONTENT, kind, f), "utf8"));
+      const { meta, body } = parseFrontmatter(readFileSync(join(from, f), "utf8"));
       const id = basename(f, ".md");
       if (meta[kind] !== id) throw new Error(`${kind}/${f}: 파일명과 frontmatter ${kind} 가 다르다`);
-      return { kind, id, meta, body, n: sectionCounts(body) };
+      return { kind, id, lang, meta, body, n: sectionCounts(body) };
     })
     .sort((a, b) => (a.id < b.id ? 1 : -1)); // 최신순
 }
@@ -95,16 +141,16 @@ const koDate = (iso) => {
   const [, m, d] = iso.split("-").map(Number);
   return `${m}월 ${d}일`;
 };
-const period = (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`;
-const groupsOf = (d) => Object.keys(KINDS[d.kind].groups);
+const period = (d) => TEXT[d.lang].period(d.meta);
+const groupsOf = (d) => Object.keys(TEXT[d.lang].groups);
 const counts = (d) => groupsOf(d).map((g) => `${g} ${d.n[g] ?? 0}`).join(" · ");
 // 어느 종류든 구획마다 5건이 표준이다. 표준이면 건수를 화면에서 반복하지 않고,
 // 어긋날 때만 드러낸다.
 const isStandard = (d) => groupsOf(d).every((g) => d.n[g] === 5);
-const pageTitle = (d) => `${d.id} ${KINDS[d.kind].suffix} (${period(d.meta)})`;
+const pageTitle = (d) => `${d.id} ${TEXT[d.lang].suffix[d.kind]} (${period(d)})`;
 // 화면에서는 기간을 다음 줄로 내린다. 한 줄에 두면 좁은 화면에서 어중간하게 잘린다.
 const pageTitleHtml = (d) =>
-  `${d.id} ${KINDS[d.kind].suffix}<span class="period">${period(d.meta)}</span>`;
+  `${d.id} ${TEXT[d.lang].suffix[d.kind]}<span class="period">${period(d)}</span>`;
 
 // ---------- 본문 구조화 ----------
 // marked 가 낸 h3 + ul 을 항목 블록으로 바꾼다. 라벨을 화면에서 없애고
@@ -147,13 +193,13 @@ function sources(html) {
     .join(" / ");
 }
 
-function buildItem(slug, num, title, listHtml) {
+function buildItem(slug, num, title, listHtml, T) {
   const fields = {};
   // 목록에 빈 줄이 있으면 marked 가 각 <li> 안을 <p> 로 감싼다. 양쪽을 다 받는다.
   const re =
-    /<li>\s*(?:<p>)?\s*<strong>(날짜|무슨 일|왜 중요한가|출처|전개|근거)<\/strong>\s*:?\s*([\s\S]*?)\s*(?:<\/p>)?\s*<\/li>/g;
+    /<li>\s*(?:<p>)?\s*<strong>(날짜|무슨 일|왜 중요한가|출처|전개|근거|Date|What happened|Why it matters|Sources|Development|Basis)<\/strong>\s*:?\s*([\s\S]*?)\s*(?:<\/p>)?\s*<\/li>/g;
   let m;
-  while ((m = re.exec(listHtml))) fields[m[1]] = paragraphs(m[2].trim());
+  while ((m = re.exec(listHtml))) fields[FIELD_EN[m[1]] ?? m[1]] = paragraphs(m[2].trim());
 
   // 알려진 라벨이 하나도 없으면 원본을 그대로 둔다.
   if (!Object.keys(fields).length) return null;
@@ -166,22 +212,25 @@ function buildItem(slug, num, title, listHtml) {
   if (fields["무슨 일"]) parts.push(`<div class="what">${ps("무슨 일")}</div>`);
   if (fields["전개"]) parts.push(`<div class="what">${ps("전개")}</div>`);
   if (fields["왜 중요한가"])
-    parts.push(`<div class="why"><p class="lbl">왜 중요한가</p>${ps("왜 중요한가")}</div>`);
+    parts.push(`<div class="why"><p class="lbl">${T.why}</p>${ps("왜 중요한가")}</div>`);
   // 분기호·연간호의 근거 링크도 화면에서는 주간호와 같이 "출처"로 부른다.
   for (const label of ["출처", "근거"])
-    if (fields[label])
-      parts.push(`<p class="src"><span class="lbl">출처</span>${sources(fields[label].join(" "))}</p>`);
+    if (fields[label]) {
+      const html = fields[label].join(" ");
+      const urls = [...html.matchAll(/href="(https?:[^"]+)"/g)].map((x) => x[1]);
+      const ko = urls.filter(isKorean).length;
+      const note = T.korean && ko ? ` <em>· ${T.korean[ko === urls.length ? 0 : 1]}</em>` : "";
+      parts.push(`<p class="src"><span class="lbl">${T.src}</span>${sources(html)}${note}</p>`);
+    }
 
   // 분기 인사이트가 개별 항목을 가리킨다. 앵커는 `<분야>-<번호>` 다.
   return `<article class="item" id="${slug}-${num}">${parts.join("")}</article>`;
 }
 
-const KIND_HEADS = {
-  flow: `<p class="kind-h"><b>흐름</b>여러 주에 걸쳐 이어진 일</p>`,
-  single: `<p class="kind-h"><b>단발</b>흐름으로 묶이지 않은 큰 일</p>`,
-};
+const kindHead = ([name, what]) => `<p class="kind-h"><b>${name}</b>${what}</p>`;
 
-function structure(html, groups) {
+function structure(html, T) {
+  const { groups } = T;
   // 구획으로 먼저 자른다. 항목 앵커에 구획 이름이 들어가므로 항목보다 구획을 먼저 알아야 한다.
   const chunks = html.split(/(?=<h2[^>]*>)/);
   return chunks
@@ -198,18 +247,18 @@ function structure(html, groups) {
       const body = chunk.slice(m[0].length).replace(
         /<h3[^>]*>\s*(\d+)\.\s*([\s\S]*?)<\/h3>\s*<ul>([\s\S]*?)<\/ul>/g,
         (whole, num, title, list) => {
-          const item = buildItem(slug, num, title.trim(), list);
+          const item = buildItem(slug, num, title.trim(), list, T);
           if (!item) return whole;
-          const k = /<strong>전개<\/strong>/.test(list) ? "flow"
-            : !/<strong>날짜<\/strong>/.test(list) ? "single" : null;
+          const k = /<strong>(전개|Development)<\/strong>/.test(list) ? "flow"
+            : !/<strong>(날짜|Date)<\/strong>/.test(list) ? "single" : null;
           if (!k || seen.has(k)) return item;
           seen.add(k);
-          return KIND_HEADS[k] + item;
+          return kindHead(T[k]) + item;
         }
       );
 
       const n = (body.match(/class="item"/g) ?? []).length;
-      const chip = n === 5 ? "" : `<span class="n">${n}건</span>`;
+      const chip = n === 5 ? "" : `<span class="n">${T.count(n)}</span>`;
       const head = `<h2><span class="rule"></span>${name}${chip}</h2>`;
       return `<section class="group group--${slug}">${head}${body}</section>`;
     })
@@ -242,6 +291,8 @@ const CSS = `
     word-break:keep-all; overflow-wrap:break-word; letter-spacing:-.02em;
   }
   .wrap { max-width:41rem; margin:0 auto; }
+  /* 자간 좁히기와 어절 단위 줄바꿈은 한글에 맞춘 것이다. 영문판은 기본값으로 둔다. */
+  html[lang="en"] body { letter-spacing:0; word-break:normal; }
   /* 어절 단위로 끊고 왼쪽 정렬. 국내 신문사 본문이 모두 이 방식이다.
      줄 끝에 평균 1.2자가 비지만 단어가 쪼개지지 않는다. */
   .what p, .why p { font-size:1.125rem; }
@@ -249,13 +300,23 @@ const CSS = `
 
   /* 머리말 */
   header.site { padding-bottom:1.5rem; border-bottom:1px solid var(--line); margin-bottom:2.25rem; }
-  header.site h1 { margin:0 0 .4rem; font-size:1.4rem; letter-spacing:-.02em; }
+  header.site h1 { margin:0; font-size:1.4rem; letter-spacing:-.02em; }
+  /* 사이트 이름과 언어 선택을 한 줄에 둔다. */
+  .masthead { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:0 0 .4rem; }
+  header.site.compact .masthead { margin:0; }
+  .lang {
+    flex:none; display:flex; padding:2px; border:1px solid var(--line); border-radius:999px;
+    background:var(--surface); font-size:.72rem; font-weight:700; letter-spacing:.04em; line-height:1.6;
+  }
+  .lang a, .lang span { padding:.1rem .55rem; border-radius:999px; color:var(--muted); text-decoration:none; }
+  .lang a:hover { color:var(--text); }
+  .lang [aria-current] { background:var(--sunken); color:var(--text); }
   header.site h1 a { color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:.5em; }
   /* 파비콘과 같은 그림이다. 글자 크기를 따라 커지고 작아진다. */
   .logo { width:1.2em; height:1.2em; flex:none; }
   /* 발행물과 통계 페이지는 사이트 이름만 둔다. 소개는 목록에만 있다. */
   header.site.compact { padding-bottom:.9rem; margin-bottom:1.75rem; }
-  header.site.compact h1 { margin:0; font-size:1.05rem; }
+  header.site.compact h1 { font-size:1.05rem; }
   .tagline { margin:0 0 .8rem; color:var(--dim); font-size:.95rem; }
   .badges { margin:0; display:flex; flex-wrap:wrap; gap:.4rem; }
   .badge {
@@ -366,6 +427,7 @@ const CSS = `
   .tops { width:100%; display:flex; flex-direction:column; margin-top:.2rem; }
   .top { display:flex; align-items:baseline; gap:.6rem; min-width:0; font-size:.85rem; line-height:1.6; color:var(--dim); }
   .top b { flex:none; width:1.6rem; font-size:.78rem; color:var(--accent); }
+  html[lang="en"] .top b { width:2.9rem; }
   /* 두 줄을 넘으면 말줄임표로 자른다. 전체 제목은 본문에 있다. */
   .top span, .toc .tt {
     min-width:0; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
@@ -507,9 +569,41 @@ const CSS = `
   }
 `;
 
-function layout({ title, description, root, body, full = false }) {
+// 언어 선택. 다른 언어판에 같은 페이지가 있으면 그리로, 없으면 그 언어판의 홈으로 간다.
+// 고른 언어를 기억해 두고, 다음에 다른 언어판 주소로 들어오면 같은 페이지의 고른 언어판으로
+// 옮긴다. 저장소를 못 쓰는 브라우저에서는 기억만 못 하고 페이지는 그대로 보인다.
+const LANG_SCRIPT = `<script>
+(function () {
+  var h = document.documentElement;
+  try {
+    var want = localStorage.getItem("lang");
+    var alt = h.getAttribute("data-alt-" + want);
+    if (want && want !== h.lang && alt) location.replace(alt + location.hash);
+  } catch (e) {}
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[data-lang]");
+    if (a) try { localStorage.setItem("lang", a.getAttribute("data-lang")); } catch (e) {}
+  });
+})();
+</script>`;
+
+// path 는 언어판 안에서의 경로다. 홈은 "", 주간호는 "week/2026-W39/".
+function layout({ title, description, root, body, full = false, lang = "ko", path = null }) {
+  const T = TEXT[lang];
+  const home = root + T.dir;
+  const others = path === null ? [] : LANG_NAMES.filter((l) => l !== lang && PAGES[l].has(path));
+  const altAttrs = others.map((l) => ` data-alt-${l}="${root}${TEXT[l].dir}${path}"`).join("");
+  const hreflang = path !== null && others.length
+    ? [lang, ...others].map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE_URL}${TEXT[l].dir}${path}">`).join("\n")
+    : "";
+  const switcher = `<nav class="lang" aria-label="Language">${LANG_NAMES.map((l) =>
+    l === lang
+      ? `<span aria-current="true">${TEXT[l].name}</span>`
+      : `<a href="${root}${TEXT[l].dir}${path !== null && PAGES[l].has(path) ? path : ""}" hreflang="${l}" data-lang="${l}">${TEXT[l].name}</a>`
+  ).join("")}</nav>`;
+  const masthead = `<div class="masthead"><h1><a href="${home}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1>${switcher}</div>`;
   return `<!doctype html>
-<html lang="ko">
+<html lang="${lang}"${altAttrs}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -518,6 +612,7 @@ function layout({ title, description, root, body, full = false }) {
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${description}">
 <meta property="og:type" content="website">
+<meta property="og:locale" content="${T.locale}">
 <meta property="og:image" content="${SITE_URL}og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -525,21 +620,22 @@ function layout({ title, description, root, body, full = false }) {
 <link rel="icon" href="${root}favicon.svg" type="image/svg+xml">
 <link rel="icon" href="${root}favicon-96.png" type="image/png" sizes="96x96">
 <link rel="apple-touch-icon" href="${root}apple-touch-icon.png">
+${hreflang}
 <style>${CSS}</style>
+${LANG_SCRIPT}
 </head>
 <body>
 <div class="wrap">
 ${full ? `<header class="site">
-  <h1><a href="${root}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1>
-  <p class="tagline">${SITE_TAGLINE}</p>
+  ${masthead}
+  <p class="tagline">${T.tagline}</p>
   <p class="badges">
-    <span class="badge">매주 월요일 오전 8시 발행 (KST)</span>
-    <span class="badge">AI 수집 및 요약 · 모든 항목에 출처 링크</span>
+    ${T.badges.map((b) => `<span class="badge">${b}</span>`).join("\n    ")}
   </p>
-</header>` : `<header class="site compact"><h1><a href="${root}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1></header>`}
+</header>` : `<header class="site compact">${masthead}</header>`}
 ${body}
 <footer>
-  <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">통계</a></p>
+  <p><a href="${REPO_URL}">GitHub</a> · <a href="${root}stats/">${T.stats}</a></p>
 </footer>
 </div>
 </body>
@@ -604,12 +700,12 @@ const periods = (years) =>
     );
 
 const listPath = (p) => `${p.year}/Q${p.q}/`;
-const listTitle = (p) => `${p.year}년 ${p.q}분기`;
+const listTitle = (p, lang = "ko") => TEXT[lang].listTitle(p);
 
 // 연도 칩과 분기 칩을 한 줄에 둔다. 연도가 하나뿐이면 누를 데가 없는 라벨이다.
 // 연도를 누르면 그 해에서 가장 나중 분기로 간다. `연간` 은 지금 보고 있는 해의
 // 연간호로 간다. root 는 최상위까지의 상대 경로다.
-function tabs(years, here, root) {
+function tabs(years, here, root, T) {
   const all = periods(years);
   if (!all.length) return "";
 
@@ -626,7 +722,7 @@ function tabs(years, here, root) {
   const annual = years.get(here.year).annual;
   const yearRow = [...new Set(all.map((p) => p.year))].map(yearChip).join("");
   const quarterRow = all.filter((p) => p.year === here.year).map(quarterChip).join("");
-  const annualChip = annual ? `<a class="tab" href="${root}year/${annual.id}/">연간</a>` : "";
+  const annualChip = annual ? `<a class="tab" href="${root}year/${annual.id}/">${T.annual}</a>` : "";
   return `<nav class="tabs">${yearRow}<span class="tabdiv"></span>${quarterRow}${annualChip}</nav>`;
 }
 
@@ -635,7 +731,7 @@ const plainTitle = (html) => html.replace(/<[^>]+>/g, "").trim();
 
 // 주간호 목차. 구조화한 본문에서 분야와 항목 제목을 다시 읽는다.
 // 넓은 화면에서는 본문 왼쪽에 고정되고, 좁은 화면에서는 제목 아래에 펼쳐 둔다.
-function toc(html) {
+function toc(html, T) {
   const groups = html.split(/(?=<section class="group )/).flatMap((chunk) => {
     const g = chunk.match(/^<section class="group group--(\w+)"><h2><span class="rule"><\/span>([^<]*)/);
     if (!g) return [];
@@ -643,18 +739,19 @@ function toc(html) {
       .map(([, id, num, title]) => `<li><a href="#${id}"><span class="tn">${num}</span><span class="tt">${plainTitle(title)}</span></a></li>`);
     return items.length ? [`<div class="toc-group group--${g[1]}"><p class="toc-name">${g[2].trim()}</p><ol>${items.join("")}</ol></div>`] : [];
   });
-  return groups.length ? `<nav class="toc" id="toc" aria-label="목차">${groups.join("")}</nav>` : "";
+  return groups.length ? `<nav class="toc" id="toc" aria-label="${T.toc}">${groups.join("")}</nav>` : "";
 }
 
 // 같은 종류의 바로 앞뒤 발행물. ID 는 문자열 순서가 곧 시간 순서다.
 function pager(d) {
-  const ids = sets[d.kind].map((x) => x.id).sort();
+  const ids = SETS[d.lang][d.kind].map((x) => x.id).sort();
   const i = ids.indexOf(d.id);
   const [prev, next] = [ids[i - 1], ids[i + 1]];
+  const [label, before, after] = TEXT[d.lang].pager;
   if (!prev && !next) return "";
-  return `<nav class="pager" aria-label="이전 호와 다음 호">${
-    prev ? `<a class="prev" href="../${prev}/"><small>이전 호</small>← ${prev}</a>` : ""}${
-    next ? `<a class="next" href="../${next}/"><small>다음 호</small>${next} →</a>` : ""}</nav>`;
+  return `<nav class="pager" aria-label="${label}">${
+    prev ? `<a class="prev" href="../${prev}/"><small>${before}</small>← ${prev}</a>` : ""}${
+    next ? `<a class="next" href="../${next}/"><small>${after}</small>${next} →</a>` : ""}</nav>`;
 }
 
 function renderDoc(d, years) {
@@ -662,11 +759,12 @@ function renderDoc(d, years) {
   // 그 해에서 가장 나중 분기로 보낸다.
   const p = placeOf(d);
   const back = p.q ? p : periods(years).filter((x) => x.year === p.year).pop();
-  const main = structure(marked.parse(d.body), KINDS[d.kind].groups);
+  const T = TEXT[d.lang];
+  const main = structure(marked.parse(d.body), T);
   // 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
-  const nav = toc(main);
+  const nav = toc(main, T);
   const body = `
-${back ? `<p class="crumb"><a href="../../${listPath(back)}">← ${listTitle(back)}</a></p>` : ""}
+${back ? `<p class="crumb"><a href="../../${listPath(back)}">← ${listTitle(back, d.lang)}</a></p>` : ""}
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
 ${nav}
@@ -674,9 +772,11 @@ ${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)
 ${pager(d)}`;
   return layout({
     title: `${pageTitle(d)} — ${SITE_TITLE}`,
-    description: `${d.id} (${period(d.meta)}) ${KINDS[d.kind].suffix}. ${counts(d)}.`,
-    root: "../../",
+    description: `${d.id} (${period(d)}) ${T.suffix[d.kind]}. ${counts(d)}.`,
+    root: "../../" + "../".repeat(T.dir.split("/").filter(Boolean).length),
     body,
+    lang: d.lang,
+    path: `${d.kind}/${d.id}/`,
   });
 }
 
@@ -685,7 +785,7 @@ function tops(d) {
   const lines = d.body.split(/^## /m).slice(1).flatMap((chunk) => {
     const name = chunk.split("\n")[0].trim();
     const first = chunk.match(/^### \d+\.\s*(.+)$/m);
-    const slug = KINDS[d.kind].groups[name];
+    const slug = TEXT[d.lang].groups[name];
     return first && slug
       ? [`<span class="top group--${slug}"><b>${name}</b><span>${plainTitle(marked.parseInline(first[1]))}</span></span>`]
       : [];
@@ -694,26 +794,31 @@ function tops(d) {
 }
 
 // 한 분기의 목록. 홈은 가장 나중 분기와 같은 내용이고 root 와 제목만 다르다.
-function renderList(years, p, root, home) {
+// root 는 사이트 최상위까지, base 는 그 언어판 최상위까지의 상대 경로다.
+function renderList(years, p, root, home, lang = "ko") {
+  const T = TEXT[lang];
+  const base = root + T.dir;
   const cards = years
     .get(p.year)
     .quarters.get(p.q)
     .map(
       (d) => `
-  <li class="${d.kind}"><a href="${root}${d.kind}/${d.id}/">
+  <li class="${d.kind}"><a href="${base}${d.kind}/${d.id}/">
     <span class="wk">${d.id}</span>
-    <span class="period">${period(d.meta)}</span>
+    <span class="period">${period(d)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
     ${tops(d)}
   </a></li>`
     )
     .join("");
   return layout({
-    title: home ? `${SITE_TITLE} — 주간 뉴스 브리핑` : `${listTitle(p)} — ${SITE_TITLE}`,
-    description: SITE_TAGLINE,
+    title: home ? `${SITE_TITLE} — ${T.home}` : `${listTitle(p, lang)} — ${SITE_TITLE}`,
+    description: T.tagline,
     root,
     full: true,
-    body: `${tabs(years, p, root)}\n<h2 class="list">${listTitle(p)}</h2>\n<ul class="archive">${cards}\n</ul>`,
+    lang,
+    path: home ? "" : listPath(p),
+    body: `${tabs(years, p, base, T)}\n<h2 class="list">${listTitle(p, lang)}</h2>\n<ul class="archive">${cards}\n</ul>`,
   });
 }
 
@@ -933,7 +1038,31 @@ ${outletStats(view)}`,
 
 // ---------- 실행 ----------
 
-const sets = Object.fromEntries(KIND_NAMES.map((k) => [k, load(k)]));
+const SETS = Object.fromEntries(LANG_NAMES.map((l) => [l, Object.fromEntries(KIND_NAMES.map((k) => [k, load(k, l)]))]));
+const sets = SETS.ko;
+
+// 영문판은 한국어판을 옮긴 것이다. 원본이 없거나, 구획과 항목 수가 다르거나, 출처 링크가
+// 하나라도 다르면 빌드를 멈춘다. 원본이 영문판을 만든 뒤에 고쳐졌으면 경고만 한다.
+// 영문 원고의 source 는 번역할 때 읽은 원본 파일의 sha256 앞 12자리다.
+const linksOf = (d) => [...d.body.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]).join("\n");
+const shapeOf = (d) => Object.entries(d.n).map(([g, n]) => `${TEXT[d.lang].groups[g] ?? g} ${n}`).join(", ");
+const badTranslations = [], staleTranslations = [];
+for (const kind of KIND_NAMES)
+  for (const d of SETS.en[kind]) {
+    const ko = sets[kind].find((x) => x.id === d.id);
+    const at = `en/${kind}/${d.id}`;
+    if (!ko) badTranslations.push(`${at}: 한국어 원본이 없다`);
+    else if (shapeOf(d) !== shapeOf(ko)) badTranslations.push(`${at}: 구획·항목 수가 원본과 다르다 (${shapeOf(d)} / 원본 ${shapeOf(ko)})`);
+    else if (linksOf(d) !== linksOf(ko)) badTranslations.push(`${at}: 링크가 원본과 다르다`);
+    else if (d.meta.source !== createHash("sha256").update(readFileSync(join(CONTENT, kind, `${d.id}.md`))).digest("hex").slice(0, 12))
+      staleTranslations.push(at);
+  }
+if (badTranslations.length) {
+  console.error(`영문판이 원본과 맞지 않는다:\n  ${badTranslations.join("\n  ")}`);
+  process.exit(1);
+}
+if (staleTranslations.length)
+  console.warn(`경고: 영문판을 만든 뒤 원본이 바뀌었다. 바뀐 곳을 다시 옮기고 source 를 갱신한다: ${staleTranslations.join(", ")}`);
 
 // 다른 항목을 번호로 가리키면 빌드를 멈춘다. "(국내 2번)" 은 분기호가 항목을 떼어
 // 다시 묶으면 가리킬 곳이 없다. 2026-W31~W38 에서 16곳이 나와 모두 고쳤다.
@@ -977,24 +1106,42 @@ if (mixedNames.length) {
 const years = timeline(sets);
 const all = periods(years);
 
+// 언어판마다 있는 페이지. 언어 선택이 같은 페이지의 다른 언어판으로 갈 수 있는지 본다.
+const YEARS = Object.fromEntries(LANG_NAMES.map((l) => [l, timeline(SETS[l])]));
+const PAGES = Object.fromEntries(LANG_NAMES.map((l) => [l, new Set([
+  ...KIND_NAMES.flatMap((k) => SETS[l][k].map((d) => `${k}/${d.id}/`)),
+  ...periods(YEARS[l]).map(listPath),
+  ...(l === "ko" || periods(YEARS[l]).length ? [""] : []),
+])]));
+
 rmSync(SITE, { recursive: true, force: true });
 mkdirSync(SITE, { recursive: true });
 // 파비콘과 링크 미리보기 이미지. 만든 방법은 static/README.md 에 있다.
 cpSync(join(ROOT, "static"), SITE, { recursive: true, filter: (f) => !f.endsWith("README.md") });
 
 // 발행물 경로는 종류별로 그대로 둔다. 이미 나간 주소가 깨지면 안 된다.
-for (const kind of KIND_NAMES)
-  for (const d of sets[kind]) {
-    const dir = join(SITE, kind, d.id);
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, "index.html"), renderDoc(d, years));
-  }
+for (const lang of LANG_NAMES)
+  for (const kind of KIND_NAMES)
+    for (const d of SETS[lang][kind]) {
+      const dir = join(SITE, TEXT[lang].dir, kind, d.id);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "index.html"), renderDoc(d, YEARS[lang]));
+    }
 
 for (const p of all) {
   const dir = join(SITE, p.year, `Q${p.q}`);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, "index.html"), renderList(years, p, "../../", false));
 }
+
+// 영문판 목록과 홈. 옮긴 호가 있는 분기만 나온다.
+const enAll = periods(YEARS.en);
+for (const p of enAll) {
+  const dir = join(SITE, "en", p.year, `Q${p.q}`);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "index.html"), renderList(YEARS.en, p, "../../../", false, "en"));
+}
+if (enAll.length) writeFileSync(join(SITE, "en", "index.html"), renderList(YEARS.en, enAll[enAll.length - 1], "../", true, "en"));
 
 // 홈은 가장 나중 분기다. 분기가 바뀐 첫 주에는 그 분기에 주간호 한 건뿐이다.
 const latest = all[all.length - 1];
@@ -1007,6 +1154,7 @@ writeFileSync(
         description: SITE_TAGLINE,
         root: "./",
         full: true,
+        path: "",
         body: `<div class="empty"><p>아직 발행된 ${KINDS.week.label}가 없습니다.</p></div>`,
       })
 );
@@ -1033,15 +1181,15 @@ if (inQuarters.join() !== expected.join() || statViews.some((v) => tableWeeks(v)
 // 목차가 항목을 빠짐없이 가리키는지 본다. 목차는 빌드가 만든 HTML 을 다시 읽어
 // 만들므로, 항목 마크업이 바뀌면 목차가 오류 없이 비거나 모자랄 수 있다. 원고의 항목
 // 수(보통 15개)와 목차 줄 수, 목차로 돌아가는 제목 링크 수가 모두 같아야 한다.
-const badToc = KIND_NAMES.flatMap((kind) =>
-  sets[kind].flatMap((d) => {
-    const html = readFileSync(join(SITE, kind, d.id, "index.html"), "utf8");
+const badToc = LANG_NAMES.flatMap((lang) => KIND_NAMES.flatMap((kind) =>
+  SETS[lang][kind].flatMap((d) => {
+    const html = readFileSync(join(SITE, TEXT[lang].dir, kind, d.id, "index.html"), "utf8");
     const want = Object.values(d.n).reduce((a, b) => a + b, 0);
     const lines = (html.match(/<nav class="toc"[\s\S]*?<\/nav>/)?.[0].match(/<li>/g) ?? []).length;
     const back = (html.match(/class="to-toc"/g) ?? []).length;
-    return lines === want && back === want ? [] : [`${d.id} 항목 ${want} · 목차 ${lines} · 제목 링크 ${back}`];
+    return lines === want && back === want ? [] : [`${TEXT[lang].dir}${d.id} 항목 ${want} · 목차 ${lines} · 제목 링크 ${back}`];
   })
-);
+));
 if (badToc.length) {
   console.error(`목차가 항목과 맞지 않는다: ${badToc.join(", ")}. 항목 마크업이 바뀌었는지 본다.`);
   process.exit(1);
@@ -1158,3 +1306,4 @@ console.log(
     .join(" | ") || "발행물 없음"
 );
 console.log(`통계 ${statViews.map((v) => `${v.label} ${v.runs.length}개`).join(" | ")}`);
+console.log(`영문판 ${KIND_NAMES.map((k) => `${KINDS[k].label} ${SETS.en[k].length}개`).join(" | ")}`);
