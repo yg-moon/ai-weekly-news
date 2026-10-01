@@ -76,7 +76,7 @@ const TEXT = {
     tagline: "The past week in five stories each: Korea · World · AI.",
     badges: ["Every Monday, 8 a.m. KST", "Collected and summarized by AI · Sources for every item"],
     home: "Weekly News Briefing",
-    why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats (in Korean)",
+    why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Single", "Big stories that stand alone"],
     count: (n) => `${n} items`,
     pager: ["Previous and next issues", "Previous", "Next"],
