@@ -457,8 +457,20 @@ const CSS = `
     min-width:0; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
   }
   .archive .counts { width:100%; color:var(--muted); font-size:.78rem; }
-  .archive li.quarter .wk { color:var(--accent); }
-  .archive li.quarter + li { border-top-color:var(--dim); }
+  /* 분기호는 카드로 띄운다. 처음 온 사람이 주간호와 같은 줄로 읽고 지나쳤다(2026-10-01).
+     위의 세 색 띠는 로고의 세 막대와 같은 국내·해외·AI 색이다. 세 분야를 묶은 요약이라는 표시다. */
+  .archive li.quarter { margin-bottom:1.25rem; }
+  .archive li.quarter + li { border-top:none; }
+  .archive li.quarter a {
+    position:relative; overflow:hidden; margin-inline:0; padding:1.35rem 1.2rem 1rem;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  }
+  .archive li.quarter a::before {
+    content:""; position:absolute; left:0; right:0; top:0; height:5px;
+    background:linear-gradient(90deg, var(--korea) 0 33.4%, var(--world) 33.4% 66.7%, var(--ai) 66.7%);
+  }
+  .archive li.quarter a:hover { border-color:var(--muted); }
+  .archive li.quarter .wk { font-size:1.2rem; }
   .empty {
     padding:1.5rem; border:1px dashed var(--line); border-radius:var(--radius);
     color:var(--muted); background:var(--surface);
