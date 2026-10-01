@@ -582,19 +582,20 @@ const CSS = `
   }
 
   /* 이전 호·다음 호 */
-  .pager { display:flex; gap:1rem; margin-top:3.5rem; padding-top:1.25rem; border-top:1px solid var(--line); }
+  .pager { display:flex; gap:1rem; margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--line); }
   .pager a { display:flex; flex-direction:column; text-decoration:none; color:var(--text); font-weight:700; font-variant-numeric:tabular-nums; line-height:1.5; }
   .pager a:hover { color:var(--accent); }
   .pager small { font-size:.75rem; font-weight:400; color:var(--muted); }
   .pager .next { margin-left:auto; text-align:right; }
 
   footer {
-    margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line);
+    margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--line);
     font-size:.82rem; color:var(--muted);
   }
-  /* 목록 뒤에서는 줄이도록 한다. 마지막 발행물의 아래 여백(1rem)에 4rem 이 더해져 항목 사이 간격의
-     두 배를 넘었다. 바닥글의 선이 항목 사이의 선처럼 이어지게 한다. */
+  /* 바닥글 위 간격을 앞의 내용에 맞춘다. 목록은 마지막 발행물에 아래 여백(1rem)이 있어 줄이고,
+     이전 호·다음 호 뒤에서는 그 위 선과 같은 간격(1.25rem)을 둬 띠 하나처럼 보이게 한다. */
   .archive + footer { margin-top:1rem; }
+  .pager + footer { margin-top:1.25rem; }
   footer a { color:var(--muted); }
   footer p { margin:0 0 .5rem; }
   footer p:last-child { margin:0; }
