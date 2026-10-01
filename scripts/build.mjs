@@ -90,7 +90,7 @@ const TEXT = {
     badges: ["Every Monday, 8 a.m. KST", "Collected and summarized by AI · Sources for every item"],
     home: "Weekly News Briefing",
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats",
-    flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Single", "Big stories that stand alone"],
+    flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
     pager: ["Previous and next issues", "Previous", "Next"],
     og: "og-en.png",
@@ -316,7 +316,8 @@ const CSS = `
   }
   .wrap { max-width:41rem; margin:0 auto; }
   /* 자간 좁히기와 어절 단위 줄바꿈은 한글에 맞춘 것이다. 영문판은 기본값으로 둔다. */
-  html[lang="en"] body { letter-spacing:0; word-break:normal; }
+  html[lang="en"] body { letter-spacing:0; word-break:normal; line-height:1.65; }
+  .nw { white-space:nowrap; }
   /* 어절 단위로 끊고 왼쪽 정렬. 국내 신문사 본문이 모두 이 방식이다.
      줄 끝에 평균 1.2자가 비지만 단어가 쪼개지지 않는다. */
   .what p, .why p { font-size:1.125rem; }
@@ -632,7 +633,8 @@ function layout({ title, description, root, body, full = false, lang = "ko", pat
   const others = path === null ? [] : LANG_NAMES.filter((l) => l !== lang && PAGES[l].has(path));
   const altAttrs = others.map((l) => ` data-alt-${l}="${root}${TEXT[l].dir}${path}"`).join("");
   const hreflang = path !== null && others.length
-    ? [lang, ...others].map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE_URL}${TEXT[l].dir}${path}">`).join("\n")
+    ? [...[lang, ...others].map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE_URL}${TEXT[l].dir}${path}">`),
+        `<link rel="alternate" hreflang="x-default" href="${SITE_URL}${path}">`].join("\n")
     : "";
   const switcher = `<nav class="lang" aria-label="Language">${LANG_NAMES.map((l) =>
     l === lang
@@ -798,7 +800,7 @@ function renderDoc(d, years) {
   const p = placeOf(d);
   const back = p.q ? p : periods(years).filter((x) => x.year === p.year).pop();
   const T = TEXT[d.lang];
-  const main = structure(marked.parse(d.body), T);
+  const main = keepNames(structure(marked.parse(d.body), T), d.lang);
   // 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
   const nav = toc(main, T);
   const body = `
@@ -817,6 +819,12 @@ ${pager(d)}`;
     path: `${d.kind}/${d.id}/`,
   });
 }
+
+// 영문판에서 대문자로 시작하는 하이픈 낱말을 줄 끝에서 자르지 않는다. 한국 이름의
+// 붙임표에서 줄이 바뀌면 "Lee Jae-" 와 "myung" 이 갈린다. 태그 밖 글자만 고친다.
+const keepNames = (html, lang) =>
+  lang !== "en" ? html : html.split(/(<[^>]+>)/).map((t) =>
+    t.startsWith("<") ? t : t.replace(/\b([A-Z][a-z]+-[a-z]+)\b/g, '<span class="nw">$1</span>')).join("");
 
 // 목록에서 발행물마다 분야별 1위 제목을 한 줄씩 미리 보여 준다.
 function tops(d) {
@@ -1092,7 +1100,8 @@ const SETS = Object.fromEntries(LANG_NAMES.map((l) => [l, Object.fromEntries(KIN
 const sets = SETS.ko;
 
 // 영문판은 한국어판을 옮긴 것이다. 원본이 없거나, 구획과 항목 수가 다르거나, 출처 링크가
-// 하나라도 다르면 빌드를 멈춘다. 원본이 영문판을 만든 뒤에 고쳐졌으면 경고만 한다.
+// 하나라도 다르거나, 영문판을 만든 뒤 원본이 고쳐졌으면 빌드를 멈춘다. 영문판은 자주 들여다보지
+// 않아 어긋나도 늦게 알게 된다(2026-10-01 사용자). 원본을 고친 세션이 영문판도 고친다.
 // 영문 원고의 source 는 번역할 때 읽은 원본 파일의 sha256 앞 12자리다.
 const linksOf = (d) => [...d.body.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]).join("\n");
 // 출처 줄의 매체 이름. 영문판은 OUTLETS_EN 의 이름을 쓴다.
@@ -1100,7 +1109,8 @@ const outletsOf = (d, en) =>
   d.body.split("\n").filter((l) => /^- \*\*(출처|Sources)\*\*/.test(l))
     .flatMap((l) => [...l.matchAll(/\[([^\]]+)\]\(/g)].map((m) => (en ? OUTLETS_EN[m[1]] ?? m[1] : m[1])));
 const shapeOf = (d) => Object.entries(d.n).map(([g, n]) => `${TEXT[d.lang].groups[g] ?? g} ${n}`).join(", ");
-const badTranslations = [], staleTranslations = [];
+const badTranslations = [];
+const sourceHash = (kind, id) => createHash("sha256").update(readFileSync(join(CONTENT, kind, `${id}.md`))).digest("hex").slice(0, 12);
 for (const kind of KIND_NAMES)
   for (const d of SETS.en[kind]) {
     const ko = sets[kind].find((x) => x.id === d.id);
@@ -1109,15 +1119,19 @@ for (const kind of KIND_NAMES)
     else if (shapeOf(d) !== shapeOf(ko)) badTranslations.push(`${at}: 구획·항목 수가 원본과 다르다 (${shapeOf(d)} / 원본 ${shapeOf(ko)})`);
     else if (linksOf(d) !== linksOf(ko)) badTranslations.push(`${at}: 링크가 원본과 다르다`);
     else if (outletsOf(d).join() !== outletsOf(ko, true).join()) badTranslations.push(`${at}: 출처 매체 이름이 OUTLETS_EN 과 다르다`);
-    else if (d.meta.source !== createHash("sha256").update(readFileSync(join(CONTENT, kind, `${d.id}.md`))).digest("hex").slice(0, 12))
-      staleTranslations.push(at);
+    // 영문 제목은 60자까지다. 한국어 제목의 26자와 같이 목차에서 두 줄을 넘지 않는 길이다.
+    for (const [, t] of d.body.matchAll(/^### \d+\.\s*(.+)$/gm))
+      if (t.length > 60) badTranslations.push(`${at}: 제목이 ${t.length}자다(60까지) "${t}"`);
+    // 영문은 둥근 따옴표(“ ” ’)를 쓴다. 링크 주소 밖의 곧은 따옴표를 막는다.
+    const straight = d.body.replace(/\]\([^)]*\)/g, "").match(/.{0,20}["'].{0,20}/);
+    if (straight) badTranslations.push(`${at}: 곧은 따옴표가 있다 "${straight[0]}"`);
+    else if (d.meta.source !== sourceHash(kind, d.id))
+      badTranslations.push(`${at}: 영문판을 만든 뒤 원본이 바뀌었다. 바뀐 곳을 다시 옮기고 source 를 ${sourceHash(kind, d.id)} 로 바꾼다`);
   }
 if (badTranslations.length) {
   console.error(`영문판이 원본과 맞지 않는다:\n  ${badTranslations.join("\n  ")}`);
   process.exit(1);
 }
-if (staleTranslations.length)
-  console.warn(`경고: 영문판을 만든 뒤 원본이 바뀌었다. 바뀐 곳을 다시 옮기고 source 를 갱신한다: ${staleTranslations.join(", ")}`);
 
 // 다른 항목을 번호로 가리키면 빌드를 멈춘다. "(국내 2번)" 은 분기호가 항목을 떼어
 // 다시 묶으면 가리킬 곳이 없다. 2026-W31~W38 에서 16곳이 나와 모두 고쳤다.
