@@ -1150,6 +1150,14 @@ if (badTranslations.length) {
   console.error(`영문판이 원본과 맞지 않는다:\n  ${badTranslations.join("\n  ")}`);
   process.exit(1);
 }
+// 영문 문장은 40단어까지 권한다. 비원어민이 한 번에 읽는 길이다(사용자 2026-10-01).
+// 따옴표 안의 인용은 원문 문장을 지키므로 세지 않는다. 막지는 않고 알리기만 한다.
+const longSentences = KIND_NAMES.flatMap((kind) => SETS.en[kind].flatMap((d) =>
+  d.body.split("\n").filter((l) => !/^(#|- \*\*(Date|Sources|Basis)\*\*)/.test(l))
+    .flatMap((l) => l.trim().replace(/^- \*\*[^*]+\*\*: /, "").split(/(?<=[.!?”])\s+(?=[A-Z“])/))
+    .filter((s) => s.replace(/“[^”]*”/g, "").split(/\s+/).filter(Boolean).length > 40)
+    .map((s) => `en/${kind}/${d.id}: ${s.slice(0, 80)}…`)));
+if (longSentences.length) console.warn(`40단어가 넘는 영문 문장이 있다(나누기를 권한다):\n  ${longSentences.join("\n  ")}`);
 
 // 다른 항목을 번호로 가리키면 빌드를 멈춘다. "(국내 2번)" 은 분기호가 항목을 떼어
 // 다시 묶으면 가리킬 곳이 없다. 2026-W31~W38 에서 16곳이 나와 모두 고쳤다.
