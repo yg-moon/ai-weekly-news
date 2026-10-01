@@ -413,6 +413,8 @@ const CSS = `
     display:block; font-size:.7rem; letter-spacing:.08em; font-weight:700;
     color:var(--accent); margin-bottom:.3rem;
   }
+  /* 넓은 자간은 대문자 라벨의 방식이다. 영문 소문자에 주면 글자가 흩어져 보인다. */
+  html[lang="en"] .why .lbl { text-transform:uppercase; }
   .src { margin:.9rem 0 0 var(--indent); font-size:.8rem; color:var(--muted); line-height:1.9; }
   .src .lbl { color:var(--muted); margin-right:.4rem; }
   .src a { color:var(--muted); }
