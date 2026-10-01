@@ -806,7 +806,7 @@ function renderDoc(d, years) {
   const p = placeOf(d);
   const back = p.q ? p : periods(years).filter((x) => x.year === p.year).pop();
   const T = TEXT[d.lang];
-  const main = keepNames(structure(marked.parse(d.body), T), d.lang);
+  const main = fallbackLinks(keepNames(structure(marked.parse(d.body), T), d.lang), d.lang);
   // 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
   const nav = toc(main, T);
   const body = `
@@ -831,6 +831,12 @@ ${pager(d)}`;
 const keepNames = (html, lang) =>
   lang !== "en" ? html : html.split(/(<[^>]+>)/).map((t) =>
     t.startsWith("<") ? t : t.replace(/\b([A-Z][a-z]+-[a-z]+)\b/g, '<span class="nw">$1</span>')).join("");
+
+// 분기호·연간호의 근거 링크는 같은 언어판의 발행물을 가리킨다. 영문판에 아직 없는 발행물은
+// 한국어판으로 보낸다. 번역이 생기면 다음 빌드부터 영문판으로 간다.
+const fallbackLinks = (html, lang) =>
+  lang === "ko" ? html : html.replace(/href="\.\.\/\.\.\/(week|quarter|year)\/([^/"]+)\//g, (whole, kind, id) =>
+    SETS[lang][kind].some((x) => x.id === id) ? whole : `href="../../${"../".repeat(TEXT[lang].dir.split("/").filter(Boolean).length)}${kind}/${id}/`);
 
 // 목록에서 발행물마다 분야별 1위 제목을 한 줄씩 미리 보여 준다.
 function tops(d) {
@@ -1110,6 +1116,11 @@ const sets = SETS.ko;
 // 않아 어긋나도 늦게 알게 된다(2026-10-01 사용자). 원본을 고친 세션이 영문판도 고친다.
 // 영문 원고의 source 는 번역할 때 읽은 원본 파일의 sha256 앞 12자리다.
 const linksOf = (d) => [...d.body.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]).join("\n");
+// 근거 줄의 링크 이름. "W35 국내 3" 은 영문판에서 "W35 Korea 3" 이다.
+const GROUP_EN = Object.fromEntries(Object.keys(TEXT.ko.groups).map((g, i) => [g, Object.keys(TEXT.en.groups)[i]]));
+const basisOf = (d, en) =>
+  d.body.split("\n").filter((l) => /^- \*\*(근거|Basis)\*\*/.test(l))
+    .flatMap((l) => [...l.matchAll(/\[([^\]]+)\]\(/g)].map((m) => (en ? m[1].replace(/국내|해외/g, (g) => GROUP_EN[g]) : m[1])));
 // 출처 줄의 매체 이름. 영문판은 OUTLETS_EN 의 이름을 쓴다.
 const outletsOf = (d, en) =>
   d.body.split("\n").filter((l) => /^- \*\*(출처|Sources)\*\*/.test(l))
@@ -1125,6 +1136,7 @@ for (const kind of KIND_NAMES)
     else if (shapeOf(d) !== shapeOf(ko)) badTranslations.push(`${at}: 구획·항목 수가 원본과 다르다 (${shapeOf(d)} / 원본 ${shapeOf(ko)})`);
     else if (linksOf(d) !== linksOf(ko)) badTranslations.push(`${at}: 링크가 원본과 다르다`);
     else if (outletsOf(d).join() !== outletsOf(ko, true).join()) badTranslations.push(`${at}: 출처 매체 이름이 OUTLETS_EN 과 다르다`);
+    else if (basisOf(d).join() !== basisOf(ko, true).join()) badTranslations.push(`${at}: 근거 링크 이름이 원본과 다르다`);
     // 영문 제목은 60자까지다. 한국어 제목의 26자와 같이 목차에서 두 줄을 넘지 않는 길이다.
     for (const [, t] of d.body.matchAll(/^### \d+\.\s*(.+)$/gm))
       if (t.length > 60) badTranslations.push(`${at}: 제목이 ${t.length}자다(60까지) "${t}"`);
