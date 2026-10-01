@@ -73,8 +73,8 @@ const TEXT = {
       return ma === mb ? `${EN_MONTHS[ma - 1]} ${da}–${db}` : `${EN_MONTHS[ma - 1]} ${da} – ${EN_MONTHS[mb - 1]} ${db}`;
     },
     listTitle: (p) => `${p.year} Q${p.q}`,
-    tagline: "The past week's news from Korea, the world and AI, in five stories each.",
-    badges: ["Every Monday, 8 a.m. KST", "Collected and summarized by AI · Sources for every item", "Translated by AI from the Korean edition"],
+    tagline: "The past week in five stories each: Korea · World · AI.",
+    badges: ["Every Monday, 8 a.m. KST", "Collected and summarized by AI · Sources for every item"],
     home: "Weekly News Briefing",
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats (in Korean)",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Single", "Big stories that stand alone"],
