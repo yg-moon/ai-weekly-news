@@ -326,7 +326,8 @@ const CSS = `
 
   /* 머리말 */
   header.site { padding-bottom:1.5rem; border-bottom:1px solid var(--line); margin-bottom:2.25rem; }
-  header.site h1 { margin:0; font-size:1.4rem; letter-spacing:-.02em; }
+  /* 줄 간격을 고정한다. 영문판은 본문 줄 간격이 달라서, 물려받으면 언어를 바꿀 때 머리말이 움직인다. */
+  header.site h1 { margin:0; font-size:1.4rem; letter-spacing:-.02em; line-height:1.75; }
   /* 사이트 이름과 언어 선택을 한 줄에 둔다. */
   .masthead { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:0 0 .4rem; }
   header.site.compact .masthead { margin:0; }
