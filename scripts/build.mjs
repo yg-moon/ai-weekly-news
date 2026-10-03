@@ -478,6 +478,7 @@ const CSS = `
   /* 통계 페이지 */
   .period-now { margin:0 0 .25rem; font-size:.85rem; color:var(--muted); }
   h2.sec { font-size:1.15rem; margin:2rem 0 .3rem; }
+  .period-now + h2.sec { margin-top:.35rem; }
   .sec-lede { color:var(--dim); font-size:.9rem; margin:0 0 1.25rem; }
   .ogs { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
   .og-h { margin:0 0 .5rem; font-weight:700; font-size:.9rem; color:var(--accent); }
