@@ -63,12 +63,18 @@
 | `content/week/` | 주간호 원본 마크다운. 사이트와 분기호의 입력이다 |
 | `content/quarter/` | 분기호 원본. 연간호의 입력이다 |
 | `content/year/` | 연간호 원본 |
+| `content/en/` | 영문판 원본. 한국어판과 같은 경로·파일 이름이다 |
 | `data/runs/` | 실행 기록. 호마다 비용·토큰·모델·시간. `/stats/` 의 입력이다 |
-| `scripts/` | 반복 실행되는 코드. 빌드와 기사 원문 추출 |
+| `scripts/` | 반복 실행되는 코드. 빌드·수집·검사. 각 스크립트의 역할은 파일 머리 주석에 있다 |
+| `static/` | 빌드가 그대로 복사하는 아이콘과 미리보기 이미지. 만든 방법은 `static/README.md` |
 | `site/` | 빌드 산출물. 커밋하지 않으며 CI 가 배포한다 |
 | `docs/` | 프로젝트 문서. 코드를 두지 않는다 |
 
 ```bash
-npm ci && npm run build              # content/week/*.md → site/
+npm ci && npm run build              # content/ → site/
+npm test                             # 검사 규칙이 살아 있는지 (scripts/*.test.mjs)
+node scripts/diff-site.mjs           # 지금 빌드한 사이트를 HEAD 와 비교
 node scripts/read-article.mjs <URL>  # 기사 본문과 발행일 추출
 ```
+
+빌드나 검사 코드를 고치면 `npm test` 와 `node scripts/diff-site.mjs` 를 돌린다. 화면이 바뀌었으면 뜻한 변화인지 본다.
