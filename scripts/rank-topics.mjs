@@ -26,7 +26,7 @@ const STOP = new Set(
 const PARTICLE = /(은|는|이|가|을|를|에|의|도|와|과|로|으로|에서|에게|부터|까지|만|들|씨|측)$/;
 
 // 해외와 AI 풀은 영어다. 같은 기준을 적용하려면 영어도 세야 한다.
-const STOP_EN = new Set(
+const STOP_EN = new Set([
   `the a an and or but of in on at to for from with by as is are was were be been being
    has have had do does did will would can could may might must shall should
    this that these those it its his her their our your my he she they we you
@@ -35,27 +35,29 @@ const STOP_EN = new Set(
    all both each other another new says said say according report reports reported
    first second third last next year years day days week weeks month months
    one two three four five six seven eight nine ten million billion percent
-   says his her also amid following since until while including such other
-   // 출처 표기 — Wikipedia 항목 끝에 "(AFP via France 24)" 처럼 붙는다
-   via afp reuters bbc cnn npr jazeera guardian xinhua euronews nbc espn dawn fortune
+   says his her also amid following since until while including such other`,
+  // 출처 표기 — Wikipedia 항목 끝에 "(AFP via France 24)" 처럼 붙는다
+  `via afp reuters bbc cnn npr jazeera guardian xinhua euronews nbc espn dawn fortune
    tribune news agency press media post times wire service france daily world
-   independent telegraph journal herald observer today online magazine network
-   // Hacker News 게시글 접두사
-   show ask launch tell hiring
-   // 사건 서술에 늘 붙는 일반어
-   people killed injured dead death toll least others wounded missing rescue
+   independent telegraph journal herald observer today online magazine network`,
+  // Hacker News 게시글 접두사
+  `show ask launch tell hiring`,
+  // 사건 서술에 늘 붙는 일반어
+  `people killed injured dead death toll least others wounded missing rescue
    president minister government official officials state states united country countries
    city district province region town village area local national international
    attack attacks strike strikes announces announced says reports court judge police
-   military forces troops security company court case election party`
-    .split(/\s+/).filter((w) => w && !w.startsWith("//"))
-);
+   military forces troops security company court case election party`,
+].join(" ").split(/\s+/).filter(Boolean));
 
+// 옵션 값은 옵션 바로 뒤에 온다. 옵션이 없을 때 indexOf 가 -1 이라 첫 인자(파일)를
+// 값으로 읽지 않게 따로 다룬다.
 const args = process.argv.slice(2);
-const file = args.find((a) => !a.startsWith("--"));
-const top = Number(args[args.indexOf("--top") + 1]) || 40;
-const covered = (args[args.indexOf("--covered") + 1] ?? "")
-  .split(",").map((s) => s.trim()).filter(Boolean);
+const opt = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
+const values = new Set(["--top", "--covered"].map((o) => args.includes(o) && args.indexOf(o) + 1).filter(Boolean));
+const file = args.find((a, i) => !a.startsWith("--") && !values.has(i));
+const top = Number(opt("--top")) || 40;
+const covered = (opt("--covered") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
 if (!file) {
   console.error("usage: node scripts/rank-topics.mjs <헤드라인파일> [--top N] [--covered \"a,b,c\"]");

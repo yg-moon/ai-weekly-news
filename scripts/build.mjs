@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync, cpSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, basename } from "node:path";
+import { fileURLToPath } from "node:url";
 import { marked } from "marked";
 import { OUTLETS_EN } from "./outlets-en.mjs";
 
@@ -19,7 +20,8 @@ marked.use({
   },
 });
 
-const ROOT = new URL("..", import.meta.url).pathname;
+// URL 의 pathname 은 한글·공백을 %인코딩한 채로 둔다. 파일 경로로 바꿔 쓴다.
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CONTENT = join(ROOT, "content");
 const RUNS = join(ROOT, "data", "runs");
 const SITE = join(ROOT, "site");
@@ -970,8 +972,6 @@ function niceStep(raw) {
   const p = 10 ** Math.floor(Math.log10(raw || 1));
   return [1, 2, 5, 10].map((m) => m * p).find((s) => s >= raw);
 }
-
-const hoursMinutes = (m) => (m < 60 ? `${m}분` : `${Math.floor(m / 60)}시간 ${m % 60}분`);
 
 // 통계는 전체·연도·분기마다 페이지가 따로 있다. 목록의 탭과 같이 주소가 기간이고
 // 스크립트를 쓰지 않는다. 기간은 발행물과 같은 13주 분기로 끊는다.

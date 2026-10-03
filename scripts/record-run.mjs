@@ -83,7 +83,8 @@ for (const file of files)
     if (file === main && d.timestamp && (!started || d.timestamp < started)) started = d.timestamp;
     const m = d.message;
     if (!m?.usage || !m.model || m.model === "<synthetic>") continue;
-    calls.set(`${d.requestId}|${m.id}`, { model: m.model, u: m.usage });
+    // 날짜가 붙은 이름(claude-haiku-4-5-20251001)도 같은 모델로 센다.
+    calls.set(`${d.requestId}|${m.id}`, { model: m.model.replace(/-\d{8}$/, ""), u: m.usage });
   }
 if (!calls.size) fail(`${main} 에 사용량이 없다. 대화 기록 형식이 바뀌었는지 본다`);
 

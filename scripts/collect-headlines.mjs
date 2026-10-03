@@ -15,9 +15,8 @@ import { execFileSync } from "node:child_process";
 const UA =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36";
 
-// 기성 종합지·지상파·통신사. 편집 판단의 기준으로 삼는다.
-// 기성 종합일간지·지상파·통신사만 본다. 연성 기사 비중이 높은 매체는
-// '많이 본' 편향을 키우므로 제외한다. 근거는 docs/DECISIONS.md 참고.
+// 기성 종합일간지·지상파·통신사만 본다. 편집 판단의 기준으로 삼는다.
+// 연성 기사 비중이 높은 매체는 '많이 본' 편향을 키우므로 제외한다. 근거는 docs/DECISIONS.md 참고.
 const PRIMARY = [
   "조선일보", "중앙일보", "동아일보", "한겨레", "경향신문", "한국일보", "서울신문", "국민일보",
   "KBS", "SBS", "MBC", "JTBC", "YTN",
@@ -222,9 +221,9 @@ function parseRss(xml) {
     const l = it.match(/<link>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/);
     const d = it.match(/<pubDate>([^<]+)<\/pubDate>/);
     if (!t || !d) continue;
-    const day = new Date(d[1]);
-    if (isNaN(day)) continue;
-    out.push({ title: clean(t[1]), url: l ? l[1].trim() : "", day: day.toISOString().slice(0, 10) });
+    if (isNaN(new Date(d[1]))) continue;
+    // 주 경계가 KST 라 날짜도 KST 로 센다. 테크 매체 목록(kstDay)과 같다.
+    out.push({ title: clean(t[1]), url: l ? l[1].trim() : "", day: kstDay(d[1]) });
   }
   return out;
 }

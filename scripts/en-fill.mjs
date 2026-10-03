@@ -34,4 +34,4 @@ if (!m) { console.error("프론트매터가 없다"); process.exit(1); }
 const hash = createHash("sha256").update(koRaw).digest("hex").slice(0, 12);
 const head = /^source:/m.test(m[1]) ? m[1].replace(/^source:.*$/m, `source: ${hash}`) : `${m[1]}\nsource: ${hash}`;
 writeFileSync(enPath, `---\n${head}\n---\n${curl(m[2])}`);
-console.log(`${enPath}: 출처·근거 ${lines.length}줄, source ${hash}`);
+console.log(`${enPath}: ${slots ? `출처·근거 ${lines.length}줄 채움, ` : ""}source ${hash}`);
