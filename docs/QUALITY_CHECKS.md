@@ -6,7 +6,7 @@
 
 ## 실행 시점
 
-- 영구 문서(`AGENTS.md` · `INTENT.md` · `DECISIONS.md` · `RUNBOOK_WEEKLY.md`)를 크게 고친 다음.
+- 영구 문서(`AGENTS.md` · `INTENT.md` · `DECISIONS.md` · 세 런북 · `TRANSLATION_EN.md`)를 크게 고친 다음.
 - 주간호가 여러 번 쌓이는 동안 한 번도 안 돌렸을 때.
 - 다른 모델이나 사람이 이 프로젝트를 이어받기 전.
 - 발행물에서 오류가 나왔을 때. 같은 유형이 더 있는지 본다.
@@ -112,7 +112,7 @@ grep -n 'const PRIMARY\|const FEEDS' -A 20 scripts/collect-headlines.mjs
 
 - 국내 주요 매체 목록이 `PRIMARY` 와 같은가.
 - AI 뉴스룸 표가 `FEEDS` 와 같은가. 경로까지 본다.
-- `RUNBOOK_WEEKLY.md` 에 적힌 명령과 파일 경로가 실제로 존재하는가. 대상 주 계산 명령은 직접 실행해 본다.
+- `RUNBOOK_WEEKLY.md` 와 `RUNBOOK_QUARTERLY.md` 에 적힌 명령과 파일 경로가 실제로 존재하는가. 대상 주와 대상 분기 계산 명령은 직접 실행해 본다.
 
 ### 2.4 늘어난 문장의 쓸모
 
