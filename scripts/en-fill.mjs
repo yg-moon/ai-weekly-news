@@ -19,8 +19,9 @@ let en = readFileSync(enPath, "utf8");
 const lines = koRaw.toString().split("\n").filter((l) => /^- \*\*(출처|근거)\*\*: /.test(l))
   .map((l) => l.replace(/^- \*\*[^*]+\*\*: /, "")
     .replace(/\[([^\]]+)\]/g, (_, t) => `[${OUTLETS_EN[t] ?? t.replace("국내", "Korea").replace("해외", "World")}]`));
+// 자리가 하나도 없으면 이미 채운 원고를 고친 경우다. 따옴표와 source 만 다시 쓴다.
 const slots = (en.match(/\b(SRC|BASIS)\b/g) ?? []).length;
-if (slots !== lines.length) {
+if (slots && slots !== lines.length) {
   console.error(`자리 수(${slots})가 원본의 출처·근거 줄 수(${lines.length})와 다르다`);
   process.exit(1);
 }

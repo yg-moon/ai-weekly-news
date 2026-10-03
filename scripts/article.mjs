@@ -46,11 +46,11 @@ function paragraphs(html) {
   return [...seen].join("\n");
 }
 
+const chrome = (html) =>
+  html.replace(/<(script|style|noscript|svg|nav|header|footer|aside|form)\b[^>]*>[\s\S]*?<\/\1>/gi, " ");
+
 function text(html) {
-  const base = html.replace(
-    /<(script|style|noscript|svg|nav|header|footer|aside|form)\b[^>]*>[\s\S]*?<\/\1>/gi,
-    " "
-  );
+  const base = chrome(html);
   const article = base.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
   const scoped = article ? strip(article[1]) : "";
   const paras = paragraphs(base);
@@ -76,7 +76,8 @@ export function fetchArticle(url) {
         const enc = cs && /euc-kr|ks_c_5601|cp949/i.test(cs[1]) ? "euc-kr" : "utf-8";
         const html = new TextDecoder(enc).decode(buf);
         const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-        resolve({ date: metaDate(html), title: title ? title[1].trim() : null, text: text(html) });
+        // all 은 메뉴 등을 뺀 페이지 글자 전부다. 본문 추출은 목록·표 안의 문장을 놓치기도 한다.
+        resolve({ date: metaDate(html), title: title ? title[1].trim() : null, text: text(html), all: strip(chrome(html)) });
       }
     );
   });

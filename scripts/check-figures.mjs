@@ -169,7 +169,7 @@ async function load(url) {
   if (path && existsSync(path)) return JSON.parse(readFileSync(path, "utf8"));
   let r;
   try {
-    r = { ok: true, text: (await fetchArticle(url)).text };
+    r = { ok: true, text: (await fetchArticle(url)).all };
   } catch (e) {
     r = { ok: false, why: e.message };
   }
