@@ -31,7 +31,7 @@
 지금 실제 독자는 사용자 한 명이다. 순서는 방문자 통계 → 검색 노출 → 알리기다. 알리기 전에 재고 있어야 알린 뒤 사람이 얼마나 왔는지 숫자로 답할 수 있다.
 
 - [x] **방문자 통계.** Umami Cloud 를 모든 페이지에 넣었다(2026-10-04). 알리기 전후의 방문·유입 경로를 여기서 본다
-- [ ] **검색 노출.** sitemap.xml(두 언어판 72쪽)·canonical·og:url 과 Search Console 확인 파일(`static/`)을 넣었다(2026-10-04). 남은 일은 사용자가 Search Console 에서 확인·사이트맵 제출·색인 요청을 하고, 며칠 뒤 `site:yg-moon.github.io/ai-weekly-news` 로 뜨는지 보는 것이다. 네이버는 하지 않는다(사용자). RSS 는 정하지 않았다
+- [ ] **검색 노출.** sitemap.xml(두 언어판 72쪽)·canonical·og:url 과 Search Console 확인 파일(`static/`)을 넣었다(2026-10-04). 사용자가 Search Console 에서 소유권 확인·사이트맵 제출·홈과 소개 페이지 색인 요청을 마쳤다. 남은 일은 며칠 뒤 `site:yg-moon.github.io/ai-weekly-news` 로 뜨는지 보는 것이다. 네이버는 하지 않는다(사용자). RSS 는 정하지 않았다
   - `robots.txt` 와 사파리 북마크 아이콘은 도메인 뿌리(`yg-moon.github.io`)에만 둘 수 있다. 뿌리 저장소를 만들지 함께 정한다
 - [ ] **알리기.** GeekNews(Show GN)에 한 번 올리고, LinkedIn 에 게시물을 쓰고 프로필 프로젝트란에 더한다
   - AI 가 쓴 글에 대한 반감은 결과물보다 만드는 방식(규칙·검사·비용 공개)을 앞세우면 덜하다. 소개 페이지와 통계 페이지가 그 근거다
