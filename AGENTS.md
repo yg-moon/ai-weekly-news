@@ -42,14 +42,14 @@
 | `AGENTS.md` | 저장소 작업 규칙 | 세션마다 읽는 비용이 든다. 짧게 유지하고 실행 절차를 들이지 않는다 |
 | `README.md` | 프로젝트 소개 | 독자를 향한 유일한 문서다. 내부 규약을 쓰지 않는다 |
 | `docs/INTENT.md` | 프로젝트 목적과 원칙 | 변경 빈도가 낮다. 실행 절차를 다듬는 일로는 건드리지 않는다 |
-| `docs/DECISIONS.md` | 주요 결정사항 및 폐기 기록 | 기준을 바꾸기 전에 먼저 읽는다. 이미 검토하고 버린 선택지가 있다. 지우지 않고 쌓으며, 바뀐 결정은 옛 결정을 새 결정 아래 '버린 것'으로 한 줄로 줄여 옮긴다 |
+| `docs/DECISIONS.md` | 주요 결정사항 및 폐기 기록 | 기준을 바꾸기 전에 먼저 읽는다. 이미 검토하고 버린 선택지가 있다. |
 | `docs/RUNBOOK_WEEKLY.md` | 주간호 실행 절차 | 주간 발행 작업은 이 문서를 처음부터 끝까지 읽고 그대로 따른다 |
 | `docs/RUNBOOK_QUARTERLY.md` | 분기호 실행 절차 | 분기 발행 작업은 이 문서를 처음부터 끝까지 읽고 그대로 따른다 |
 | `docs/RUNBOOK_YEARLY.md` | 연간호 실행 절차 | 분기 런북에서 이어서 돈다 |
 | `docs/ROUTINE_WEEKLY.md` · `docs/ROUTINE_QUARTERLY.md` | Claude Code 루틴 프롬프트 (주간 · 분기) | 루틴 전용이다. 고치면 등록된 루틴도 같은 내용으로 바꾼다 |
 | `docs/TRANSLATION_EN.md` | 영문판 번역 규칙 | 영문판을 만들거나 고칠 때 읽는다 |
 | `docs/QUALITY_CHECKS.md` | 품질 점검 항목 | 문서를 크게 고친 뒤에 돌린다. 매번 돌리지는 않는다 |
-| `docs/PLAN.md` | 앞으로 할 일 | 길어지는 것이 허용되는 유일한 문서다. 끝난 항목은 지운다 |
+| `docs/PLAN.md` | 앞으로 할 일 | 길어져도 되는 유일한 문서다 |
 
 ### 내용 배치
 
@@ -61,13 +61,10 @@
 
 | 경로 | 역할 |
 |---|---|
-| `content/week/` | 주간호 원본 마크다운. 사이트와 분기호의 입력이다 |
-| `content/quarter/` | 분기호 원본. 연간호의 입력이다 |
-| `content/year/` | 연간호 원본 |
-| `content/en/` | 영문판 원본. 한국어판과 같은 경로·파일 이름이다 |
-| `data/runs/` | 실행 기록. 호마다 비용·토큰·모델·시간. `/stats/` 의 입력이다 |
-| `scripts/` | 반복 실행되는 코드. 빌드·수집·검사. 각 스크립트의 역할은 파일 머리 주석에 있다 |
-| `static/` | 빌드가 그대로 복사하는 아이콘과 미리보기 이미지. 만든 방법은 `static/README.md` |
+| `content/` | 원고. 영문판은 `en/` 아래 같은 경로다 |
+| `data/runs/` | 호마다 실행 기록. `/stats/` 의 입력이다 |
+| `scripts/` | 빌드·수집·검사 코드. 역할은 파일 머리 주석에 있다 |
+| `static/` | 빌드가 그대로 복사하는 아이콘과 미리보기 이미지 |
 | `site/` | 빌드 산출물. 커밋하지 않으며 CI 가 배포한다 |
 | `docs/` | 프로젝트 문서. 코드를 두지 않는다 |
 
@@ -75,7 +72,6 @@
 npm ci && npm run build              # content/ → site/
 npm test                             # 검사 규칙이 살아 있는지 (scripts/*.test.mjs)
 node scripts/diff-site.mjs           # 지금 빌드한 사이트를 HEAD 와 비교
-node scripts/read-article.mjs <URL>  # 기사 본문과 발행일 추출
 ```
 
 빌드나 검사 코드를 고치면 `npm test` 와 `node scripts/diff-site.mjs` 를 돌린다. 화면이 바뀌었으면 뜻한 변화인지 본다.
