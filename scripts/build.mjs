@@ -343,7 +343,12 @@ function feedback(T) {
 (function () {
   var d = document.getElementById("fb"), f = d.querySelector(".fb-form"), b = f.querySelector(".fb-send"), s = f.querySelector(".fb-status");
   var F = ${JSON.stringify({ send: F.send, sending: F.sending, done: F.done, fail: F.fail })};
-  document.querySelector(".fb-open").addEventListener("click", function () { s.textContent = ""; d.showModal(); });
+  // 바닥글 버튼과 본문의 #feedback 링크(소개 페이지)가 같은 창을 연다.
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest && e.target.closest(".fb-open, a[href='#feedback']");
+    if (!t) return;
+    e.preventDefault(); s.textContent = ""; d.showModal();
+  });
   d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
   f.message.addEventListener("input", function () { b.disabled = !f.message.value.trim(); s.textContent = ""; });
   f.addEventListener("submit", function (e) {

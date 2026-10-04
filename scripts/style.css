@@ -193,6 +193,7 @@ h2.sec { font-size:1.15rem; margin:2rem 0 .3rem; }
 .prose { margin-top:1.25rem; }
 .prose h2 { font-size:1.15rem; margin:2.25rem 0 .6rem; }
 .prose p { margin:0 0 1rem; font-size:1.0625rem; color:var(--dim); }
+.prose strong { color:var(--text); font-weight:600; }
 .period-now + h2.sec { margin-top:.35rem; }
 .sec-lede { color:var(--dim); font-size:.9rem; margin:0 0 1.25rem; }
 .ogs { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
