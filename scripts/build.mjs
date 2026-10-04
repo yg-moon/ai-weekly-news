@@ -70,6 +70,7 @@ const TEXT = {
     count: (n) => `${n}건`,
     state: ["진행중", "완결"], editions: (n) => `${n}판`,
     pending: (iso) => `${koDate(iso)}부터 이 분기의 흐름을 모아 매주 고쳐 씁니다.`,
+    theme: "다크 모드 전환",
     search: { label: "검색", placeholder: "지난 호에서 찾기", sort: ["관련도순", "최신순"], count: (n) => `${n}건`, none: "결과가 없습니다.", desc: "지난 호의 항목을 제목과 본문으로 찾습니다." },
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
     og: "og.png",
@@ -110,6 +111,7 @@ const TEXT = {
     count: (n) => `${n} items`,
     state: ["In progress", "Complete"], editions: (n) => `${n} editions`,
     pending: (iso) => `From ${EN_MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8))}, this quarter's developing stories, updated weekly.`,
+    theme: "Toggle dark mode",
     search: { label: "Search", placeholder: "Search past publications", sort: ["Relevance", "Newest"], count: (n) => (n === 1 ? "1 result" : `${n} results`), none: "No results.", desc: "Search past items by title and text." },
     pager: ["Previous and next publications", "Previous", "Next"],
     og: "og-en.png",
@@ -333,6 +335,21 @@ const LANG_SCRIPT = `<script>
 })();
 </script>`;
 
+// 화면 밝기. 기본은 기기 설정이다. 버튼은 지금 보이는 쪽의 반대로 바꾸고, 그 결과가 기기 설정과
+// 같으면 저장을 지워 다시 기기 설정을 따른다. 그리기 전에 돌도록 <head> 에 둔다.
+const THEME_SCRIPT = `<script>
+(function () {
+  var h = document.documentElement, mq = window.matchMedia && matchMedia("(prefers-color-scheme: dark)");
+  try { var t = localStorage.getItem("theme"); if (t === "dark" || t === "light") h.setAttribute("data-theme", t); } catch (e) {}
+  document.addEventListener("click", function (e) {
+    if (!(e.target.closest && e.target.closest(".theme-toggle"))) return;
+    var sys = mq && mq.matches ? "dark" : "light", next = (h.getAttribute("data-theme") || sys) === "dark" ? "light" : "dark";
+    if (next === sys) h.removeAttribute("data-theme"); else h.setAttribute("data-theme", next);
+    try { next === sys ? localStorage.removeItem("theme") : localStorage.setItem("theme", next); } catch (e) {}
+  });
+})();
+</script>`;
+
 // 피드백 창. 보낸 글은 Web3Forms 가 사용자 메일로 전한다. 액세스 키는 받는 메일 주소를 가리키는
 // 공개용 값이라 페이지에 그대로 둔다. 보던 페이지 주소를 함께 보낸다. botcheck 는 스팸 봇이 채우는 숨은 칸이다.
 const WEB3FORMS_KEY = "ba2d7f3e-9ed5-410b-9716-b693f1b42ad6";
@@ -399,7 +416,8 @@ function layout({ title, description, root, body, full = false, lang = "ko", pat
       : `<a href="${root}${TEXT[l].dir}${path !== null && PAGES[l].has(path) ? path : ""}" hreflang="${l}" data-lang="${l}">${TEXT[l].name}</a>`
   ).join("")}</nav>`;
   const searchLink = `<a class="search-link" href="${home}search/" aria-label="${T.search.label}"${path === "search/" ? ' aria-current="page"' : ""}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></a>`;
-  const masthead = `<div class="masthead"><h1><a href="${home}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1><div class="tools">${searchLink}${switcher}</div></div>`;
+  const themeButton = `<button class="theme-toggle" type="button" aria-label="${T.theme}"><svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg><svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2.1"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg></button>`;
+  const masthead = `<div class="masthead"><h1><a href="${home}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1><div class="tools">${searchLink}${themeButton}${switcher}</div></div>`;
   return `<!doctype html>
 <html lang="${lang}"${altAttrs}>
 <head>
@@ -421,6 +439,7 @@ ${path === null ? "" : `<meta property="og:url" content="${SITE_URL}${T.dir}${pa
 <link rel="alternate" type="application/rss+xml" title="${SITE_TITLE}${lang === "ko" ? "" : ` (${T.name})`}" href="${SITE_URL}${T.dir}feed.xml">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="${UMAMI_ID}" data-domains="yg-moon.github.io"></script>
 ${hreflang}
+${THEME_SCRIPT}
 <style>${CSS}</style>
 ${LANG_SCRIPT}
 </head>
