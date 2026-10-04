@@ -42,13 +42,11 @@
 | `AGENTS.md` | 저장소 작업 규칙 | 세션마다 읽는 비용이 든다. 짧게 유지하고 실행 절차를 들이지 않는다 |
 | `README.md` | 프로젝트 소개 | 독자를 향한 유일한 문서다. 내부 규약을 쓰지 않는다 |
 | `docs/INTENT.md` | 프로젝트 목적과 원칙 | 변경 빈도가 낮다. 실행 절차를 다듬는 일로는 건드리지 않는다 |
-| `docs/DECISIONS.md` | 주요 결정사항 및 폐기 기록 | 기준을 바꾸기 전에 먼저 읽는다. 이미 검토하고 버린 선택지가 있다. |
-| `docs/RUNBOOK_WEEKLY.md` | 주간호 실행 절차 | 주간 발행 작업은 이 문서를 처음부터 끝까지 읽고 그대로 따른다 |
-| `docs/RUNBOOK_QUARTERLY.md` | 분기호 실행 절차 | 분기 발행 작업은 이 문서를 처음부터 끝까지 읽고 그대로 따른다 |
-| `docs/RUNBOOK_YEARLY.md` | 연간호 실행 절차 | 분기 런북에서 이어서 돈다 |
+| `docs/DECISIONS.md` | 주요 결정사항 및 폐기 기록 | 기준을 바꾸기 전에 먼저 읽는다. 이미 검토하고 버린 선택지가 있다 |
+| `docs/RUNBOOK_WEEKLY.md` · `docs/RUNBOOK_QUARTERLY.md` · `docs/RUNBOOK_YEARLY.md` | 발행 실행 절차 (주간 · 분기 · 연간) | 발행 작업은 그 주기의 런북을 처음부터 끝까지 읽고 그대로 따른다. 연간호는 분기 런북에서 이어서 돈다 |
 | `docs/ROUTINE_WEEKLY.md` · `docs/ROUTINE_QUARTERLY.md` | Claude Code 루틴 프롬프트 (주간 · 분기) | 루틴 전용이다. 고치면 등록된 루틴도 같은 내용으로 바꾼다 |
 | `docs/TRANSLATION_EN.md` | 영문판 번역 규칙 | 영문판을 만들거나 고칠 때 읽는다 |
-| `docs/QUALITY_CHECKS.md` | 품질 점검 항목 | 문서를 크게 고친 뒤에 돌린다. 매번 돌리지는 않는다 |
+| `docs/QUALITY_CHECKS.md` | 품질 점검 항목 | 문서를 크게 고친 뒤에 돌린다. 3절(발행물 기계 검사)만 주간 발행이 매번 돌린다 |
 | `docs/PLAN.md` | 앞으로 할 일 | 길어져도 되는 유일한 문서다 |
 
 ### 내용 배치
