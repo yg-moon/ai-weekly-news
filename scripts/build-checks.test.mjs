@@ -127,3 +127,34 @@ test("근거 링크가 없는 항목을 가리키면 잡는다", () => {
 `);
   assert.match(run({ ko: { week: [doc("week", "2026-W39", weekBody())], quarter: [q] } }), /근거 링크가 가리키는 항목이 없거나/);
 });
+
+test("진행 중 분기호의 기준 주와 흐름 수를 본다", () => {
+  const flow = (n, a, b) => `
+### ${n}. 흐름 사안
+
+- **전개**: 일이 있었다.
+
+일이 이어졌다.
+- **왜 중요한가**: 중요하다.
+- **근거**: [W${a}](../../week/2026-${a}/#korea-1) / [W${b}](../../week/2026-${b}/#korea-1)
+`;
+  const single = (n, w) => `
+### ${n}. 단발 사안
+
+- **무슨 일**: 일이 있었다.
+- **왜 중요한가**: 중요하다.
+- **근거**: [${w}](../../week/2026-${w}/#korea-1)
+`;
+  const weeks = ["W27", "W28", "W29", "W30", "W31"].map((w) => doc("week", `2026-${w}`, weekBody()));
+  const q = (through, body) => doc("quarter", "2026-Q3", `\n## 국내\n${body}`, "ko", through ? { through } : {});
+  const ok = flow(1, "W27", "W28") + single(2, "W29") + single(3, "W30");
+  // 흐름이 하나뿐이어도 단발이 2번부터 오면 통과한다.
+  assert.equal(run({ ko: { week: weeks, quarter: [q("2026-W30", ok)] } }), "");
+  assert.match(run({ ko: { week: weeks, quarter: [q("2026-W29", ok)] } }), /근거 링크가 가리키는 항목이 없거나 범위 밖이다: 2026-Q3 → \.\.\/\.\.\/week\/2026-W30/);
+  assert.match(run({ ko: { week: weeks, quarter: [q("2026-W40", ok)] } }), /through 2026-W40 가 그 분기의 주차가 아니다/);
+  assert.match(run({ ko: { week: weeks, quarter: [q("2026-W30", single(1, "W29") + flow(2, "W27", "W28"))] } }), /흐름이 단발보다 앞에 오지 않았다/);
+  // 연간호는 진행 중인 분기호를 근거로 걸 수 없다.
+  const year = doc("year", "2026", `\n## 국내\n${single(4, "Q3").replace("../../week/2026-Q3/", "../../quarter/2026-Q3/")}`);
+  assert.match(run({ ko: { week: weeks, quarter: [q("2026-W30", ok)], year: [year] } }), /2026 → \.\.\/\.\.\/quarter\/2026-Q3/);
+  assert.equal(run({ ko: { week: weeks, quarter: [q(null, ok)], year: [year] } }), "");
+});

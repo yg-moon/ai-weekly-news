@@ -380,7 +380,7 @@ echo "영문 항목: $(grep -c '<article class="item"' /tmp/pub-en.html)건"
 
 ### 15. 분기호는 따로 돈다
 
-주간 실행은 분기호를 만들지 않는다. 분기말 주간호가 발행되면 분기 루틴([`ROUTINE_QUARTERLY.md`](ROUTINE_QUARTERLY.md))이 그 뒤에 분기호를 만든다.
+주간 실행은 분기호를 만들지 않는다. 주간호가 발행되면 분기 루틴([`ROUTINE_QUARTERLY.md`](ROUTINE_QUARTERLY.md))이 그 뒤에 분기호를 만든다. 분기말이면 완성본을, 분기 도중이면 진행 중인 판을 쓴다.
 
 ## 제목과 경로 규약
 

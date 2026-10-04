@@ -62,6 +62,7 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
       const ko = sets[kind].find((x) => x.id === d.id);
       const at = `en/${kind}/${d.id}`;
       if (!ko) badTranslations.push(`${at}: 한국어 원본이 없다`);
+      else if ((d.meta.through ?? "") !== (ko.meta.through ?? "")) badTranslations.push(`${at}: 기준 주(through)가 원본과 다르다`);
       else if (shapeOf(d) !== shapeOf(ko)) badTranslations.push(`${at}: 구획·항목 수가 원본과 다르다 (${shapeOf(d)} / 원본 ${shapeOf(ko)})`);
       else if (linksOf(d) !== linksOf(ko)) badTranslations.push(`${at}: 링크가 원본과 다르다`);
       else if (outletsOf(d).join() !== outletsOf(ko, true).join()) badTranslations.push(`${at}: 출처 매체 이름이 OUTLETS_EN 과 다르다`);
@@ -140,10 +141,19 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
         const inside = k === SOURCE[kind]
           ? at.year === here.year && (kind === "year" || at.q === here.q)
           : k === kind && earlier;
-        return target && inside && Number(num) <= count ? [] : [`${d.id} → ${href}`];
+        // 진행 중인 분기호는 근거로 걸 수 없고, 진행 중인 판은 기준 주 뒤의 주간호를 걸 수 없다.
+        const settled = !target?.meta.through && !(d.meta.through && k === "week" && id > d.meta.through);
+        return target && inside && settled && Number(num) <= count ? [] : [`${d.id} → ${href}`];
       })
     )
   );
+  const badThrough = sets.year.filter((d) => d.meta.through).map((d) => `${d.id}: 연간호에는 through 를 두지 않는다`)
+    .concat(sets.quarter.filter((d) => d.meta.through).flatMap((d) => {
+      const w = d.meta.through.match(/^(\d{4})-W(\d{2})$/);
+      const at = w && placeOf({ kind: "week", id: d.meta.through }), here = placeOf(d);
+      return w && at.year === here.year && at.q === here.q ? [] : [`${d.id}: through ${d.meta.through} 가 그 분기의 주차가 아니다`];
+    }));
+  if (badThrough.length) errors.push(`진행 중 분기호의 기준 주가 맞지 않는다: ${badThrough.join(", ")}`);
   if (badLinks.length) errors.push(`근거 링크가 가리키는 항목이 없거나 범위 밖이다: ${badLinks.join(", ")}`);
 
   // 분기호와 연간호의 항목 모양을 본다. 2026-Q2·Q3 첫 발행에서 흐름이 주제 묶음으로
@@ -160,9 +170,13 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
       const out = [], seen = new Map();
       for (const chunk of d.body.split(/^## /m).slice(1)) {
         const field = chunk.split("\n")[0].trim();
+        const flows = [], singles = [];
         for (const item of chunk.split(/^### /m).slice(1)) {
           const num = Number(item.match(/^(\d+)\./)?.[1]);
           const at = `${field} ${num}`;
+          // 흐름은 전개 칸이 있는 항목이다. 진행 중인 분기호는 흐름이 셋보다 적을 수 있어 번호로 가리지 않는다.
+          const flow = /\*\*전개\*\*/.test(item);
+          (flow ? flows : singles).push(num);
           // 필드는 다음 필드 줄 앞까지다. 전개처럼 문단을 나눈 필드도 통째로 읽는다. 라벨 뒤 공백에
         // 줄바꿈을 넣지 않는다. 넣으면 비어 있는 필드가 다음 필드를 제 내용으로 읽는다.
           const line = (label) => item.match(new RegExp(`\\*\\*${label}\\*\\*[ \\t]*:?[ \\t]*([\\s\\S]*?)(?=\\n- \\*\\*|$)`))?.[1] ?? "";
@@ -171,10 +185,10 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
           const past = links.filter((l) => l.k === kind);
           if (past.length > 1) out.push(`${at}: 지난 ${kind === "quarter" ? "분기호" : "연간호"} 링크가 ${past.length}개다(하나까지)`);
           if (past.length && links[0].k !== kind) out.push(`${at}: 지난 ${kind === "quarter" ? "분기호" : "연간호"} 링크가 근거 맨 앞이 아니다`);
-          if (past.length && num > 3) out.push(`${at}: 단발에 지난 ${kind === "quarter" ? "분기호" : "연간호"} 링크가 있다`);
+          if (past.length && !flow) out.push(`${at}: 단발에 지난 ${kind === "quarter" ? "분기호" : "연간호"} 링크가 있다`);
           const ids = own.map((l) => l.id);
           if (new Set(ids).size !== ids.length) out.push(`${at}: 근거에 같은 ${kind === "quarter" ? "주" : "분기"}가 두 번 있다`);
-          if (num <= 3 && new Set(ids).size < 2) out.push(`${at}: 흐름인데 근거가 ${kind === "quarter" ? "두 주" : "두 분기"}에 걸치지 않는다`);
+          if (flow && new Set(ids).size < 2) out.push(`${at}: 흐름인데 근거가 ${kind === "quarter" ? "두 주" : "두 분기"}에 걸치지 않는다`);
           for (const l of own) {
             const key = `${l.id}#${l.a}`;
             if (seen.has(key)) out.push(`${at}: ${key} 를 ${seen.get(key)} 에서 이미 썼다`);
@@ -186,6 +200,8 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
           if (!line("왜 중요한가").trim()) out.push(`${at}: 왜 중요한가가 없다`);
           if (sentences(line("왜 중요한가")) > 2) out.push(`${at}: 왜 중요한가가 ${sentences(line("왜 중요한가"))}문장이다(2까지)`);
         }
+        if (flows.length > 3 || singles.length > 2) out.push(`${field}: 흐름 ${flows.length} · 단발 ${singles.length}이다(흐름 3, 단발 2까지)`);
+        if (Math.max(...flows) > Math.min(...singles)) out.push(`${field}: 흐름이 단발보다 앞에 오지 않았다`);
       }
       return out.map((m) => `${d.id} ${m}`);
     })

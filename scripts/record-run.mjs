@@ -2,6 +2,7 @@
 // 발행 커밋 직전에 돌린다. 주간 런북 14절, 분기 런북 8절, 연간 런북 5절.
 //
 //   node scripts/record-run.mjs 2026-W39
+//   node scripts/record-run.mjs 2026-Q4 --add   (진행 중 분기호의 다음 판)
 //
 // 비용은 Claude Code 대화 기록(~/.claude/projects/*/*.jsonl)의 토큰을 API 정가로
 // 환산한다. 클라우드와 로컬이 같은 형식으로 남기므로 어디서 돌려도 같은 기준이다.
@@ -141,7 +142,19 @@ const run = {
   tokens,
 };
 
+// --add 는 진행 중 분기호를 다시 쓴 판이다(분기 런북 8절). 지난 기록에 이번 판의 비용·시간·토큰을
+// 더하고 판 수를 센다. 시작 시각은 첫 판, 발행 시각은 이번 판이다. 없으면 첫 판으로 쓴다.
+const out = `data/runs/${week}.json`;
+if (args.includes("--add") && existsSync(out)) {
+  const old = JSON.parse(readFileSync(out, "utf8"));
+  const mins = (r) => r.minutes ?? Math.round((new Date(r.published) - new Date(r.started)) / 60e3);
+  run.minutes = mins(old) + mins(run);
+  run.editions = (old.editions ?? 1) + 1;
+  run.started = old.started;
+  run.cost_usd = Math.round((old.cost_usd + run.cost_usd) * 100) / 100;
+  for (const k of Object.keys(tokens)) run.tokens[k] += old.tokens?.[k] ?? 0;
+}
 mkdirSync("data/runs", { recursive: true });
-writeFileSync(`data/runs/${week}.json`, JSON.stringify(run, null, 2) + "\n");
+writeFileSync(out, JSON.stringify(run, null, 2) + "\n");
 console.log(`data/runs/${week}.json  (대화 기록 ${basename(main)})`);
 console.log(JSON.stringify(run));

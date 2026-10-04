@@ -68,6 +68,7 @@ const TEXT = {
     why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "소개",
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
+    state: ["진행중", "완결"], editions: (n) => `${n}판`,
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
     og: "og.png",
     aboutDesc: `${SITE_TITLE}를 만든 이유와 뉴스를 고르고 만드는 방식.`,
@@ -106,6 +107,7 @@ const TEXT = {
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats", about: "About",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
+    state: ["In progress", "Complete"], editions: (n) => `${n} editions`,
     pager: ["Previous and next issues", "Previous", "Next"],
     og: "og-en.png",
     aboutDesc: `Why ${SITE_TITLE} exists, and how its stories are chosen and made.`,
@@ -190,10 +192,12 @@ const counts = (d) => groupsOf(d).map((g) => `${g} ${d.n[g] ?? 0}`).join(" · ")
 // 어느 종류든 구획마다 5건이 표준이다. 표준이면 건수를 화면에서 반복하지 않고,
 // 어긋날 때만 드러낸다.
 const isStandard = (d) => groupsOf(d).every((g) => d.n[g] === 5);
-const pageTitle = (d) => `${d.id} ${TEXT[d.lang].suffix[d.kind]} (${period(d)})`;
+// 분기호는 진행 중인지 끝났는지를 제목에 붙인다. 진행 중인 판은 프런트매터에 through(기준 주)가 있다.
+const stateMark = (d) => (d.kind === "quarter" ? ` (${TEXT[d.lang].state[d.meta.through ? 0 : 1]})` : "");
+const pageTitle = (d) => `${d.id} ${TEXT[d.lang].suffix[d.kind]}${stateMark(d)} (${period(d)})`;
 // 화면에서는 기간을 다음 줄로 내린다. 한 줄에 두면 좁은 화면에서 어중간하게 잘린다.
 const pageTitleHtml = (d) =>
-  `${d.id} ${TEXT[d.lang].suffix[d.kind]}<span class="period">${period(d)}</span>`;
+  `${d.id} ${TEXT[d.lang].suffix[d.kind]}${stateMark(d)}<span class="period">${period(d)}</span>`;
 
 // ---------- 본문 구조화 ----------
 // marked 가 낸 h3 + ul 을 항목 블록으로 바꾼다. 라벨을 화면에서 없애고
@@ -410,6 +414,7 @@ ${path === null ? "" : `<meta property="og:url" content="${SITE_URL}${T.dir}${pa
 <link rel="icon" href="${root}favicon.svg" type="image/svg+xml">
 <link rel="icon" href="${root}favicon-96.png" type="image/png" sizes="96x96">
 <link rel="apple-touch-icon" href="${root}apple-touch-icon.png">
+<link rel="alternate" type="application/rss+xml" title="${SITE_TITLE}${lang === "ko" ? "" : ` (${T.name})`}" href="${SITE_URL}${T.dir}feed.xml">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="${UMAMI_ID}" data-domains="yg-moon.github.io"></script>
 ${hreflang}
 <style>${CSS}</style>
@@ -426,7 +431,7 @@ ${full ? `<header class="site">
 </header>` : `<header class="site compact">${masthead}</header>`}
 ${body}
 <footer>
-  <p><a href="${home}about/">${T.about}</a> · <a href="${home}stats/">${T.stats}</a> · <button class="fb-open" type="button">${T.fb.link}</button> · <a href="${REPO_URL}">GitHub</a></p>
+  <p><a href="${home}about/">${T.about}</a> · <a href="${home}stats/">${T.stats}</a> · <button class="fb-open" type="button">${T.fb.link}</button> · <a href="${home}feed.xml">RSS</a> · <a href="${REPO_URL}">GitHub</a></p>
   <p class="updated">${UPDATED_MARK}</p>
 </footer>
 ${feedback(T)}
@@ -609,7 +614,7 @@ function renderList(years, p, root, home, lang = "ko") {
     .map(
       (d) => `
   <li class="${d.kind}"><a href="${base}${d.kind}/${d.id}/">
-    <span class="wk">${d.id}</span>
+    <span class="wk">${d.id}${stateMark(d)}</span>
     <span class="period">${period(d)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
     ${tops(d)}
@@ -640,7 +645,8 @@ function loadRuns() {
   return files.map((f) => JSON.parse(readFileSync(join(RUNS, f), "utf8"))).sort((a, b) => runOrder(a) - runOrder(b));
 }
 
-const minutes = (r) => Math.round((new Date(r.published) - new Date(r.started)) / 60e3);
+// 여러 판을 만든 분기호는 record-run 이 판마다의 시간을 더해 minutes 에 둔다.
+const minutes = (r) => r.minutes ?? Math.round((new Date(r.published) - new Date(r.started)) / 60e3);
 const usd = (x) => `$${x.toFixed(2)}`;
 const shortWeek = (w, annual) => (/^\d{4}$/.test(w) ? annual : w.replace(/^\d{4}-/, ""));
 
@@ -817,7 +823,7 @@ function renderStats(views, view, lang = "ko") {
   // 버튼이 오류 없이 안 먹는다.
   const SHOWN = 16;
   const rows = [...runs].reverse().map((r, i) => `<tr${i >= SHOWN ? ' class="old"' : ""}>
-  <td>${r.week}</td>
+  <td>${r.week}${r.editions > 1 ? ` <small>${T.editions(r.editions)}</small>` : ""}</td>
   <td class="r">${usd(r.cost_usd)}</td><td class="r">${S.min(minutes(r))}</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td><td class="m">${r.model}</td>
 </tr>`).join("");
   const more = runs.length > SHOWN
@@ -956,6 +962,52 @@ for (const lang of LANG_NAMES)
 for (const lang of LANG_NAMES) {
   mkdirSync(join(SITE, TEXT[lang].dir, "about"), { recursive: true });
   writeFileSync(join(SITE, TEXT[lang].dir, "about", "index.html"), renderAbout(lang));
+}
+
+// 없는 주소. GitHub Pages 가 어느 깊이의 주소에서든 이 파일을 내므로 경로를 절대 경로로 쓴다.
+writeFileSync(
+  join(SITE, "404.html"),
+  layout({
+    title: `페이지를 찾을 수 없습니다 — ${SITE_TITLE}`,
+    description: SITE_TAGLINE,
+    root: new URL(SITE_URL).pathname,
+    body: `<div class="empty"><h1 class="issue-title">페이지를 찾을 수 없습니다</h1>
+<p>주소가 바뀌었거나 없는 페이지입니다. <a href="${new URL(SITE_URL).pathname}">처음으로</a></p>
+<p lang="en">This page doesn't exist. <a href="${new URL(SITE_URL).pathname}en/">Go to the English home</a></p></div>`,
+  })
+);
+
+// RSS. 언어판마다 하나이고 최근 발행물 20개를 싣는다. 항목 제목을 분야별로 적는다.
+// 발행 시각은 실행 기록에서 읽고, 기록이 없으면 기간 다음 날 오전 8시(KST)로 둔다.
+const FEED_SIZE = 20;
+const xml = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const pubDate = (d) => {
+  const r = runs.find((x) => x.week === d.id);
+  return new Date(r ? r.published : new Date(Date.parse(`${d.meta.period_end}T08:00:00+09:00`) + 864e5)).toUTCString();
+};
+for (const lang of LANG_NAMES) {
+  const T = TEXT[lang];
+  const docs = KIND_NAMES.flatMap((k) => SETS[lang][k])
+    // 지난 호는 한꺼번에 만든 것이 많아 발행 시각이 아니라 기간 끝 순서로 놓는다. 같으면 분기호·연간호가 앞이다.
+    .sort((a, b) => b.meta.period_end.localeCompare(a.meta.period_end) || KIND_NAMES.indexOf(b.kind) - KIND_NAMES.indexOf(a.kind))
+    .slice(0, FEED_SIZE);
+  const items = docs.map((d) => {
+    const url = `${SITE_URL}${T.dir}${d.kind}/${d.id}/`;
+    const desc = d.body.split(/^## /m).slice(1).map((chunk) => {
+      const titles = [...chunk.matchAll(/^### (\d+)\.\s*(.+)$/gm)].map(([, n, t]) => `${n}. ${plainTitle(marked.parseInline(t))}`);
+      return `<p><b>${chunk.split("\n")[0].trim()}</b><br>${titles.join("<br>")}</p>`;
+    }).join("");
+    return `<item><title>${xml(pageTitle(d))}</title><link>${url}</link><guid>${url}</guid><pubDate>${pubDate(d)}</pubDate><description>${xml(desc)}</description></item>`;
+  });
+  writeFileSync(
+    join(SITE, T.dir, "feed.xml"),
+    `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+<title>${SITE_TITLE}${lang === "ko" ? "" : ` (${T.name})`}</title><link>${SITE_URL}${T.dir}</link><description>${xml(T.tagline)}</description><language>${lang}</language>
+${items.join("\n")}
+</channel></rss>
+`
+  );
 }
 
 // 검색 엔진에 내는 페이지 목록. 두 언어판의 모든 페이지다.
