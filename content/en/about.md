@@ -1,6 +1,6 @@
 # About
 
-There are too many sensational stories to follow the news every day, while the events that really matter repeat in much the same way all week. So once a week, this site picks only the stories you should not miss and puts them in one place.
+There are too many sensational stories to follow the news every day, while the events that really matter keep coming back in much the same form for a long time. So once a week, this site picks only the stories you should not miss and puts them in one place.
 
 ## Issues
 
