@@ -135,7 +135,14 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
 .src em { font-style:normal; color:var(--muted); opacity:.85; }
 
 /* 목록 페이지 */
-.tabs { display:flex; flex-wrap:wrap; gap:.25rem; margin:0 0 1.75rem; border-bottom:1px solid var(--line); }
+.tabs { display:flex; gap:.25rem; margin:0 0 1.75rem; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none; }
+.tabs::-webkit-scrollbar { display:none; }
+.tabs > * { flex:none; }
+/* 목록 탭의 둘째 단: 고른 해의 분기와 연간 */
+.subtabs { display:flex; flex-wrap:wrap; gap:.4rem; margin:-.9rem 0 1.6rem; }
+.chip { padding:.15rem .75rem; border:1px solid var(--line); border-radius:999px; font-size:.85rem; color:var(--muted); text-decoration:none; }
+.chip:hover { color:var(--text); }
+.chip.on { background:var(--text); border-color:var(--text); color:var(--bg); font-weight:700; }
 .tab {
   padding:.5rem .85rem; font-size:.9rem; text-decoration:none;
   color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px;
@@ -184,6 +191,15 @@ html[lang="en"] .top b { width:2.9rem; }
 }
 .archive li.quarter a:hover { border-color:var(--muted); }
 .archive li.quarter .wk { font-size:1.2rem; }
+/* 진행 중 분기호가 나오기 전의 자리. 분기호 카드와 같은 자리에 점선으로 둔다. */
+.archive li.pending { margin-bottom:1.25rem; }
+.archive li.pending + li { border-top:none; }
+.archive li.pending > div { padding:1.1rem 1.2rem; border:1px dashed var(--line); border-radius:var(--radius); }
+.archive li.pending .wk { display:block; color:var(--dim); }
+.archive li.pending .note { display:block; margin-top:.2rem; color:var(--muted); font-size:.875rem; }
+/* 홈(최근 호)에서 분기가 바뀌는 곳의 이름 */
+.archive li.qdiv { padding:1.4rem 0 .2rem; color:var(--muted); font-size:.8rem; font-weight:700; }
+.archive li.qdiv, .archive li.qdiv + li { border-top:none; }
 .empty {
   padding:1.5rem; border:1px dashed var(--line); border-radius:var(--radius);
   color:var(--muted); background:var(--surface);
@@ -370,7 +386,10 @@ dialog.fb::backdrop { background:rgba(20,20,18,.38); }
   background:var(--surface); color:var(--text); font:inherit; font-size:1rem;
 }
 .search input:focus { outline:2px solid var(--accent); outline-offset:1px; }
-.search-count { color:var(--muted); font-size:.875rem; margin:.9rem 0 .4rem; min-height:1.4em; }
+.search-count { display:flex; justify-content:space-between; gap:1rem; color:var(--muted); font-size:.875rem; margin:.9rem 0 .4rem; min-height:1.4em; }
+.sort button { padding:0; border:0; background:none; font:inherit; color:var(--muted); cursor:pointer; }
+.sort button:hover, .sort button[aria-pressed="true"] { color:var(--text); }
+.sort button[aria-pressed="true"] { font-weight:700; }
 .search-results { list-style:none; margin:0; padding:0; }
 .search-results li { padding:.9rem 0; border-top:1px solid var(--line); }
 .sr-title { display:block; font-weight:700; color:var(--text); text-decoration:none; }

@@ -28,9 +28,10 @@ export function itemsOf(body) {
 }
 
 // 띄어쓰기로 나눈 낱말이 모두 들어 있는 항목을 찾는다. 대소문자는 가리지 않고 부분 일치다.
-// 제목에 걸린 낱말이 많은 항목이 앞이고, 같으면 색인 순서(최신 호부터)다.
+// 관련도순은 제목에 걸린 낱말이 많은 항목이 앞이고, 같으면 색인 순서(최신 호부터)다.
+// newest 면 색인 순서만 따른다.
 // 검색 페이지에 문자열로 옮겨 넣으므로 바깥 이름을 쓰지 않는다.
-export function findItems(entries, q) {
+export function findItems(entries, q, newest) {
   var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
   var hits = [];
   if (terms.length)
@@ -39,6 +40,6 @@ export function findItems(entries, q) {
       if (terms.every(function (w) { return all.indexOf(w) >= 0; }))
         hits.push({ e: e, i: i, t: terms.filter(function (w) { return title.indexOf(w) >= 0; }).length });
     });
-  hits.sort(function (a, b) { return b.t - a.t || a.i - b.i; });
+  hits.sort(function (a, b) { return (newest ? 0 : b.t - a.t) || a.i - b.i; });
   return { terms: terms, hits: hits.map(function (h) { return h.e; }) };
 }

@@ -65,12 +65,13 @@ const TEXT = {
     listTitle: (p) => `${p.year}년 ${p.q}분기`,
     tagline: SITE_TAGLINE,
     badges: ["매주 월요일 오전 8시 발행 (KST)", "AI 수집 및 요약 · 모든 항목에 출처 링크"],
-    home: "주간 뉴스 브리핑",
+    home: "주간 뉴스 브리핑", recent: "최근", recentTitle: "최근 호",
     why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "소개",
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
     state: ["진행중", "완결"], editions: (n) => `${n}판`,
-    search: { label: "검색", placeholder: "지난 호에서 찾기", count: (n) => `${n}건`, none: "결과가 없습니다.", desc: "지난 호의 항목을 제목과 본문으로 찾습니다." },
+    pending: (iso) => `${koDate(iso)}부터 이 분기의 흐름을 모아 매주 고쳐 씁니다.`,
+    search: { label: "검색", placeholder: "지난 호에서 찾기", sort: ["관련도순", "최신순"], count: (n) => `${n}건`, none: "결과가 없습니다.", desc: "지난 호의 항목을 제목과 본문으로 찾습니다." },
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
     og: "og.png",
     aboutDesc: `${SITE_TITLE}를 만든 이유와 뉴스를 고르고 만드는 방식.`,
@@ -105,12 +106,13 @@ const TEXT = {
     // 세 분야 이름은 줄이 바뀌어도 함께 넘어가게 붙인다(\u00a0). 좁은 폰에서 "AI." 만 떨어졌다.
     tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI.",
     badges: ["Every Monday, 8 AM KST", "Collected and summarized by AI · Sources for every item"],
-    home: "Weekly News Briefing",
+    home: "Weekly News Briefing", recent: "Latest", recentTitle: "Latest issues",
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats", about: "About",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
     state: ["In progress", "Complete"], editions: (n) => `${n} editions`,
-    search: { label: "Search", placeholder: "Search past issues", count: (n) => (n === 1 ? "1 result" : `${n} results`), none: "No results.", desc: "Search past items by title and text." },
+    pending: (iso) => `From ${EN_MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8))}, this quarter's developing stories, updated weekly.`,
+    search: { label: "Search", placeholder: "Search past issues", sort: ["Relevance", "Newest"], count: (n) => (n === 1 ? "1 result" : `${n} results`), none: "No results.", desc: "Search past items by title and text." },
     pager: ["Previous and next issues", "Previous", "Next"],
     og: "og-en.png",
     aboutDesc: `Why ${SITE_TITLE} exists, and how its stories are chosen and made.`,
@@ -504,28 +506,22 @@ const periods = (years) =>
 const listPath = (p) => `${p.year}/Q${p.q}/`;
 const listTitle = (p, lang = "ko") => TEXT[lang].listTitle(p);
 
-// 연도 칩과 분기 칩을 한 줄에 둔다. 연도가 하나뿐이면 누를 데가 없는 라벨이다.
-// 연도를 누르면 그 해에서 가장 나중 분기로 간다. `연간` 은 지금 보고 있는 해의
-// 연간호로 간다. root 는 최상위까지의 상대 경로다.
+// 목록의 탭은 두 단이다. 첫 줄은 최근(홈)과 연도들, 둘째 줄은 고른 해의 분기와 연간이다.
+// 한 줄에 다 두면 해가 셋을 넘을 때 분기가 다음 줄로 밀린다. 연도를 누르면 그 해에서 가장
+// 나중 분기로 간다. 첫 줄은 줄바꿈하지 않고, 넘치면 옆으로 밀어 본다. here 가 없으면 홈이다.
 function tabs(years, here, root, T) {
   const all = periods(years);
   if (!all.length) return "";
-
-  const yearChip = (y) =>
-    y === here.year
-      ? `<span class="yr on">${y}</span>`
-      : `<a class="yr" href="${root}${listPath(all.filter((p) => p.year === y).pop())}">${y}</a>`;
-
-  const quarterChip = (p) =>
-    p.q === here.q
-      ? `<span class="tab on" aria-current="page">Q${p.q}</span>`
-      : `<a class="tab" href="${root}${listPath(p)}">Q${p.q}</a>`;
-
+  const recent = here ? `<a class="tab" href="${root}">${T.recent}</a>` : `<span class="tab on" aria-current="page">${T.recent}</span>`;
+  const yearTabs = [...new Set(all.map((p) => p.year))].map((y) =>
+    here && y === here.year ? `<span class="tab on">${y}</span>` : `<a class="tab" href="${root}${listPath(all.filter((p) => p.year === y).pop())}">${y}</a>`).join("");
+  const row = `<nav class="tabs">${recent}<span class="tabdiv"></span>${yearTabs}</nav>`;
+  if (!here) return row;
+  const quarterChips = all.filter((p) => p.year === here.year).map((p) =>
+    p.q === here.q ? `<span class="chip on" aria-current="page">Q${p.q}</span>` : `<a class="chip" href="${root}${listPath(p)}">Q${p.q}</a>`).join("");
   const annual = years.get(here.year).annual;
-  const yearRow = [...new Set(all.map((p) => p.year))].map(yearChip).join("");
-  const quarterRow = all.filter((p) => p.year === here.year).map(quarterChip).join("");
-  const annualChip = annual ? `<a class="tab" href="${root}year/${annual.id}/">${T.annual}</a>` : "";
-  return `<nav class="tabs">${yearRow}<span class="tabdiv"></span>${quarterRow}${annualChip}</nav>`;
+  const annualChip = annual ? `<a class="chip" href="${root}year/${annual.id}/">${T.annual}</a>` : "";
+  return `${row}<nav class="subtabs">${quarterChips}${annualChip}</nav>`;
 }
 
 // 목차와 목록에 쓰는 제목. 태그만 걷고 전체를 둔다. 길면 CSS 가 두 줄에서 자른다.
@@ -609,30 +605,66 @@ function tops(d) {
 
 // 한 분기의 목록. 홈은 가장 나중 분기와 같은 내용이고 root 와 제목만 다르다.
 // root 는 사이트 최상위까지, base 는 그 언어판 최상위까지의 상대 경로다.
-function renderList(years, p, root, home, lang = "ko") {
+// 진행 중 분기호는 그 분기 주간호가 4개 쌓인 주부터 나온다(분기 런북 1절). 그 전에는 분기호
+// 자리에 언제부터 나오는지를 적는다. 첫 판은 4주차 다음 월요일(KST)에 나온다.
+const PENDING_WEEKS = 4;
+function pendingCard(p, docs, lang) {
+  if (docs.some((d) => d.kind === "quarter") || docs.length >= PENDING_WEEKS) return "";
+  const week = (p.q - 1) * 13 + PENDING_WEEKS + 1;
+  const jan4 = Date.UTC(Number(p.year), 0, 4);
+  const monday = new Date(jan4 - ((new Date(jan4).getUTCDay() + 6) % 7) * 864e5 + (week - 1) * 7 * 864e5).toISOString().slice(0, 10);
   const T = TEXT[lang];
-  const base = root + T.dir;
-  const cards = years
-    .get(p.year)
-    .quarters.get(p.q)
-    .map(
-      (d) => `
+  return `
+  <li class="pending"><div><span class="wk">${p.year}-Q${p.q} ${T.suffix.quarter} (${T.state[0]})</span><span class="note">${T.pending(monday)}</span></div></li>`;
+}
+
+const card = (d, base) => `
   <li class="${d.kind}"><a href="${base}${d.kind}/${d.id}/">
     <span class="wk">${d.id}${stateMark(d)}</span>
     <span class="period">${period(d)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
     ${tops(d)}
-  </a></li>`
-    )
-    .join("");
+  </a></li>`;
+
+function renderList(years, p, root, lang = "ko") {
+  const T = TEXT[lang];
+  const base = root + T.dir;
+  const docs = years.get(p.year).quarters.get(p.q);
   return layout({
-    title: home ? `${SITE_TITLE} — ${T.home}` : `${listTitle(p, lang)} — ${SITE_TITLE}`,
+    title: `${listTitle(p, lang)} — ${SITE_TITLE}`,
     description: T.tagline,
     root,
     full: true,
     lang,
-    path: home ? "" : listPath(p),
-    body: `${tabs(years, p, base, T)}\n<h2 class="list">${listTitle(p, lang)}</h2>\n<ul class="archive">${cards}\n</ul>`,
+    path: listPath(p),
+    body: `${tabs(years, p, base, T)}\n<h2 class="list">${listTitle(p, lang)}</h2>\n<ul class="archive">${pendingCard(p, docs, lang)}${docs.map((d) => card(d, base)).join("")}\n</ul>`,
+  });
+}
+
+// 홈은 분기와 상관없는 "최근 호"다. 맨 위에 가장 최근 분기호(진행 중이거나 지난 분기 완결본),
+// 그 아래 최근 주간호 13개를 둔다. 분기가 바뀌는 곳에 분기 이름을 단다. 새 분기 첫 주에도
+// 홈이 비지 않게 한 것이다(2026-10-04).
+const HOME_WEEKS = 13;
+function renderHome(years, root, lang = "ko") {
+  const T = TEXT[lang];
+  const base = root + T.dir;
+  const newest = periods(years).reverse().map((p) => ({ p, docs: years.get(p.year).quarters.get(p.q) }));
+  const quarterly = newest.flatMap((x) => x.docs).find((d) => d.kind === "quarter");
+  let rows = "", shown = 0;
+  for (const { p, docs } of newest) {
+    const weeks = docs.filter((d) => d.kind === "week").slice(0, HOME_WEEKS - shown);
+    if (!weeks.length) continue;
+    rows += `\n  <li class="qdiv">${listTitle(p, lang)}</li>` + weeks.map((d) => card(d, base)).join("");
+    if ((shown += weeks.length) >= HOME_WEEKS) break;
+  }
+  return layout({
+    title: `${SITE_TITLE} — ${T.home}`,
+    description: T.tagline,
+    root,
+    full: true,
+    lang,
+    path: "",
+    body: `${tabs(years, null, base, T)}\n<h2 class="list">${T.recentTitle}</h2>\n<ul class="archive">${quarterly ? card(quarterly, base) : ""}${rows}\n</ul>`,
   });
 }
 
@@ -895,12 +927,13 @@ function renderSearch(lang) {
     body: `<p class="crumb"><a href="${root + T.dir}">${T.st.back}</a></p>
 <h1 class="issue-title">${S.label}</h1>
 <form class="search" role="search" onsubmit="return false"><input id="q" type="search" name="q" autocomplete="off" autofocus placeholder="${S.placeholder}" aria-label="${S.label}"></form>
-<p class="search-count" id="count" aria-live="polite"></p>
+<p class="search-count"><span id="count" aria-live="polite"></span><span class="sort" id="sort" hidden><button type="button" data-sort="rel" aria-pressed="true">${S.sort[0]}</button> · <button type="button" data-sort="new" aria-pressed="false">${S.sort[1]}</button></span></p>
 <ol class="search-results" id="results"></ol>
 <script>
 (function () {
   ${findItems.toString()}
-  var input = document.getElementById("q"), out = document.getElementById("results"), count = document.getElementById("count");
+  var input = document.getElementById("q"), out = document.getElementById("results"), count = document.getElementById("count"), sortBox = document.getElementById("sort");
+  var newest = new URLSearchParams(location.search).get("sort") === "new";
   var entries = null, COUNT = ${JSON.stringify(S.count(0)).replace("0", "{n}")}, ONE = ${JSON.stringify(S.count(1))}, NONE = ${JSON.stringify(S.none)}, SNIP = ${lang === "ko" ? 90 : 140};
   function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function mark(s, terms) {
@@ -916,8 +949,10 @@ function renderSearch(lang) {
     return (start ? "…" : "") + mark(text.slice(start, end), terms) + (end < text.length ? "…" : "");
   }
   function render(q) {
-    var r = findItems(entries, q);
-    try { history.replaceState(null, "", q.trim() ? "?q=" + encodeURIComponent(q.trim()) : location.pathname); } catch (e) {}
+    var r = findItems(entries, q, newest);
+    try { history.replaceState(null, "", q.trim() ? "?q=" + encodeURIComponent(q.trim()) + (newest ? "&sort=new" : "") : location.pathname); } catch (e) {}
+    sortBox.hidden = r.hits.length < 2;
+    [].forEach.call(sortBox.querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", String((b.getAttribute("data-sort") === "new") === newest)); });
     if (!r.terms.length) { count.textContent = ""; out.innerHTML = ""; return; }
     count.textContent = r.hits.length ? (r.hits.length === 1 ? ONE : COUNT.replace("{n}", r.hits.length)) : NONE;
     out.innerHTML = r.hits.map(function (e) {
@@ -926,6 +961,10 @@ function renderSearch(lang) {
   }
   input.addEventListener("input", function (e) { if (entries && !e.isComposing) render(input.value); });
   input.addEventListener("compositionend", function () { if (entries) render(input.value); });
+  sortBox.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (b && entries) { newest = b.getAttribute("data-sort") === "new"; render(input.value); }
+  });
   fetch("index.json").then(function (r) { return r.json(); }).then(function (d) {
     entries = d;
     var q = new URLSearchParams(location.search).get("q");
@@ -987,7 +1026,7 @@ for (const lang of LANG_NAMES)
 for (const p of all) {
   const dir = join(SITE, p.year, `Q${p.q}`);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "index.html"), renderList(years, p, "../../", false));
+  writeFileSync(join(dir, "index.html"), renderList(years, p, "../../"));
 }
 
 // 영문판 목록과 홈. 옮긴 호가 있는 분기만 나온다.
@@ -995,16 +1034,16 @@ const enAll = periods(YEARS.en);
 for (const p of enAll) {
   const dir = join(SITE, "en", p.year, `Q${p.q}`);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "index.html"), renderList(YEARS.en, p, "../../../", false, "en"));
+  writeFileSync(join(dir, "index.html"), renderList(YEARS.en, p, "../../../", "en"));
 }
-if (enAll.length) writeFileSync(join(SITE, "en", "index.html"), renderList(YEARS.en, enAll[enAll.length - 1], "../", true, "en"));
+if (enAll.length) writeFileSync(join(SITE, "en", "index.html"), renderHome(YEARS.en, "../", "en"));
 
 // 홈은 가장 나중 분기다. 분기가 바뀐 첫 주에는 그 분기에 주간호 한 건뿐이다.
 const latest = all[all.length - 1];
 writeFileSync(
   join(SITE, "index.html"),
   latest
-    ? renderList(years, latest, "./", true)
+    ? renderHome(years, "./")
     : layout({
         title: `${SITE_TITLE} — 주간 뉴스 브리핑`,
         description: SITE_TAGLINE,

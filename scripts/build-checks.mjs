@@ -249,6 +249,7 @@ export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
   const CONDITIONAL = new Set([
     "quarter", // 분기호가 있을 때
     "empty", // 목록이나 기록이 비었을 때
+    "pending", "note", // 새 분기의 1~3주차, 진행 중 분기호가 나오기 전
     "counts", "issue-meta", // 건수가 국내·해외·AI 5건씩이 아닌 호
     "wide", "plot", "yaxis", "scroll", // 한 그래프의 막대가 본문 폭을 넘을 때
     "old", "more-toggle", "more", // 기록이 16개를 넘을 때

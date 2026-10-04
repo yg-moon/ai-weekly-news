@@ -24,6 +24,7 @@ test("낱말이 모두 든 항목을 제목 일치, 최신순으로 찾는다", 
   ];
   assert.deepEqual(findItems(entries, "홈플러스").hits.map((e) => e[2]), ["b", "c", "a"]);
   assert.deepEqual(findItems(entries, "홈플러스  회생").hits.map((e) => e[2]), ["c"]);
+  assert.deepEqual(findItems(entries, "홈플러스", true).hits.map((e) => e[2]), ["a", "b", "c"]);
   assert.deepEqual(findItems(entries, "  ").hits, []);
   assert.deepEqual(findItems([["OpenAI sues", "", "x", ""]], "openai").hits.length, 1);
 });
