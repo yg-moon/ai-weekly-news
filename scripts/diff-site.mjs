@@ -12,6 +12,7 @@ import { mkdtempSync, readFileSync, readdirSync, writeFileSync, symlinkSync, rmS
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { VERSION_FILE } from "./site-version.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const ref = process.argv[2] ?? "HEAD";
@@ -35,6 +36,7 @@ function files(dir) {
   return readdirSync(dir, { recursive: true, withFileTypes: true })
     .filter((d) => d.isFile())
     .map((d) => relative(dir, join(d.parentPath, d.name)))
+    .filter((f) => f !== VERSION_FILE)
     .sort();
 }
 
@@ -51,7 +53,8 @@ function report(a, b) {
     if (!f.endsWith(".html")) { changed.push([f, null]); continue; }
     const [hx, hy] = [x.toString(), y.toString()];
     if (style(hx) !== style(hy)) styles.add(`${style(hx)}\u0000${style(hy)}`);
-    const [bx, by] = [hx, hy].map((h) => h.replace(style(h), ""));
+    // 바닥글의 업데이트 시각은 커밋마다 다르므로 비교에서 뺀다. version.json 도 같은 이유로 뺀다.
+    const [bx, by] = [hx, hy].map((h) => h.replace(style(h), "").replace(/<p class="updated">[^<]*<\/p>/, "<p class=\"updated\"></p>"));
     if (bx !== by) changed.push([f, [bx, by]]);
   }
 

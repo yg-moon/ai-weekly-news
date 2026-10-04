@@ -55,7 +55,10 @@ jobs:
           fi
           if [ -z "$files" ]; then echo "바뀐 발행물이 없다"; exit 0; fi
           node scripts/check-links.mjs $files
+      # 지금 배포본의 지문(version.json)과 견줘, 바뀐 것이 없으면 바닥글의 마지막 업데이트 시각을 이어 쓴다.
       - run: npm run build
+        env:
+          LIVE_VERSION_URL: https://yg-moon.github.io/ai-weekly-news/version.json
       # Pages는 저장소 설정에서 미리 켜 두어야 한다. configure-pages 의
       # enablement 파라미터는 GITHUB_TOKEN 권한 부족으로 동작하지 않는다.
       - uses: actions/configure-pages@v5

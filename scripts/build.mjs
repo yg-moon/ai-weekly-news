@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { marked } from "marked";
 import { OUTLETS_EN } from "./outlets-en.mjs";
 import { checkContent, checkSite } from "./build-checks.mjs";
+import { VERSION_FILE, hashSite, kst, headCommit, pickUpdated, fetchLive } from "./site-version.mjs";
 
 // 취소선을 쓰지 않는다. GFM 은 한 문단의 물결표 두 개 사이를 취소선으로 바꾸는데,
 // 한국어는 범위를 "6억~12억" 처럼 물결표로 쓴다. 2026-W32 에서 문장 일부에 줄이 그어졌다.
@@ -67,6 +68,7 @@ const TEXT = {
     count: (n) => `${n}건`,
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
     og: "og.png",
+    updated: (t) => `마지막 업데이트: ${t.y}년 ${t.m}월 ${t.d}일 ${t.hm} KST`,
     fb: {
       link: "피드백", title: "피드백 보내기", close: "닫기",
       msg: "불편한 점이나 바라는 점을 적어주세요", email: "답장받을 이메일 (선택)",
@@ -103,6 +105,7 @@ const TEXT = {
     count: (n) => `${n} items`,
     pager: ["Previous and next issues", "Previous", "Next"],
     og: "og-en.png",
+    updated: (t) => `Last updated: ${EN_MONTHS[t.m - 1]} ${t.d}, ${t.y}, ${t.hm} KST`,
     fb: {
       link: "Feedback", title: "Send feedback", close: "Close",
       msg: "Tell us what's not working or what you'd like to see", email: "Email for a reply (optional)",
@@ -361,6 +364,9 @@ function feedback(T) {
 </script>`;
 }
 
+// 바닥글의 마지막 업데이트 시각 자리. 모든 페이지를 쓴 뒤 사이트 지문을 내고 채운다(맨 아래).
+const UPDATED_MARK = "__SITE_UPDATED__";
+
 // path 는 언어판 안에서의 경로다. 홈은 "", 주간호는 "week/2026-W39/".
 function layout({ title, description, root, body, full = false, lang = "ko", path = null }) {
   const T = TEXT[lang];
@@ -411,6 +417,7 @@ ${full ? `<header class="site">
 ${body}
 <footer>
   <p><a href="${REPO_URL}">GitHub</a> · <a href="${home}stats/">${T.stats}</a> · <button class="fb-open" type="button">${T.fb.link}</button></p>
+  <p class="updated">${UPDATED_MARK}</p>
 </footer>
 ${feedback(T)}
 </div>
@@ -919,10 +926,26 @@ for (const lang of LANG_NAMES)
 // 사이트 검사(scripts/build-checks.mjs).
 stop(checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }));
 
+// 마지막 업데이트 시각은 사이트 전체에 하나다. 배포되는 파일이 바뀐 커밋의 시각을 쓴다.
+// 배포 때는 LIVE_VERSION_URL 로 지금 배포본의 지문을 읽어, 같으면 그 시각을 이어 쓴다.
+// 로컬 빌드는 배포본을 읽지 않고 HEAD 커밋 시각을 쓴다.
+const hash = hashSite(SITE);
+const head = headCommit(ROOT);
+const live = await fetchLive(process.env.LIVE_VERSION_URL);
+const updated = pickUpdated(hash, live, head);
+for (const f of readdirSync(SITE, { recursive: true }).filter((f) => f.endsWith(".html"))) {
+  const file = join(SITE, f);
+  const html = readFileSync(file, "utf8");
+  const lang = html.match(/<html lang="(\w+)"/)?.[1] ?? "ko";
+  writeFileSync(file, html.replace(UPDATED_MARK, TEXT[lang].updated(kst(updated))));
+}
+writeFileSync(join(SITE, VERSION_FILE), JSON.stringify({ hash, commit: head.sha, updated }, null, 2) + "\n");
+
 console.log(
   all
     .map((p) => `${listTitle(p)} ${years.get(p.year).quarters.get(p.q).length}개`)
     .join(" | ") || "발행물 없음"
 );
 console.log(`통계 ${statViews.map((v) => `${v.label} ${v.runs.length}개`).join(" | ")}`);
+console.log(`업데이트 ${updated} (${!process.env.LIVE_VERSION_URL ? "배포본 안 봄" : !live ? "배포본 못 읽음" : live.hash === hash ? "배포본과 같음" : "배포본과 다름"}) · 지문 ${hash.slice(0, 12)}`);
 console.log(`영문판 ${KIND_NAMES.map((k) => `${KINDS[k].label} ${SETS.en[k].length}개`).join(" | ")}`);
