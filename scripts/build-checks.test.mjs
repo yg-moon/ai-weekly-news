@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkContent } from "./build-checks.mjs";
+import { checkContent, dateProblems } from "./build-checks.mjs";
 
 const GROUPS = { 국내: "korea", 해외: "world", AI: "ai" };
 const KINDS = { week: { groups: GROUPS }, quarter: { groups: GROUPS }, year: { groups: GROUPS } };
@@ -25,12 +25,12 @@ const doc = (kind, id, body, lang = "ko", meta = {}) => {
   for (const chunk of body.split(/^## /m).slice(1)) n[chunk.split("\n")[0].trim()] = (chunk.match(/^### /gm) ?? []).length;
   return { kind, id, lang, meta, body, n };
 };
-const weekBody = (title = "국내 사안", what = "일이 있었다.") => `
+const weekBody = (title = "국내 사안", what = "일이 있었다.", date = "9월 21일 (월)") => `
 ## 국내
 
 ### 1. ${title}
 
-- **날짜**: 9월 21일 (월)
+- **날짜**: ${date}
 - **무슨 일**: ${what}
 - **왜 중요한가**: 중요하다.
 - **출처**: [연합뉴스](https://example.com/a)
@@ -55,6 +55,22 @@ test("다른 항목을 번호로 가리키면 잡는다", () => {
 
 test("AI 기업 이름을 한글로 쓰면 잡는다", () => {
   assert.match(run({ ko: { week: [doc("week", "2026-W39", weekBody("국내 사안", "앤트로픽이 발표했다."))] } }), /이름 표기/);
+});
+
+test("날짜 칸의 요일과 범위를 본다", () => {
+  const week = (date) => run({ ko: { week: [doc("week", "2026-W39", weekBody("국내 사안", "일이 있었다.", date))] } });
+  assert.equal(week("9월 21일–26일 (월–토)"), "");
+  assert.equal(week("9월 21일 (월)~9월 22일 (화)"), "");
+  assert.match(week("9월 21일 (화)"), /9\/21 은 월요일이다/);
+  assert.match(week("9월 22일–21일 (화–월)"), /시작이 끝보다/);
+  assert.match(week("9월 21일"), /날짜를 읽지 못했다/);
+});
+
+test("주 경계를 넘는 날짜는 가까운 해로 읽는다", () => {
+  assert.deepEqual(dateProblems("12월 31일 (목)", "2027-W01"), []);
+  assert.deepEqual(dateProblems("6월 29일–7월 3일 (월–금)", "2026-W27"), []);
+  assert.deepEqual(dateProblems("Mar 31–Apr 2 (Tue–Thu)", "2026-W14", "en"), []);
+  assert.deepEqual(dateProblems("Sep 21 (Tue)", "2026-W39", "en"), ["9/21 은 Mon이다"]);
 });
 
 test("영문판이 원본과 어긋나면 잡는다", () => {

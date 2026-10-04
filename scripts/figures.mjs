@@ -1,4 +1,4 @@
-// 본문 수치를 읽고 원문 값과 맞춰 보는 규칙. check-figures.mjs 가 쓰고, figures.test.mjs 가
+// 본문 수치와 낱말을 읽고 원문과 맞춰 보는 규칙. check-figures.mjs 가 쓰고, figures.test.mjs 가
 // 표기마다 맞게 읽는지 본다. 규칙의 설명은 check-figures.mjs 머리말에 있다.
 
 const BIG = { 만: 1e4, 억: 1e8, 조: 1e12 };
@@ -114,3 +114,41 @@ export function found(f, text, values) {
   }
   return false;
 }
+
+// ---------- 낱말 ----------
+// 수치 밖의 사실을 원문과 맞춰 볼 때 쓰는 낱말. check-figures.mjs 가 본문 밖에서만 찾은 사실과 다른 항목의
+// 출처에만 있는 사실을 찾을 때 쓴다. 따옴표 안 인용(6자 이상)은 띄어쓰기를 뺀 통째로, 영어는 대문자가 든
+// 낱말을, 한국어는 조사를 뗀 두 글자 이상 낱말을 본다. nouns 를 주면 용언 꼴로 끝나는 낱말을 뺀다.
+
+const PARTICLE = /(으로부터|에서는|에게서|으로는|이라고|라고|이라는|라는|에서|에게|으로|부터|까지|처럼|보다|이며|이나|은|는|이|가|을|를|의|에|로|와|과|도|만|씩)$/;
+const VERBAL = /(다|고|며|거나|지만|자|면|서|는데|려|게|던|된|한|할|운|하|해|돼|했|됐|져|워|겠|었|았|지|록|니)$/;
+const STOP = new Set("대통령 정부 장관 위원장 대표 의원 후보자 관계자 이날 지난 이번 오는 당시 이후 이전 가운데 관련 대해 위해 통해 따라 함께 이상 이하 미국 한국 중국 일본 북한 러시아 이란 이스라엘 우크라이나 국민의힘 민주당 더불어민주당 청와대 대통령실 국회".split(" "));
+const flat = (s) => s.replace(/\s+/g, "");
+
+// 본문을 문장으로 나눈다. 필드 이름("- ")은 떼고 열 자 이하 조각은 버린다.
+export const sentences = (text) =>
+  text.split(/\n/).flatMap((l) => l.replace(/^\s*-\s*/, "").split(/(?<=[다요]\.["”’']?|\.["”’']?)\s+(?=[가-힣A-Z0-9"“'‘(])/))
+    .map((s) => s.trim()).filter((s) => s.length > 10);
+
+export function words(sentence, { nouns = false } = {}) {
+  const out = new Map();
+  for (const m of sentence.matchAll(/["“'‘]([^"”'’]{6,})["”'’]/g)) out.set("Q" + flat(m[1]).replace(/[.,·…!?]/g, ""), "quote");
+  for (const w of sentence.split(/[\s,.·…()\[\]"“”'‘’]+/)) {
+    // 영문 이름 뒤에 붙은 조사는 뗀다("OpenAI는" → OpenAI).
+    const latin = w.match(/^[A-Za-z][A-Za-z0-9.-]*[A-Za-z0-9]/)?.[0];
+    if (latin && /[A-Z]/.test(latin)) { out.set("L" + latin, "latin"); continue; }
+    const h = w.match(/^[가-힣]+/)?.[0];
+    if (!h) continue;
+    let s = h;
+    for (let i = 0; i < 2 && s.length > 2; i++) s = s.replace(PARTICLE, "");
+    if (s.length < 2 || STOP.has(s) || (nouns && VERBAL.test(s))) continue;
+    out.set("H" + s, "ko");
+  }
+  return [...out].map(([key, kind]) => ({ key, kind, text: key.slice(1) }));
+}
+
+// 원문 글을 낱말 대조용으로 한 번 손질해 둔다. 인용은 띄어쓰기와 문장부호를 무시하고 찾는다.
+export const pageText = (text) => ({ text, squeezed: flat(text).replace(/[.,·…!?]/g, "") });
+export const hasWord = (w, page) => (w.kind === "quote" ? page.squeezed : page.text).includes(w.text);
+// 인용은 그 자체로 강한 근거라 둘로 센다.
+export const weight = (ws) => ws.reduce((n, w) => n + (w.kind === "quote" ? 2 : 1), 0);

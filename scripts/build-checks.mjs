@@ -7,6 +7,33 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { OUTLETS_EN } from "./outlets-en.mjs";
 
+// 날짜 칸("9월 21일–26일 (월–토)", "5월 11일 (월)~5월 15일 (금)", "Sep 21–26 (Mon–Sat)", "Mar 31–Apr 2 (Tue–Thu)")을
+// 읽어 문제를 낸다. 연도는 주차에서 정하고, 주 경계를 넘는 1월·12월은 그 주에 가까운 해로 본다.
+const DOW = { ko: [..."일월화수목금토"], en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] };
+const MONTH_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export function dateProblems(value, weekId, lang = "ko") {
+  const [y, w] = weekId.split("-W").map(Number);
+  const jan4 = Date.UTC(y, 0, 4), monday = jan4 - (((new Date(jan4).getUTCDay() + 6) % 7) - (w - 1) * 7) * 864e5;
+  const dates = [];
+  let month = null;
+  const re = lang === "en" ? new RegExp(`(?:(${MONTH_EN.join("|")})\\s+)?(\\d{1,2})\\b`, "g") : /(?:(\d{1,2})월\s*)?(\d{1,2})일/g;
+  for (const [, m, day] of value.replace(/\([^)]*\)/g, (s) => s.replace(/\d/g, "")).matchAll(re)) {
+    if (m) month = lang === "en" ? MONTH_EN.indexOf(m) : Number(m) - 1;
+    if (month === null) return ["날짜를 읽지 못했다"];
+    const near = [y - 1, y, y + 1].map((yy) => Date.UTC(yy, month, Number(day))).sort((a, b) => Math.abs(a - monday) - Math.abs(b - monday))[0];
+    dates.push(near);
+  }
+  const days = [...value.matchAll(/\(([^)]*)\)/g)].flatMap((m) => m[1].split(/[–~-]/).map((s) => s.trim()));
+  if (!dates.length || dates.length > 2 || days.length !== dates.length) return ["날짜를 읽지 못했다"];
+  const out = [];
+  dates.forEach((t, i) => {
+    const real = DOW[lang][new Date(t).getUTCDay()];
+    if (days[i] !== real) out.push(`${new Date(t).getUTCMonth() + 1}/${new Date(t).getUTCDate()} 은 ${real}${lang === "ko" ? "요일" : ""}이다`);
+  });
+  if (dates.length === 2 && dates[0] >= dates[1]) out.push("시작이 끝보다 늦거나 같다");
+  return out;
+}
+
 // 원고 검사. SETS 는 언어판 → 종류 → 발행물 목록이다. 경고는 빌드를 멈추지 않는다.
 export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
   const KIND_NAMES = Object.keys(KINDS);
@@ -88,6 +115,15 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
   );
   if (mixedNames.length) errors.push(`이름 표기가 규칙과 다르다: ${mixedNames.join(", ")}`);
 
+
+  // 주간호 날짜 칸의 요일이 날짜와 맞는지, 범위의 시작이 끝보다 늦지 않은지 본다(주간 런북 11절).
+  // 날짜는 손으로 옮겨 적어 하루 어긋나도 눈에 띄지 않는다. 영문판도 같은 칸을 본다.
+  // 주 범위 밖은 주 경계의 현지 날짜일 수 있어 막지 않는다. QUALITY_CHECKS 3.4 가 알린다.
+  const badDates = ["ko", "en"].flatMap((lang) => SETS[lang].week.flatMap((d) =>
+    d.body.split("\n").filter((l) => /^- \*\*(날짜|Date)\*\*/.test(l))
+      .map((l) => l.replace(/^- \*\*(날짜|Date)\*\*:\s*/, "").trim())
+      .flatMap((v) => dateProblems(v, d.id, lang).map((m) => `${lang === "en" ? "en/" : ""}week/${d.id} "${v}": ${m}`))));
+  if (badDates.length) errors.push(`날짜 칸이 맞지 않는다:\n  ${badDates.join("\n  ")}`);
 
   // 분기호와 연간호의 근거 링크가 실제 항목을 가리키는지 본다. 분기호는 그 분기의
   // 주간호와 앞선 분기호만, 연간호는 그 해의 분기호와 앞선 연간호만 가리킨다. 앵커가 없는 항목으로 가면

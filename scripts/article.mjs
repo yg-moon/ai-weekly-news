@@ -49,7 +49,26 @@ function paragraphs(html) {
 const chrome = (html) =>
   html.replace(/<(script|style|noscript|svg|nav|header|footer|aside|form)\b[^>]*>[\s\S]*?<\/\1>/gi, " ");
 
+// 기사 본문만 뽑는다. 페이지 전체로 되돌아가지 않는다. 네이버는 #dic_area 가 본문이다.
+// 관련기사 제목과 "많이 본 뉴스" 는 다른 기사이고 받을 때마다 바뀌어서, 본문과 섞이면 그 기사에 없는 사실을
+// 본문에서 읽은 것처럼 쓰게 된다.
+const NAVER_BODY = /<article[^>]*id=["']dic_area["'][^>]*>([\s\S]*?)<\/article>/i;
+function body(html) {
+  const naver = html.match(NAVER_BODY);
+  if (naver) return strip(naver[1]);
+  const base = chrome(html);
+  const article = base.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
+  const scoped = article ? strip(article[1]) : "";
+  const paras = paragraphs(base);
+  return paras.length > scoped.length ? paras : scoped;
+}
+
 function text(html) {
+  // 네이버는 짧은 기사도 본문만 쓴다. 아래 1200자 기준에 걸리면 관련기사까지 든 페이지 전체가 나온다.
+  if (NAVER_BODY.test(html)) {
+    const b = body(html);
+    if (b.length > 200) return b;
+  }
   const base = chrome(html);
   const article = base.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
   const scoped = article ? strip(article[1]) : "";
@@ -76,8 +95,9 @@ export function fetchArticle(url) {
         const enc = cs && /euc-kr|ks_c_5601|cp949/i.test(cs[1]) ? "euc-kr" : "utf-8";
         const html = new TextDecoder(enc).decode(buf);
         const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-        // all 은 메뉴 등을 뺀 페이지 글자 전부다. 본문 추출은 목록·표 안의 문장을 놓치기도 한다.
-        resolve({ date: metaDate(html), title: title ? title[1].trim() : null, text: text(html), all: strip(chrome(html)) });
+        // body 는 기사 본문만, all 은 메뉴 등을 뺀 페이지 글자 전부다(관련기사 제목 포함). 본문 추출은 목록·표
+        // 안의 문장을 놓치기도 해서 all 도 함께 낸다.
+        resolve({ date: metaDate(html), title: title ? title[1].trim() : null, text: text(html), body: body(html), all: strip(chrome(html)) });
       }
     );
   });

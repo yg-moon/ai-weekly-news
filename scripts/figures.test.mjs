@@ -3,7 +3,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { found, itemFigures, koFigures, valuesIn } from "./figures.mjs";
+import { found, hasWord, itemFigures, koFigures, pageText, valuesIn, words } from "./figures.mjs";
 
 const ko = (t) => koFigures(t).map((f) => f.value);
 const item = (t) => itemFigures(t).map((f) => f.raw);
@@ -61,4 +61,17 @@ test("원문에 없는 값은 찾지 못한다", () => {
   assert.ok(!hit("직원 2,000명", "2,900 workers"));
   assert.ok(!hit("주가가 15% 넘게 올랐다", "shares rose 20%"));
   assert.ok(!hit("갤런당 4.09달러", "more than $4 a gallon"));
+});
+
+test("문장의 낱말을 조사를 떼고 읽는다", () => {
+  const w = (s, o) => words(s, o).map((x) => x.text);
+  assert.deepEqual(w("김태선 의원이 사이드카를 전달했다."), ["김태선", "사이드카", "전달했다"]);
+  assert.deepEqual(w("김태선 의원이 사이드카를 전달했다.", { nouns: true }), ["김태선", "사이드카"]);
+  assert.deepEqual(w("OpenAI는 GPT-6 Sol을 냈다", { nouns: true }), ["OpenAI", "GPT-6", "Sol"]);
+});
+
+test("인용은 띄어쓰기를 무시하고 찾는다", () => {
+  const [q] = words('그는 "인사는 하면 할수록 어렵다"고 했다').filter((x) => x.kind === "quote");
+  assert.ok(hasWord(q, pageText("인사는 하면  할수록 어렵다.")));
+  assert.ok(!hasWord(q, pageText("인사는 어렵다")));
 });
