@@ -46,6 +46,7 @@
 - 북한 인명은 영문 매체 관례대로 붙임표 없이 쓴다(Kim Jong Un, Kim Yo Jong). 이름이 같은 다른 사람은 직함으로 구분한다.
 - 외국 인물은 처음 나올 때 성과 이름을 모두 쓴다.
 - 미 국방부는 본문에서 Defense Department, 제목에서만 Pentagon 이다.
+- 이 사이트의 발행물은 publication, 주간호는 weekly briefing, 분기호는 quarterly review, 연간호는 annual review 다. issue 는 쓰지 않는다. 기사 속 "문제·쟁점"으로 읽히고, 저장소에서는 GitHub 이슈와 헷갈린다(사용자 2026-10-04).
 - 한국 매체 이름은 `scripts/outlets-en.mjs` 의 이름을 쓴다(연합뉴스 → Yonhap).
 - 원문이 익명으로 쓴 사람은 그대로 둔다(Senior Officer A).
 - 원화 금액은 달러로 환산하지 않는다. 원본에 없는 수치가 생긴다. 평은 제곱미터를 괄호로 덧붙인다.
