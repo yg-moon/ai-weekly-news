@@ -7,3 +7,4 @@
 - `apple-touch-icon.png`: 홈 화면 아이콘(180×180). `favicon.svg` 를 캡처한 것이다.
 - `og.png`: 링크 미리보기 이미지(1200×630). `scripts/og-image.html` 을 Pretendard 글꼴과 같은 폴더에 두고 브라우저로 1200×630 을 캡처했다. 문구를 바꾸면 다시 캡처한다.
 - `og-en.png`: 영문판 링크 미리보기 이미지. 같은 `scripts/og-image.html` 을 주소 끝에 `?lang=en` 을 붙여 열고 캡처했다.
+- `google24a9c274b57e15b7.html`: 구글 Search Console 소유권 확인 파일. 지우면 확인이 풀린다.
