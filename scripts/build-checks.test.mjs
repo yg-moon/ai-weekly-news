@@ -110,9 +110,26 @@ test("분기호 항목의 모양을 잡는다", () => {
 `);
   const ko = (q) => ({ week: [week("2026-W39")], quarter: [q] });
   assert.equal(run({ ko: ko(quarter("일이 있었다.", "중요하다.")) }), "");
-  assert.match(run({ ko: ko(quarter("일이 있었다. 또 있었다.", "중요하다.")) }), /무슨 일이 2문장/);
+  assert.equal(run({ ko: ko(quarter("하나다. 둘이다. 셋이다. 넷이다.", "중요하다.")) }), "");
+  assert.match(run({ ko: ko(quarter("하나다. 둘이다. 셋이다. 넷이다. 다섯이다.", "중요하다.")) }), /무슨 일이 5문장/);
   assert.match(run({ ko: ko(quarter("일이 있었다.", "")) }), /왜 중요한가가 없다/);
   assert.match(run({ ko: ko(quarter("일이 있었다.", "하나다. 둘이다. 셋이다.")) }), /왜 중요한가가 3문장/);
+});
+
+test("분기호 흐름의 전개는 세 문단, 여덟 문장까지다", () => {
+  const quarter = (body) => doc("quarter", "2026-Q3", `
+## 국내
+
+### 1. 흐름 사안
+
+- **전개**: ${body}
+- **왜 중요한가**: 중요하다.
+- **근거**: [W38 국내 1](../../week/2026-W38/#korea-1) / [W39 국내 1](../../week/2026-W39/#korea-1)
+`);
+  const ko = (q) => ({ week: [doc("week", "2026-W38", weekBody()), doc("week", "2026-W39", weekBody())], quarter: [q] });
+  assert.equal(run({ ko: ko(quarter("하나다. 둘이다.\n\n  셋이다. 넷이다. 다섯이다.\n\n  여섯이다. 일곱이다. 여덟이다.")) }), "");
+  assert.match(run({ ko: ko(quarter("하나다.\n\n  둘이다.")) }), /전개가 2문단/);
+  assert.match(run({ ko: ko(quarter("하나다. 둘이다. 셋이다.\n\n  넷이다. 다섯이다. 여섯이다.\n\n  일곱이다. 여덟이다. 아홉이다.")) }), /전개가 9문장/);
 });
 
 test("근거 링크가 없는 항목을 가리키면 잡는다", () => {
@@ -135,6 +152,8 @@ test("진행 중 분기호의 기준 주와 흐름 수를 본다", () => {
 - **전개**: 일이 있었다.
 
 일이 이어졌다.
+
+일이 남았다.
 - **왜 중요한가**: 중요하다.
 - **근거**: [W${a}](../../week/2026-${a}/#korea-1) / [W${b}](../../week/2026-${b}/#korea-1)
 `;

@@ -162,7 +162,8 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
   // - 한 항목의 근거는 주마다 하나다. 같은 주 항목을 더 붙여 흐름을 키우지 않는다.
   // - 한 주간호 항목은 한 번만 쓴다. 한 사안을 흐름과 단발에 나눠 싣지 않는다.
   // - 지난 분기호(연간호는 지난 연간호) 링크는 흐름에만, 근거 맨 앞에 하나까지 단다.
-  // - 전개는 다섯 문장, 무슨 일은 한 문장까지다. 전개는 두 문단으로 나눈다.
+  // - 전개는 여덟 문장, 세 문단이다(배경·전환점·분기 말). 무슨 일은 네 문장까지다. 한 호가 주간호 한 호
+  //   길이를 넘지 않게 한다(사용자 2026-10-04).
   // - 흐름과 단발 모두 왜 중요한가를 두 문장까지 둔다. 연간호도 분기호와 같다(사용자 2026-10-01).
   const sentences = (t) => (t.match(/다\.["”’')]*(?=\s|$)/g) ?? []).length;
   const badShape = ["quarter", "year"].flatMap((kind) =>
@@ -194,9 +195,10 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
             if (seen.has(key)) out.push(`${at}: ${key} 를 ${seen.get(key)} 에서 이미 썼다`);
             else seen.set(key, at);
           }
-          if (sentences(line("전개")) > 5) out.push(`${at}: 전개가 ${sentences(line("전개"))}문장이다(5까지)`);
-          if (line("전개") && !/\n\s*\n/.test(line("전개").trim())) out.push(`${at}: 전개가 한 문단이다(두 문단으로 나눈다)`);
-          if (sentences(line("무슨 일")) > 1) out.push(`${at}: 무슨 일이 ${sentences(line("무슨 일"))}문장이다(1까지)`);
+          if (sentences(line("전개")) > 8) out.push(`${at}: 전개가 ${sentences(line("전개"))}문장이다(8까지)`);
+          const paras = line("전개").trim() ? line("전개").trim().split(/\n\s*\n/).length : 0;
+          if (flow && paras !== 3) out.push(`${at}: 전개가 ${paras}문단이다(세 문단으로 나눈다)`);
+          if (sentences(line("무슨 일")) > 4) out.push(`${at}: 무슨 일이 ${sentences(line("무슨 일"))}문장이다(4까지)`);
           if (!line("왜 중요한가").trim()) out.push(`${at}: 왜 중요한가가 없다`);
           if (sentences(line("왜 중요한가")) > 2) out.push(`${at}: 왜 중요한가가 ${sentences(line("왜 중요한가"))}문장이다(2까지)`);
         }
