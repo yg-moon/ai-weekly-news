@@ -400,7 +400,7 @@ function layout({ title, description, root, body, full = false, lang = "ko", pat
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${description}">
 <meta property="og:type" content="website">
-<meta property="og:locale" content="${T.locale}">
+${path === null ? "" : `<meta property="og:url" content="${SITE_URL}${T.dir}${path}">\n<link rel="canonical" href="${SITE_URL}${T.dir}${path}">\n`}<meta property="og:locale" content="${T.locale}">
 <meta property="og:image" content="${SITE_URL}${T.og}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -954,6 +954,16 @@ for (const lang of LANG_NAMES) {
   mkdirSync(join(SITE, TEXT[lang].dir, "about"), { recursive: true });
   writeFileSync(join(SITE, TEXT[lang].dir, "about", "index.html"), renderAbout(lang));
 }
+
+// 검색 엔진에 내는 페이지 목록. 두 언어판의 모든 페이지다.
+writeFileSync(
+  join(SITE, "sitemap.xml"),
+  `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${LANG_NAMES.flatMap((l) => [...PAGES[l]].sort().map((p) => `<url><loc>${SITE_URL}${TEXT[l].dir}${p}</loc></url>`)).join("\n")}
+</urlset>
+`
+);
 
 // 사이트 검사(scripts/build-checks.mjs).
 stop(checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }));
