@@ -67,6 +67,11 @@ const TEXT = {
     count: (n) => `${n}건`,
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
     og: "og.png",
+    fb: {
+      link: "피드백", title: "피드백 보내기", close: "닫기",
+      msg: "불편한 점이나 바라는 점을 적어주세요", email: "답장받을 이메일 (선택)",
+      send: "보내기", sending: "보내는 중…", done: "보냈습니다. 고맙습니다.", fail: "보내지 못했습니다. 잠시 뒤 다시 보내 주세요.",
+    },
     st: {
       back: "← 목록", all: "전체", yearLabel: (y) => `${y}년`,
       tiles: ["발행물", "개", "총 비용", "평균 비용", "평균 소요 시간", "분"],
@@ -98,6 +103,11 @@ const TEXT = {
     count: (n) => `${n} items`,
     pager: ["Previous and next issues", "Previous", "Next"],
     og: "og-en.png",
+    fb: {
+      link: "Feedback", title: "Send feedback", close: "Close",
+      msg: "Tell us what's not working or what you'd like to see", email: "Email for a reply (optional)",
+      send: "Send", sending: "Sending…", done: "Sent. Thank you.", fail: "Couldn't send. Please try again later.",
+    },
     st: {
       back: "← All issues", all: "All", yearLabel: (y) => y,
       tiles: ["Issues", "", "Total cost", "Average cost", "Average time", "min"],
@@ -309,6 +319,48 @@ const LANG_SCRIPT = `<script>
 })();
 </script>`;
 
+// 피드백 창. 보낸 글은 Web3Forms 가 사용자 메일로 전한다. 액세스 키는 받는 메일 주소를 가리키는
+// 공개용 값이라 페이지에 그대로 둔다. 보던 페이지 주소를 함께 보낸다. botcheck 는 스팸 봇이 채우는 숨은 칸이다.
+const WEB3FORMS_KEY = "ba2d7f3e-9ed5-410b-9716-b693f1b42ad6";
+function feedback(T) {
+  const F = T.fb;
+  return `<dialog class="fb" id="fb" aria-labelledby="fb-title">
+  <form method="dialog" class="fb-head"><h2 id="fb-title">${F.title}</h2><button class="fb-x" aria-label="${F.close}">×</button></form>
+  <form class="fb-form">
+    <textarea name="message" required aria-label="${F.link}" placeholder="${F.msg}"></textarea>
+    <input name="email" type="email" aria-label="${F.email}" placeholder="${F.email}">
+    <input name="botcheck" type="checkbox" class="fb-bot" tabindex="-1" autocomplete="off">
+    <button class="fb-send" disabled>${F.send}</button>
+    <p class="fb-status" role="status"></p>
+  </form>
+</dialog>
+<script>
+(function () {
+  var d = document.getElementById("fb"), f = d.querySelector(".fb-form"), b = f.querySelector(".fb-send"), s = f.querySelector(".fb-status");
+  var F = ${JSON.stringify({ send: F.send, sending: F.sending, done: F.done, fail: F.fail })};
+  document.querySelector(".fb-open").addEventListener("click", function () { s.textContent = ""; d.showModal(); });
+  d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+  f.message.addEventListener("input", function () { b.disabled = !f.message.value.trim(); s.textContent = ""; });
+  f.addEventListener("submit", function (e) {
+    e.preventDefault();
+    b.disabled = true; b.textContent = F.sending;
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        access_key: "${WEB3FORMS_KEY}", subject: "피드백 — " + document.title,
+        from_name: "${SITE_TITLE}", message: f.message.value, email: f.email.value || undefined,
+        page: location.href, botcheck: f.botcheck.checked,
+      }),
+    }).then(function (r) { return r.json(); }).then(function (r) {
+      if (!r.success) throw 0;
+      f.reset(); s.textContent = F.done;
+    }).catch(function () { s.textContent = F.fail; b.disabled = false; })
+      .then(function () { b.textContent = F.send; });
+  });
+})();
+</script>`;
+}
+
 // path 는 언어판 안에서의 경로다. 홈은 "", 주간호는 "week/2026-W39/".
 function layout({ title, description, root, body, full = false, lang = "ko", path = null }) {
   const T = TEXT[lang];
@@ -358,8 +410,9 @@ ${full ? `<header class="site">
 </header>` : `<header class="site compact">${masthead}</header>`}
 ${body}
 <footer>
-  <p><a href="${REPO_URL}">GitHub</a> · <a href="${home}stats/">${T.stats}</a></p>
+  <p><a href="${REPO_URL}">GitHub</a> · <a href="${home}stats/">${T.stats}</a> · <button class="fb-open" type="button">${T.fb.link}</button></p>
 </footer>
+${feedback(T)}
 </div>
 </body>
 </html>

@@ -306,6 +306,43 @@ footer a { color:var(--muted); }
 footer p { margin:0 0 .5rem; }
 footer p:last-child { margin:0; }
 
+/* 피드백. 바닥글에서는 링크처럼 보이는 버튼이고, 누르면 가운데에 창이 뜬다. */
+.fb-open {
+  padding:0; border:0; background:none; cursor:pointer;
+  font:inherit; letter-spacing:inherit; color:var(--muted);
+  text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px;
+}
+dialog.fb {
+  width:min(28rem, calc(100vw - 32px)); margin:auto; padding:1.4rem 1.4rem 1.25rem;
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--surface); color:var(--text); box-shadow:0 12px 40px rgba(0,0,0,.14);
+}
+dialog.fb::backdrop { background:rgba(20,20,18,.38); }
+.fb-head { display:flex; align-items:center; justify-content:space-between; margin:0 0 .9rem; }
+.fb-head h2 { margin:0; font-size:1.05rem; }
+.fb-x {
+  width:2rem; height:2rem; margin:-.35rem -.5rem -.35rem 0; border:0; border-radius:999px;
+  background:none; color:var(--muted); font-size:1.35rem; line-height:1; cursor:pointer;
+}
+.fb-x:hover { background:var(--sunken); color:var(--text); }
+.fb textarea, .fb input {
+  display:block; width:100%; margin:0 0 .75rem; padding:.7rem .85rem;
+  font:inherit; font-size:.95rem; line-height:1.6; letter-spacing:inherit; color:var(--text);
+  background:var(--bg); border:1px solid var(--line); border-radius:8px;
+}
+.fb textarea { min-height:9rem; resize:vertical; }
+.fb textarea::placeholder, .fb input::placeholder { color:var(--muted); }
+.fb textarea:focus, .fb input:focus { outline:none; border-color:var(--accent); }
+.fb .fb-bot { display:none; }
+.fb-send {
+  display:block; width:100%; padding:.7rem; border:0; border-radius:8px; cursor:pointer;
+  font:inherit; font-size:.95rem; font-weight:600; letter-spacing:inherit;
+  background:var(--accent); color:var(--surface);
+}
+.fb-send:disabled { background:var(--sunken); color:var(--muted); cursor:default; }
+.fb-status { margin:.6rem 0 0; font-size:.85rem; color:var(--dim); text-align:center; }
+.fb-status:empty { display:none; }
+
 @media (max-width:30rem) {
   :root { --indent:0rem; --pad:.9rem; }
   /* 왼쪽처럼 오른쪽도 본문 밖으로 같은 만큼 낸다. 글은 본문과 같은 폭이다. */
