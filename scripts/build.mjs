@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { marked } from "marked";
 import { OUTLETS_EN } from "./outlets-en.mjs";
 import { checkContent, checkSite } from "./build-checks.mjs";
-import { itemsOf, findItems } from "./search.mjs";
+import { itemsOf, findItems, positions } from "./search.mjs";
 import { VERSION_FILE, hashSite, kst, headCommit, pickUpdated, fetchLive } from "./site-version.mjs";
 
 // 취소선을 쓰지 않는다. GFM 은 한 문단의 물결표 두 개 사이를 취소선으로 바꾸는데,
@@ -29,7 +29,7 @@ const RUNS = join(ROOT, "data", "runs");
 const SITE = join(ROOT, "site");
 
 const SITE_TITLE = "AI Weekly News";
-const SITE_TAGLINE = "지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다.";
+const SITE_TAGLINE = "지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다. AI가 수집하고 요약하며, 모든 항목에 출처를 답니다.";
 const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
 // 링크 미리보기 이미지는 절대 주소여야 한다.
 const SITE_URL = "https://yg-moon.github.io/ai-weekly-news/";
@@ -64,7 +64,6 @@ const TEXT = {
     period: (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`,
     listTitle: (p) => `${p.year}년 ${p.q}분기`,
     tagline: SITE_TAGLINE,
-    badges: ["매주 월요일 오전 8시 발행 (KST)", "AI 수집 및 요약 · 모든 항목에 출처 링크"],
     home: "주간 뉴스 브리핑", recent: "최근", recentTitle: "최근 호",
     why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "소개",
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
@@ -104,8 +103,7 @@ const TEXT = {
     },
     listTitle: (p) => `${p.year} Q${p.q}`,
     // 세 분야 이름은 줄이 바뀌어도 함께 넘어가게 붙인다(\u00a0). 좁은 폰에서 "AI." 만 떨어졌다.
-    tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI.",
-    badges: ["Every Monday, 8 AM KST", "Collected and summarized by AI · Sources for every item"],
+    tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI. Collected and summarized by AI, with sources for every item.",
     home: "Weekly News Briefing", recent: "Latest", recentTitle: "Latest issues",
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats", about: "About",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
@@ -431,9 +429,6 @@ ${LANG_SCRIPT}
 ${full ? `<header class="site">
   ${masthead}
   <p class="tagline">${T.tagline}</p>
-  <p class="badges">
-    ${T.badges.map((b) => `<span class="badge">${b}</span>`).join("\n    ")}
-  </p>
 </header>` : `<header class="site compact">${masthead}</header>`}
 ${body}
 <footer>
@@ -931,17 +926,25 @@ function renderSearch(lang) {
 <ol class="search-results" id="results"></ol>
 <script>
 (function () {
+  ${positions.toString()}
   ${findItems.toString()}
   var input = document.getElementById("q"), out = document.getElementById("results"), count = document.getElementById("count"), sortBox = document.getElementById("sort");
   var newest = new URLSearchParams(location.search).get("sort") === "new";
   var entries = null, COUNT = ${JSON.stringify(S.count(0)).replace("0", "{n}")}, ONE = ${JSON.stringify(S.count(1))}, NONE = ${JSON.stringify(S.none)}, SNIP = ${lang === "ko" ? 90 : 140};
   function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  // 걸린 자리를 찾는 규칙은 검색과 같다(positions). 겹치는 자리는 앞의 것만 칠한다.
   function mark(s, terms) {
-    var re = new RegExp("(" + terms.map(function (w) { return w.replace(/[.*+?^\${}()|[\\]\\\\]/g, "\\\\$&"); }).join("|") + ")", "gi");
-    return s.split(re).map(function (p, i) { return i % 2 ? '<mark>' + esc(p) + '</mark>' : esc(p); }).join("");
+    var low = s.toLowerCase(), r = [], out = "", at = 0;
+    terms.forEach(function (w) { positions(low, w).forEach(function (i) { r.push([i, i + w.length]); }); });
+    r.sort(function (a, b) { return a[0] - b[0]; }).forEach(function (x) {
+      if (x[0] < at) return;
+      out += esc(s.slice(at, x[0])) + "<mark>" + esc(s.slice(x[0], x[1])) + "</mark>";
+      at = x[1];
+    });
+    return out + esc(s.slice(at));
   }
   function snippet(text, terms) {
-    var low = text.toLowerCase(), at = Math.min.apply(null, terms.map(function (w) { var i = low.indexOf(w); return i < 0 ? Infinity : i; }));
+    var low = text.toLowerCase(), at = Math.min.apply(null, terms.map(function (w) { var p = positions(low, w); return p.length ? p[0] : Infinity; }));
     var start = at === Infinity ? 0 : Math.max(0, at - SNIP / 4);
     var cut = start ? text.slice(start, at).search(/\\s/) : -1;
     if (cut >= 0) start += cut + 1;
