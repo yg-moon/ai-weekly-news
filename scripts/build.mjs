@@ -927,7 +927,9 @@ ${marked.parse(rest)}</div>`,
 }
 
 // 검색 페이지. 색인(index.json)은 이 페이지만 받는다. 검색어는 주소의 ?q= 에 남아 공유할 수 있다.
-// 한글은 글자 조합이 끝난 뒤에 찾는다. 결과의 클래스 이름은 아래 문자열에 그대로 적어 둔다.
+// 한글은 조합 중인 글자까지 바로 찾되, 끝에 홀로 남은 자모(ㄱ, ㅏ)는 빼고 찾는다. 데스크톱 입력기는
+// 다음 글자를 칠 때까지 조합을 끝내지 않아, 조합이 끝난 뒤에만 찾으면 한 글자씩 늦었다(2026-10-04).
+// 결과의 클래스 이름은 아래 문자열에 그대로 적어 둔다.
 // 빌드의 쓰이지 않는 스타일 검사가 HTML 안의 class="…" 를 읽는다.
 function renderSearch(lang) {
   const T = TEXT[lang], S = T.search;
@@ -971,6 +973,7 @@ function renderSearch(lang) {
     return (start ? "…" : "") + mark(text.slice(start, end), terms) + (end < text.length ? "…" : "");
   }
   function render(q) {
+    q = q.replace(/[\u3131-\u318e]+$/, "");
     var r = findItems(entries, q, newest);
     try { history.replaceState(null, "", q.trim() ? "?q=" + encodeURIComponent(q.trim()) + (newest ? "&sort=new" : "") : location.pathname); } catch (e) {}
     sortBox.hidden = r.hits.length < 2;
@@ -981,8 +984,7 @@ function renderSearch(lang) {
       return '<li><a class="sr-title" href="../' + e[2] + '">' + mark(e[0], r.terms) + '</a><span class="sr-meta">' + esc(e[3]) + '</span><span class="sr-text">' + snippet(e[1], r.terms) + '</span></li>';
     }).join("");
   }
-  input.addEventListener("input", function (e) { if (entries && !e.isComposing) render(input.value); });
-  input.addEventListener("compositionend", function () { if (entries) render(input.value); });
+  input.addEventListener("input", function () { if (entries) render(input.value); });
   sortBox.addEventListener("click", function (e) {
     var b = e.target.closest("button");
     if (b && entries) { newest = b.getAttribute("data-sort") === "new"; render(input.value); }
