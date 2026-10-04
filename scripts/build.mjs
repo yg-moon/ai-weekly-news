@@ -64,7 +64,7 @@ const TEXT = {
     period: (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`,
     listTitle: (p) => `${p.year}년 ${p.q}분기`,
     tagline: SITE_TAGLINE,
-    home: "주간 뉴스 브리핑", recent: "최근", recentTitle: "최근 호",
+    home: "주간 뉴스 브리핑", recent: "최근",
     why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "사이트 소개",
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
@@ -104,7 +104,7 @@ const TEXT = {
     listTitle: (p) => `${p.year} Q${p.q}`,
     // 세 분야 이름은 줄이 바뀌어도 함께 넘어가게 붙인다(\u00a0). 좁은 폰에서 "AI." 만 떨어졌다.
     tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI. Collected and summarized by AI, with sources for every item.",
-    home: "Weekly News Briefing", recent: "Latest", recentTitle: "Latest issues",
+    home: "Weekly News Briefing", recent: "Latest",
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats", about: "About",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
@@ -636,7 +636,7 @@ function renderList(years, p, root, lang = "ko") {
   });
 }
 
-// 홈은 분기와 상관없는 "최근 호"다. 맨 위에 가장 최근 분기호(진행 중이거나 지난 분기 완결본),
+// 홈은 분기와 상관없는 최근 호들이다. 탭의 "최근"이 곧 제목이라 따로 제목을 달지 않는다. 맨 위에 가장 최근 분기호(진행 중이거나 지난 분기 완결본),
 // 그 아래 최근 주간호 13개를 둔다. 분기가 바뀌는 곳에 분기 이름을 단다. 새 분기 첫 주에도
 // 홈이 비지 않게 한 것이다(2026-10-04).
 const HOME_WEEKS = 13;
@@ -659,7 +659,7 @@ function renderHome(years, root, lang = "ko") {
     full: true,
     lang,
     path: "",
-    body: `${tabs(years, null, base, T)}\n<h2 class="list">${T.recentTitle}</h2>\n<ul class="archive">${quarterly ? card(quarterly, base) : ""}${rows}\n</ul>`,
+    body: `${tabs(years, null, base, T)}\n<ul class="archive">${quarterly ? card(quarterly, base) : ""}${rows}\n</ul>`,
   });
 }
 
