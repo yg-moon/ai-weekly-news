@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { marked } from "marked";
 import { OUTLETS_EN } from "./outlets-en.mjs";
 import { checkContent, checkSite } from "./build-checks.mjs";
+import { itemsOf, findItems } from "./search.mjs";
 import { VERSION_FILE, hashSite, kst, headCommit, pickUpdated, fetchLive } from "./site-version.mjs";
 
 // 취소선을 쓰지 않는다. GFM 은 한 문단의 물결표 두 개 사이를 취소선으로 바꾸는데,
@@ -69,6 +70,7 @@ const TEXT = {
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
     state: ["진행중", "완결"], editions: (n) => `${n}판`,
+    search: { label: "검색", placeholder: "지난 호에서 찾기", count: (n) => `${n}건`, none: "결과가 없습니다.", desc: "지난 호의 항목을 제목과 본문으로 찾습니다." },
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
     og: "og.png",
     aboutDesc: `${SITE_TITLE}를 만든 이유와 뉴스를 고르고 만드는 방식.`,
@@ -108,6 +110,7 @@ const TEXT = {
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
     state: ["In progress", "Complete"], editions: (n) => `${n} editions`,
+    search: { label: "Search", placeholder: "Search past issues", count: (n) => (n === 1 ? "1 result" : `${n} results`), none: "No results.", desc: "Search past items by title and text." },
     pager: ["Previous and next issues", "Previous", "Next"],
     og: "og-en.png",
     aboutDesc: `Why ${SITE_TITLE} exists, and how its stories are chosen and made.`,
@@ -395,7 +398,8 @@ function layout({ title, description, root, body, full = false, lang = "ko", pat
       ? `<span aria-current="true">${TEXT[l].name}</span>`
       : `<a href="${root}${TEXT[l].dir}${path !== null && PAGES[l].has(path) ? path : ""}" hreflang="${l}" data-lang="${l}">${TEXT[l].name}</a>`
   ).join("")}</nav>`;
-  const masthead = `<div class="masthead"><h1><a href="${home}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1>${switcher}</div>`;
+  const searchLink = `<a class="search-link" href="${home}search/" aria-label="${T.search.label}"${path === "search/" ? ' aria-current="page"' : ""}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></a>`;
+  const masthead = `<div class="masthead"><h1><a href="${home}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1><div class="tools">${searchLink}${switcher}</div></div>`;
   return `<!doctype html>
 <html lang="${lang}"${altAttrs}>
 <head>
@@ -823,8 +827,8 @@ function renderStats(views, view, lang = "ko") {
   // 버튼이 오류 없이 안 먹는다.
   const SHOWN = 16;
   const rows = [...runs].reverse().map((r, i) => `<tr${i >= SHOWN ? ' class="old"' : ""}>
-  <td>${r.week}${r.editions > 1 ? ` <small>${T.editions(r.editions)}</small>` : ""}</td>
-  <td class="r">${usd(r.cost_usd)}</td><td class="r">${S.min(minutes(r))}</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td><td class="m">${r.model}</td>
+  <td>${r.week}</td>
+  <td class="r">${usd(r.cost_usd)}${r.editions > 1 ? ` <small>${T.editions(r.editions)}</small>` : ""}</td><td class="r">${S.min(minutes(r))}</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td><td class="m">${r.model}</td>
 </tr>`).join("");
   const more = runs.length > SHOWN
     ? `<label for="more-runs" class="more">${S.more}</label>`
@@ -876,6 +880,63 @@ ${marked.parse(rest)}</div>`,
   });
 }
 
+// 검색 페이지. 색인(index.json)은 이 페이지만 받는다. 검색어는 주소의 ?q= 에 남아 공유할 수 있다.
+// 한글은 글자 조합이 끝난 뒤에 찾는다. 결과의 클래스 이름은 아래 문자열에 그대로 적어 둔다.
+// 빌드의 쓰이지 않는 스타일 검사가 HTML 안의 class="…" 를 읽는다.
+function renderSearch(lang) {
+  const T = TEXT[lang], S = T.search;
+  const root = "../".repeat((T.dir + "search/").split("/").filter(Boolean).length);
+  return layout({
+    title: `${S.label} — ${SITE_TITLE}`,
+    description: S.desc,
+    root,
+    lang,
+    path: "search/",
+    body: `<p class="crumb"><a href="${root + T.dir}">${T.st.back}</a></p>
+<h1 class="issue-title">${S.label}</h1>
+<form class="search" role="search" onsubmit="return false"><input id="q" type="search" name="q" autocomplete="off" autofocus placeholder="${S.placeholder}" aria-label="${S.label}"></form>
+<p class="search-count" id="count" aria-live="polite"></p>
+<ol class="search-results" id="results"></ol>
+<script>
+(function () {
+  ${findItems.toString()}
+  var input = document.getElementById("q"), out = document.getElementById("results"), count = document.getElementById("count");
+  var entries = null, COUNT = ${JSON.stringify(S.count(0)).replace("0", "{n}")}, ONE = ${JSON.stringify(S.count(1))}, NONE = ${JSON.stringify(S.none)}, SNIP = ${lang === "ko" ? 90 : 140};
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function mark(s, terms) {
+    var re = new RegExp("(" + terms.map(function (w) { return w.replace(/[.*+?^\${}()|[\\]\\\\]/g, "\\\\$&"); }).join("|") + ")", "gi");
+    return s.split(re).map(function (p, i) { return i % 2 ? '<mark>' + esc(p) + '</mark>' : esc(p); }).join("");
+  }
+  function snippet(text, terms) {
+    var low = text.toLowerCase(), at = Math.min.apply(null, terms.map(function (w) { var i = low.indexOf(w); return i < 0 ? Infinity : i; }));
+    var start = at === Infinity ? 0 : Math.max(0, at - SNIP / 4);
+    var cut = start ? text.slice(start, at).search(/\\s/) : -1;
+    if (cut >= 0) start += cut + 1;
+    var end = Math.min(text.length, start + SNIP);
+    return (start ? "…" : "") + mark(text.slice(start, end), terms) + (end < text.length ? "…" : "");
+  }
+  function render(q) {
+    var r = findItems(entries, q);
+    try { history.replaceState(null, "", q.trim() ? "?q=" + encodeURIComponent(q.trim()) : location.pathname); } catch (e) {}
+    if (!r.terms.length) { count.textContent = ""; out.innerHTML = ""; return; }
+    count.textContent = r.hits.length ? (r.hits.length === 1 ? ONE : COUNT.replace("{n}", r.hits.length)) : NONE;
+    out.innerHTML = r.hits.map(function (e) {
+      return '<li><a class="sr-title" href="../' + e[2] + '">' + mark(e[0], r.terms) + '</a><span class="sr-meta">' + esc(e[3]) + '</span><span class="sr-text">' + snippet(e[1], r.terms) + '</span></li>';
+    }).join("");
+  }
+  input.addEventListener("input", function (e) { if (entries && !e.isComposing) render(input.value); });
+  input.addEventListener("compositionend", function () { if (entries) render(input.value); });
+  fetch("index.json").then(function (r) { return r.json(); }).then(function (d) {
+    entries = d;
+    var q = new URLSearchParams(location.search).get("q");
+    if (q) input.value = q;
+    render(input.value);
+  });
+})();
+</script>`,
+  });
+}
+
 // ---------- 실행 ----------
 
 const SETS = Object.fromEntries(LANG_NAMES.map((l) => [l, Object.fromEntries(KIND_NAMES.map((k) => [k, load(k, l)]))]));
@@ -907,6 +968,7 @@ const runs = loadRuns();
 const statViews = statsViews(runs);
 for (const l of LANG_NAMES) for (const v of statViews) PAGES[l].add(v.path);
 for (const l of LANG_NAMES) PAGES[l].add("about/");
+for (const l of LANG_NAMES) PAGES[l].add("search/");
 
 rmSync(SITE, { recursive: true, force: true });
 mkdirSync(SITE, { recursive: true });
@@ -964,6 +1026,27 @@ for (const lang of LANG_NAMES) {
   writeFileSync(join(SITE, TEXT[lang].dir, "about", "index.html"), renderAbout(lang));
 }
 
+// 검색 페이지와 항목 색인. 최신 호부터 놓고, 같은 날 끝나면 분기호·연간호가 앞이다.
+const newestFirst = (a, b) => b.meta.period_end.localeCompare(a.meta.period_end) || KIND_NAMES.indexOf(b.kind) - KIND_NAMES.indexOf(a.kind);
+const badIndex = [];
+for (const lang of LANG_NAMES) {
+  const T = TEXT[lang];
+  const index = KIND_NAMES.flatMap((k) => SETS[lang][k]).sort(newestFirst).flatMap((d) =>
+    itemsOf(d.body).map((it) => {
+      const href = `${d.kind}/${d.id}/#${T.groups[it.group]}-${it.num}`;
+      const page = readFileSync(join(SITE, T.dir, d.kind, d.id, "index.html"), "utf8");
+      if (!page.includes(`id="${T.groups[it.group]}-${it.num}"`)) badIndex.push(`${T.dir}${href}`);
+      return [it.title, it.text, href, `${d.id}${stateMark(d)} · ${it.group} ${it.num} · ${period(d)}`];
+    })
+  );
+  const want = KIND_NAMES.flatMap((k) => SETS[lang][k]).reduce((n, d) => n + Object.values(d.n).reduce((a, b) => a + b, 0), 0);
+  if (index.length !== want) badIndex.push(`${lang} 색인 ${index.length}개 · 원고 항목 ${want}개`);
+  mkdirSync(join(SITE, T.dir, "search"), { recursive: true });
+  writeFileSync(join(SITE, T.dir, "search", "index.json"), JSON.stringify(index));
+  writeFileSync(join(SITE, T.dir, "search", "index.html"), renderSearch(lang));
+}
+stop(badIndex.length ? [`검색 색인이 원고와 맞지 않는다: ${badIndex.join(", ")}`] : []);
+
 // 없는 주소. GitHub Pages 가 어느 깊이의 주소에서든 이 파일을 내므로 경로를 절대 경로로 쓴다.
 writeFileSync(
   join(SITE, "404.html"),
@@ -988,8 +1071,8 @@ const pubDate = (d) => {
 for (const lang of LANG_NAMES) {
   const T = TEXT[lang];
   const docs = KIND_NAMES.flatMap((k) => SETS[lang][k])
-    // 지난 호는 한꺼번에 만든 것이 많아 발행 시각이 아니라 기간 끝 순서로 놓는다. 같으면 분기호·연간호가 앞이다.
-    .sort((a, b) => b.meta.period_end.localeCompare(a.meta.period_end) || KIND_NAMES.indexOf(b.kind) - KIND_NAMES.indexOf(a.kind))
+    // 지난 호는 한꺼번에 만든 것이 많아 발행 시각이 아니라 기간 끝 순서로 놓는다.
+    .sort(newestFirst)
     .slice(0, FEED_SIZE);
   const items = docs.map((d) => {
     const url = `${SITE_URL}${T.dir}${d.kind}/${d.id}/`;
@@ -1015,7 +1098,7 @@ writeFileSync(
   join(SITE, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${LANG_NAMES.flatMap((l) => [...PAGES[l]].sort().map((p) => `<url><loc>${SITE_URL}${TEXT[l].dir}${p}</loc></url>`)).join("\n")}
+${LANG_NAMES.flatMap((l) => [...PAGES[l]].filter((p) => p !== "search/").sort().map((p) => `<url><loc>${SITE_URL}${TEXT[l].dir}${p}</loc></url>`)).join("\n")}
 </urlset>
 `
 );
