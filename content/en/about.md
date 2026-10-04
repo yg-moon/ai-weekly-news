@@ -1,12 +1,12 @@
 # About
 
-If you follow the news every day, you see many sensational stories, while the events that really matter repeat with little change all week. So once a week, I pick only the stories you should not miss and put them in one place.
+There are too many sensational stories to follow the news every day, while the events that really matter repeat in much the same way all week. So once a week, I pick only the stories you should not miss and put them in one place.
 
 ## Issues
 
 Every Monday at 8 AM KST, I publish the past week’s news, Monday to Sunday: five stories each from Korea, the world and AI. Each story says what happened and why it matters. The aim is that you understand what an event means, not only the facts, in one read.
 
-When 13 weekly issues have built up, they are combined into a quarterly review, and the quarterly reviews into an annual review. These show trends that a single week cannot.
+Weekly issues are combined into quarterly reviews, and quarterly reviews into an annual review. These show trends that a single week cannot.
 
 ## Selection
 
