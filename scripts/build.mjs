@@ -632,7 +632,7 @@ function renderList(years, p, root, lang = "ko") {
     full: true,
     lang,
     path: listPath(p),
-    body: `${tabs(years, p, base, T)}\n<h2 class="list">${listTitle(p, lang)}</h2>\n<ul class="archive">${pendingCard(p, docs, lang)}${docs.map((d) => card(d, base)).join("")}\n</ul>`,
+    body: `${tabs(years, p, base, T)}\n<ul class="archive">${pendingCard(p, docs, lang)}${docs.map((d) => card(d, base)).join("")}\n</ul>`,
   });
 }
 

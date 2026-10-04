@@ -154,7 +154,6 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
 .yr.on { color:var(--text); font-weight:700; }
 .tabdiv { width:1px; margin:.55rem .45rem; background:var(--line); }
 
-h2.list { font-size:1.05rem; margin:0 0 1rem; }
 .archive { list-style:none; margin:0; padding:0; }
 .archive li + li { border-top:1px solid var(--line); }
 .archive a {
