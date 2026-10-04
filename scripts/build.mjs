@@ -32,6 +32,8 @@ const SITE_TAGLINE = "지난 한 주의 뉴스를 국내·해외·AI 각 5건으
 const REPO_URL = "https://github.com/yg-moon/ai-weekly-news";
 // 링크 미리보기 이미지는 절대 주소여야 한다.
 const SITE_URL = "https://yg-moon.github.io/ai-weekly-news/";
+// 방문자 통계(Umami Cloud). 배포된 주소에서 연 페이지만 센다.
+const UMAMI_ID = "23e118f1-1e88-4802-952a-7bc65d7e05a5";
 
 // 발행물의 종류. 순서가 곧 탭 순서다.
 const KINDS = {
@@ -408,6 +410,7 @@ ${path === null ? "" : `<meta property="og:url" content="${SITE_URL}${T.dir}${pa
 <link rel="icon" href="${root}favicon.svg" type="image/svg+xml">
 <link rel="icon" href="${root}favicon-96.png" type="image/png" sizes="96x96">
 <link rel="apple-touch-icon" href="${root}apple-touch-icon.png">
+<script defer src="https://cloud.umami.is/script.js" data-website-id="${UMAMI_ID}" data-domains="yg-moon.github.io"></script>
 ${hreflang}
 <style>${CSS}</style>
 ${LANG_SCRIPT}
