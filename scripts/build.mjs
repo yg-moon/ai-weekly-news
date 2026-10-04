@@ -65,7 +65,7 @@ const TEXT = {
     listTitle: (p) => `${p.year}년 ${p.q}분기`,
     tagline: SITE_TAGLINE,
     home: "주간 뉴스 브리핑", recent: "최근", recentTitle: "최근 호",
-    why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "소개",
+    why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "사이트 소개",
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
     state: ["진행중", "완결"], editions: (n) => `${n}판`,

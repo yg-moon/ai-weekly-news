@@ -1,8 +1,8 @@
-# About
+# About this site
 
 There are too many sensational stories to follow the news every day, while the events that really matter keep coming back in much the same form for a long time. So once a week, this site picks only the stories you should not miss and puts them in one place.
 
-## Issues
+## Format
 
 Every Monday at 8 AM KST, a new issue covers the past week, Monday to Sunday: **five stories each from Korea, the world and AI**. Each story says what happened and **why it matters**. The aim is that you understand what an event means, not only the facts, in one read.
 
