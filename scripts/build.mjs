@@ -63,11 +63,12 @@ const TEXT = {
     tagline: SITE_TAGLINE,
     badges: ["매주 월요일 오전 8시 발행 (KST)", "AI 수집 및 요약 · 모든 항목에 출처 링크"],
     home: "주간 뉴스 브리핑",
-    why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계",
+    why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "소개",
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
     og: "og.png",
+    aboutDesc: `${SITE_TITLE}를 만든 이유와 뉴스를 고르고 만드는 방식.`,
     updated: (t) => `마지막 업데이트: ${t.y}년 ${t.m}월 ${t.d}일 ${t.hm} KST`,
     fb: {
       link: "피드백", title: "피드백 보내기", close: "닫기",
@@ -100,11 +101,12 @@ const TEXT = {
     tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI.",
     badges: ["Every Monday, 8 AM KST", "Collected and summarized by AI · Sources for every item"],
     home: "Weekly News Briefing",
-    why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats",
+    why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats", about: "About",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
     pager: ["Previous and next issues", "Previous", "Next"],
     og: "og-en.png",
+    aboutDesc: `Why ${SITE_TITLE} exists, and how its stories are chosen and made.`,
     updated: (t) => `Last updated: ${EN_MONTHS[t.m - 1]} ${t.d}, ${t.y}, ${t.hm} KST`,
     fb: {
       link: "Feedback", title: "Send feedback", close: "Close",
@@ -416,7 +418,7 @@ ${full ? `<header class="site">
 </header>` : `<header class="site compact">${masthead}</header>`}
 ${body}
 <footer>
-  <p><a href="${REPO_URL}">GitHub</a> · <a href="${home}stats/">${T.stats}</a> · <button class="fb-open" type="button">${T.fb.link}</button></p>
+  <p><a href="${home}about/">${T.about}</a> · <a href="${home}stats/">${T.stats}</a> · <button class="fb-open" type="button">${T.fb.link}</button> · <a href="${REPO_URL}">GitHub</a></p>
   <p class="updated">${UPDATED_MARK}</p>
 </footer>
 ${feedback(T)}
@@ -841,6 +843,25 @@ ${outletStats(view, lang)}`,
   });
 }
 
+// 소개 페이지. 본문은 content/about.md(영문판 content/en/about.md)이고 첫 줄 # 이 제목이다.
+function renderAbout(lang) {
+  const T = TEXT[lang];
+  const root = "../".repeat((T.dir + "about/").split("/").filter(Boolean).length);
+  const md = readFileSync(join(CONTENT, T.dir, "about.md"), "utf8");
+  const [, title, rest] = md.match(/^# (.+)\n([\s\S]*)$/);
+  return layout({
+    title: `${title} — ${SITE_TITLE}`,
+    description: T.aboutDesc,
+    root,
+    lang,
+    path: "about/",
+    body: `<p class="crumb"><a href="${root + T.dir}">${T.st.back}</a></p>
+<h1 class="issue-title">${title}</h1>
+<div class="prose">
+${marked.parse(rest)}</div>`,
+  });
+}
+
 // ---------- 실행 ----------
 
 const SETS = Object.fromEntries(LANG_NAMES.map((l) => [l, Object.fromEntries(KIND_NAMES.map((k) => [k, load(k, l)]))]));
@@ -871,6 +892,7 @@ const PAGES = Object.fromEntries(LANG_NAMES.map((l) => [l, new Set([
 const runs = loadRuns();
 const statViews = statsViews(runs);
 for (const l of LANG_NAMES) for (const v of statViews) PAGES[l].add(v.path);
+for (const l of LANG_NAMES) PAGES[l].add("about/");
 
 rmSync(SITE, { recursive: true, force: true });
 mkdirSync(SITE, { recursive: true });
@@ -922,6 +944,11 @@ for (const lang of LANG_NAMES)
     mkdirSync(join(SITE, TEXT[lang].dir, v.path), { recursive: true });
     writeFileSync(join(SITE, TEXT[lang].dir, v.path, "index.html"), renderStats(statViews, v, lang));
   }
+
+for (const lang of LANG_NAMES) {
+  mkdirSync(join(SITE, TEXT[lang].dir, "about"), { recursive: true });
+  writeFileSync(join(SITE, TEXT[lang].dir, "about", "index.html"), renderAbout(lang));
+}
 
 // 사이트 검사(scripts/build-checks.mjs).
 stop(checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }));
