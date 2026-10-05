@@ -68,7 +68,11 @@ header.site.compact .masthead { margin:0; }
 /* 누르기 전에도 버튼임이 보이게 언어 선택과 같은 테두리를 두른다. 안쪽 그림자라 크기는 그대로다(2026-10-05). */
 .search-link, .theme-toggle { display:flex; padding:.35rem; border:0; border-radius:999px; background:none; box-shadow:inset 0 0 0 1px var(--line); color:var(--muted); cursor:pointer; }
 /* 머리글 버튼의 눌림·현재 표시는 분기 띠와 같은 색이다(폰에서 --sunken 은 거의 안 보였다). */
-.search-link:hover, .search-link[aria-current], .theme-toggle:hover { color:var(--text); background:var(--press); }
+.search-link[aria-current] { color:var(--text); background:var(--press); }
+/* 호버 표시는 마우스가 있을 때만 준다. 폰에서는 누른 뒤 다른 곳을 누를 때까지 :hover 가 남는다. */
+@media (hover:hover) {
+  .search-link:hover, .theme-toggle:hover { color:var(--text); background:var(--press); }
+}
 /* 밝은 화면에서는 달(어둡게), 어두운 화면에서는 해(밝게)를 보인다. */
 .theme-toggle .i-sun { display:none; }
 :root[data-theme="dark"] .theme-toggle .i-sun { display:block; }
