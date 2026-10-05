@@ -9,6 +9,7 @@
 // - 빈 곳: 폰에서 글자·상자 사이가 GAP_MAX 를 넘는 곳
 // - 본문 폭: 폰에서 배경·테두리가 있는 상자가 본문 폭 밖으로 나가는지
 // - 좁은 폰: 340px 에서 화면이 옆으로 넘치는지
+// - 목차 버튼: 주간호에서 아래로 읽을 때는 숨고, 목차를 지나 위로 스크롤하면 나타나고, 데스크톱에는 없는지
 // 걸린 것이 있으면 종료 코드 1 로 끝난다.
 
 import { createServer } from "node:http";
@@ -138,6 +139,29 @@ for (const path of PAGES) {
   await page.close();
   if (over > 0) problems.push(`340px 에서 옆으로 ${over}px 넘친다: ${path || "/"}`);
   if (lines > 40) problems.push(`340px 에서 머리말이 두 줄이다: ${path || "/"}`);
+}
+
+// 5. 목차 버튼. 주간호를 폰에서 열어 위아래로 옮겨 가며 버튼이 보이는지 본다.
+{
+  const path = `week/${latest("week")}/`;
+  const page = await open(path, 390);
+  const at = async (y) => {
+    await page.evaluate((y) => scrollTo(0, y), y);
+    await page.waitForTimeout(300);
+    return page.evaluate(() => getComputedStyle(document.querySelector(".toc-fab")).visibility === "visible");
+  };
+  const end = await page.evaluate(() => document.getElementById("toc").getBoundingClientRect().bottom + scrollY);
+  const steps = [
+    [end + 2000, false, "아래로 읽을 때 보인다"],
+    [end + 1800, true, "목차를 지나 위로 스크롤해도 안 나온다"],
+    [end + 2400, false, "다시 아래로 읽어도 남아 있다"],
+    [0, false, "목차가 보이는 곳에서 나온다"],
+  ];
+  for (const [y, want, msg] of steps) if ((await at(y)) !== want) problems.push(`목차 버튼 ${path}: ${msg}`);
+  await page.close();
+  const desk = await open(path, 1280);
+  if (await desk.evaluate(() => getComputedStyle(document.querySelector(".toc-fab")).display) !== "none") problems.push(`목차 버튼 ${path}: 데스크톱에 있다`);
+  await desk.close();
 }
 
 await browser.close();

@@ -572,6 +572,27 @@ function toc(html, T) {
   return groups.length ? `<nav class="toc" id="toc" aria-label="${T.toc}">${groups.join("")}</nav>` : "";
 }
 
+// 좁은 화면의 목차 버튼. 목차가 화면 위로 지나간 뒤 위로 스크롤하면 나타나고,
+// 아래로 읽어 내려가면 숨는다. 넓은 화면에서는 목차가 늘 옆에 있어 CSS 가 감춘다.
+function tocButton(T) {
+  return `<a class="toc-fab" href="#toc">${T.toc}</a>
+<script>
+(function () {
+  var b = document.querySelector(".toc-fab"), t = document.getElementById("toc"), y = scrollY, busy = false;
+  function set(on) { b.classList.toggle("on", on); }
+  addEventListener("scroll", function () {
+    if (busy) return; busy = true;
+    requestAnimationFrame(function () {
+      busy = false;
+      var d = scrollY - y; if (Math.abs(d) < 6) return; y = scrollY;
+      set(d < 0 && t.getBoundingClientRect().bottom < 0);
+    });
+  }, { passive: true });
+  b.addEventListener("click", function () { set(false); });
+})();
+</script>`;
+}
+
 // 같은 종류의 바로 앞뒤 발행물. ID 는 문자열 순서가 곧 시간 순서다.
 function pager(d) {
   const ids = SETS[d.lang][d.kind].map((x) => x.id).sort();
@@ -597,7 +618,7 @@ function renderDoc(d, years) {
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
 ${nav}
 ${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)([\s\S]*?)<\/h3>/g, '$1<a class="to-toc" href="#toc">$2</a></h3>') : main}
-${pager(d)}`;
+${pager(d)}${nav ? tocButton(T) : ""}`;
   return layout({
     title: `${pageTitle(d)} — ${SITE_TITLE}`,
     description: `${d.id} (${period(d)}) ${T.suffix[d.kind]}. ${counts(d)}.`,
