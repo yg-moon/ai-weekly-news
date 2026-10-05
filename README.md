@@ -4,7 +4,7 @@
 
 ### Website: [yg-moon.github.io/ai-weekly-news](https://yg-moon.github.io/ai-weekly-news/)
 
-지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다. 주간호가 쌓여 분기·연간 트렌드로 이어지는 것이 목표입니다.
+지난 한 주의 뉴스를 국내·해외·AI 각 5건으로 정리합니다. 주간호를 분기·연간 단위로 묶어 긴 흐름을 파악합니다.
 
 ## 발행물
 

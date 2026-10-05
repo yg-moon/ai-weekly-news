@@ -2,7 +2,7 @@
 
 There are too many sensational stories to follow the news every day, and the issues that really matter are repeated in similar stories for a long time. So once a week, this site picks only what you should not miss and sums it up.
 
-## Format
+## Publications
 
 Every Monday at 6 AM KST, this site publishes the news of the past week: **five stories each from Korea, the world and AI**. Each story says what happened and **why it matters**.
 
