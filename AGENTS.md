@@ -47,7 +47,7 @@
 | `docs/DECISIONS.md` | 주요 결정사항 및 폐기 기록 | 기준을 바꾸기 전에 먼저 읽는다. 이미 검토하고 버린 선택지가 있다 |
 | `docs/RUNBOOK_WEEKLY.md` · `docs/RUNBOOK_QUARTERLY.md` · `docs/RUNBOOK_YEARLY.md` | 발행 실행 절차 (주간 · 분기 · 연간) | 발행 작업은 그 주기의 런북을 처음부터 끝까지 읽고 그대로 따른다. 연간호는 분기 런북에서 이어서 돈다 |
 | `docs/ROUTINE_WEEKLY.md` · `docs/ROUTINE_QUARTERLY.md` | Claude Code 루틴 프롬프트 (주간 · 분기) | 루틴 전용이다. 고치면 등록된 루틴도 같은 내용으로 바꾼다 |
-| `docs/TRANSLATION_EN.md` | 영문판 번역 규칙 | 영문판을 만들거나 고칠 때 읽는다 |
+| `docs/TRANSLATION_EN.md` | 영문판 번역 규칙 | 영문판이나 사이트의 영어 문장을 만들거나 고칠 때 읽는다 |
 | `docs/QUALITY_CHECKS.md` | 품질 점검 항목 | 문서를 크게 고친 뒤에 돌린다. 3절(발행물 기계 검사)만 주간 발행이 매번 돌린다 |
 | `docs/PLAN.md` | 앞으로 할 일 | 길어져도 되는 유일한 문서다 |
 
