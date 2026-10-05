@@ -1,6 +1,7 @@
 :root {
   --bg:#fbfbf9; --surface:#fff; --sunken:#f4f4f1;
-  --text:#191918; --dim:#55554f; --muted:#84847c; --line:#9c9c95;
+  /* 회색 글씨는 뉴스 본문과 출처가 흐리지 않게 진하게 둔다. --muted 도 작은 글씨 대비 기준(4.5:1)을 넘긴다(2026-10-05). */
+  --text:#191918; --dim:#44443f; --muted:#6b6b64; --line:#9c9c95;
   --korea:#0f6b57; --world:#2a5aa8; --ai:#6d3fa8;
   --accent:var(--korea); --radius:12px;
   /* 회색 띠와 눌림 표시. 홈의 분기 띠와 머리글 버튼이 같이 쓴다. 어두운 화면에서는 바뀐 --line·--bg 로 다시 계산된다. */
