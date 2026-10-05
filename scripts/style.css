@@ -99,6 +99,8 @@ header.site.compact { margin-bottom:.75rem; }
 
 /* 분야 */
 .group { --accent:var(--korea); margin-top:3.5rem; }
+/* 분야가 바뀌는 곳은 색과 제목이 가르므로 간격은 항목 사이 정도로 둔다(2026-10-05). */
+.group + .group { margin-top:1.25rem; }
 .group--world { --accent:var(--world); }
 .group--ai { --accent:var(--ai); }
 .group > h2 {
