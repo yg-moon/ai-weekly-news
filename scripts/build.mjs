@@ -62,7 +62,7 @@ const TEXT = {
     groups: KINDS.week.groups,
     suffix: Object.fromEntries(KIND_NAMES.map((k) => [k, KINDS[k].suffix])),
     period: (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`,
-    listTitle: (p) => `${p.year}년 ${p.q}분기`,
+    listTitle: (p) => (p.q ? `${p.year}년 ${p.q}분기` : `${p.year}년 연간`),
     tagline: SITE_TAGLINE,
     home: "주간 뉴스 브리핑", recent: "최근",
     why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "사이트 소개",
@@ -108,7 +108,7 @@ const TEXT = {
       const [, ma, da] = a.split("-").map(Number), [, mb, db] = b.split("-").map(Number);
       return ma === mb ? `${EN_MONTHS[ma - 1]} ${da}–${db}` : `${EN_MONTHS[ma - 1]} ${da} – ${EN_MONTHS[mb - 1]} ${db}`;
     },
-    listTitle: (p) => `${p.year} Q${p.q}`,
+    listTitle: (p) => (p.q ? `${p.year} Q${p.q}` : `${p.year} Annual`),
     // 세 분야 이름은 줄이 바뀌어도 함께 넘어가게 붙인다(\u00a0). 좁은 폰에서 "AI." 만 떨어졌다.
     tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI. Collected and summarized by AI, with sources for every item.",
     home: "Weekly News Briefing", recent: "Latest",
@@ -529,24 +529,30 @@ const periods = (years) =>
       [...years.get(y).quarters.keys()].sort((a, b) => a - b).map((q) => ({ year: y, q }))
     );
 
-const listPath = (p) => `${p.year}/Q${p.q}/`;
+// 연간 목록은 q 가 null 이다. 연간호 하나뿐이어도 분기와 같은 목록 페이지로 둔다. 칩을 누르는
+// 사람은 무엇이 있는지 보려는 것이라 발행물로 바로 넘어가면 당황한다(2026-10-05).
+const annuals = (years) =>
+  [...years.keys()].sort().filter((y) => years.get(y).annual).map((y) => ({ year: y, q: null }));
+const listPath = (p) => (p.q ? `${p.year}/Q${p.q}/` : `${p.year}/annual/`);
 const listTitle = (p, lang = "ko") => TEXT[lang].listTitle(p);
 
 // 목록의 탭은 두 단이다. 첫 줄은 최근(홈)과 연도들, 둘째 줄은 고른 해의 분기와 연간이다.
-// 한 줄에 다 두면 해가 셋을 넘을 때 분기가 다음 줄로 밀린다. 연도를 누르면 그 해에서 가장
-// 나중 분기로 간다. 첫 줄은 줄바꿈하지 않고, 넘치면 옆으로 밀어 본다. here 가 없으면 홈이다.
+// 한 줄에 다 두면 해가 셋을 넘을 때 분기가 다음 줄로 밀린다. 연도를 누르면 그 해의 연간
+// 목록으로, 연간호가 아직 없으면 그 해에서 가장 나중 분기로 간다. 첫 줄은 줄바꿈하지 않고, 넘치면 옆으로 밀어 본다. here 가 없으면 홈이다.
 function tabs(years, here, root, T) {
   const all = periods(years);
   if (!all.length) return "";
   const recent = here ? `<a class="tab" href="${root}">${T.recent}</a>` : `<span class="tab on" aria-current="page">${T.recent}</span>`;
   const yearTabs = [...new Set(all.map((p) => p.year))].map((y) =>
-    here && y === here.year ? `<span class="tab on">${y}</span>` : `<a class="tab" href="${root}${listPath(all.filter((p) => p.year === y).pop())}">${y}</a>`).join("");
+    here && y === here.year ? `<span class="tab on">${y}</span>` : `<a class="tab" href="${root}${listPath(years.get(y).annual ? { year: y, q: null } : all.filter((p) => p.year === y).pop())}">${y}</a>`).join("");
   const row = `<nav class="tabs">${recent}<span class="tabdiv"></span>${yearTabs}</nav>`;
   if (!here) return row;
   const quarterChips = all.filter((p) => p.year === here.year).map((p) =>
     p.q === here.q ? `<span class="chip on" aria-current="page">Q${p.q}</span>` : `<a class="chip" href="${root}${listPath(p)}">Q${p.q}</a>`).join("");
   const annual = years.get(here.year).annual;
-  const annualChip = annual ? `<a class="chip" href="${root}year/${annual.id}/">${T.annual}</a>` : "";
+  const annualChip = !annual ? "" : here.q === null
+    ? `<span class="chip on" aria-current="page">${T.annual}</span>`
+    : `<a class="chip" href="${root}${listPath({ year: here.year, q: null })}">${T.annual}</a>`;
   return `${row}<nav class="subtabs">${quarterChips}${annualChip}</nav>`;
 }
 
@@ -579,16 +585,14 @@ function pager(d) {
 }
 
 function renderDoc(d, years) {
-  // 되돌아가는 곳은 그 발행물이 속한 분기 목록이다. 연간호는 분기가 없으므로
-  // 그 해에서 가장 나중 분기로 보낸다.
+  // 되돌아가는 곳은 그 발행물이 속한 분기 목록이고, 연간호는 그 해의 연간 목록이다.
   const p = placeOf(d);
-  const back = p.q ? p : periods(years).filter((x) => x.year === p.year).pop();
   const T = TEXT[d.lang];
   const main = fallbackLinks(keepNames(structure(marked.parse(d.body), T), d.lang), d.lang);
   // 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
   const nav = toc(main, T);
   const body = `
-${back ? `<p class="crumb"><a href="../../${listPath(back)}">← ${listTitle(back, d.lang)}</a></p>` : ""}
+<p class="crumb"><a href="../../${listPath(p)}">← ${listTitle(p, d.lang)}</a></p>
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
 ${nav}
@@ -636,7 +640,7 @@ function tops(d) {
 // (사용자 2026-10-05).
 const PENDING_WEEKS = 4;
 function pendingCard(p, docs, lang) {
-  if (docs.some((d) => d.kind === "quarter") || docs.length >= PENDING_WEEKS) return "";
+  if (!p.q || docs.some((d) => d.kind === "quarter") || docs.length >= PENDING_WEEKS) return "";
   const T = TEXT[lang];
   return `
   <li class="pending"><div><span class="wk">${p.year}-Q${p.q} (${T.state[0]})</span><span class="note">${T.pending(PENDING_WEEKS)}</span></div></li>`;
@@ -644,7 +648,7 @@ function pendingCard(p, docs, lang) {
 
 const card = (d, base) => `
   <li class="${d.kind}"><a href="${base}${d.kind}/${d.id}/">
-    <span class="wk">${d.id}${stateMark(d)}</span>
+    <span class="wk">${d.id}${d.kind === "year" ? ` ${TEXT[d.lang].suffix.year}` : ""}${stateMark(d)}</span>
     <span class="period">${period(d)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
     ${tops(d)}
@@ -653,7 +657,7 @@ const card = (d, base) => `
 function renderList(years, p, root, lang = "ko") {
   const T = TEXT[lang];
   const base = root + T.dir;
-  const docs = years.get(p.year).quarters.get(p.q);
+  const docs = p.q ? years.get(p.year).quarters.get(p.q) : [years.get(p.year).annual];
   return layout({
     title: `${listTitle(p, lang)} — ${SITE_TITLE}`,
     description: T.tagline,
@@ -667,13 +671,16 @@ function renderList(years, p, root, lang = "ko") {
 
 // 홈은 분기와 상관없는 최근 호들이다. 탭의 "최근"이 곧 제목이라 따로 제목을 달지 않는다. 맨 위에 가장 최근 분기호(진행 중이거나 지난 분기 완결본),
 // 그 아래 최근 주간호 13개를 둔다. 분기가 바뀌는 곳에 분기 이름을 단다. 새 분기 첫 주에도
-// 홈이 비지 않게 한 것이다(2026-10-04).
+// 홈이 비지 않게 한 것이다(2026-10-04). 연간호는 나오면 분기호 위에 두고, 다음 해 분기호가
+// 나오면 홈에서 빠진다(2026-10-05).
 const HOME_WEEKS = 13;
 function renderHome(years, root, lang = "ko") {
   const T = TEXT[lang];
   const base = root + T.dir;
   const newest = periods(years).reverse().map((p) => ({ p, docs: years.get(p.year).quarters.get(p.q) }));
   const quarterly = newest.flatMap((x) => x.docs).find((d) => d.kind === "quarter");
+  const lastYear = [...years.keys()].sort().reverse().find((y) => years.get(y).annual);
+  const annual = lastYear && !(quarterly && placeOf(quarterly).year > lastYear) ? years.get(lastYear).annual : null;
   let rows = "", shown = 0;
   for (const { p, docs } of newest) {
     const weeks = docs.filter((d) => d.kind === "week").slice(0, HOME_WEEKS - shown);
@@ -688,7 +695,7 @@ function renderHome(years, root, lang = "ko") {
     full: true,
     lang,
     path: "",
-    body: `${tabs(years, null, base, T)}\n<ul class="archive">${quarterly ? card(quarterly, base) : ""}${rows}\n</ul>`,
+    body: `${tabs(years, null, base, T)}\n<ul class="archive">${annual ? card(annual, base) : ""}${quarterly ? card(quarterly, base) : ""}${rows}\n</ul>`,
   });
 }
 
@@ -1063,6 +1070,7 @@ const YEARS = Object.fromEntries(LANG_NAMES.map((l) => [l, timeline(SETS[l])]));
 const PAGES = Object.fromEntries(LANG_NAMES.map((l) => [l, new Set([
   ...KIND_NAMES.flatMap((k) => SETS[l][k].map((d) => `${k}/${d.id}/`)),
   ...periods(YEARS[l]).map(listPath),
+  ...annuals(YEARS[l]).map(listPath),
   ...(l === "ko" || periods(YEARS[l]).length ? [""] : []),
 ])]));
 
@@ -1087,16 +1095,16 @@ for (const lang of LANG_NAMES)
       writeFileSync(join(dir, "index.html"), renderDoc(d, YEARS[lang]));
     }
 
-for (const p of all) {
-  const dir = join(SITE, p.year, `Q${p.q}`);
+for (const p of [...all, ...annuals(years)]) {
+  const dir = join(SITE, listPath(p));
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, "index.html"), renderList(years, p, "../../"));
 }
 
 // 영문판 목록과 홈. 옮긴 호가 있는 분기만 나온다.
 const enAll = periods(YEARS.en);
-for (const p of enAll) {
-  const dir = join(SITE, "en", p.year, `Q${p.q}`);
+for (const p of [...enAll, ...annuals(YEARS.en)]) {
+  const dir = join(SITE, "en", listPath(p));
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, "index.html"), renderList(YEARS.en, p, "../../../", "en"));
 }
