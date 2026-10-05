@@ -272,6 +272,45 @@ export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
   if (struck.length) errors.push(`취소선이 렌더링됐다: ${struck.join(", ")}. 물결표가 취소선으로 바뀌었는지 본다.`);
   if (unusedClasses.length) errors.push(`쓰이지 않는 CSS 클래스: ${unusedClasses.join(", ")}. 마크업의 클래스 이름이 바뀌었는지 본다.`);
 
+  // ---------- 화면 ----------
+  errors.push(...checkSelectedFill(SITE, CSS), ...checkLineContrast(CSS));
+
 
   return errors;
+}
+
+// 고른 탭·칩은 채워서 보인다. HTML 에 "X on" 으로 나오는 클래스마다 CSS 의 .X.on 에 배경이 있어야
+// 한다. 통계의 연도 탭(yr)만 채움이 빠져 굵은 글씨로 남은 적이 있다(2026-10-05).
+export function checkSelectedFill(SITE, CSS) {
+  const selected = new Set();
+  for (const f of readdirSync(SITE, { recursive: true }))
+    if (f.endsWith(".html"))
+      for (const m of readFileSync(join(SITE, f), "utf8").matchAll(/class="([^"]*)"/g)) {
+        const cls = m[1].split(/\s+/);
+        if (cls.includes("on")) for (const c of cls) if (c !== "on") selected.add(c);
+      }
+  const rules = [...CSS.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  const filled = (c) => rules.some(([, sel, body]) => sel.split(",").some((s) => new RegExp(`\\.${c}\\.on\\b`).test(s)) && /background\s*:/.test(body));
+  const missing = [...selected].filter((c) => !filled(c));
+  return missing.length ? [`고른 상태에 배경이 없는 클래스: ${missing.map((c) => `.${c}.on`).join(", ")}. 고른 탭·칩은 채워서 보인다.`] : [];
+}
+
+// 선은 바탕에서 또렷이 보여야 한다. 밝은 화면과 어두운 화면에서 --line 과 --bg 의 명암비를 본다.
+// 1.2~1.4 이던 때는 선이 있는지 알기 어려웠다(2026-10-05).
+const LINE_CONTRAST = 2.5;
+export function checkLineContrast(CSS) {
+  const lum = (h) => {
+    const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const out = [];
+  for (const block of CSS.match(/\{[^{}]*--line:[^{}]*\}/g) ?? []) {
+    const bg = block.match(/--bg:(#[0-9a-f]{6})/i)?.[1], line = block.match(/--line:(#[0-9a-f]{6})/i)?.[1];
+    if (!bg || !line) { out.push(`--line 과 --bg 를 같은 블록에서 #rrggbb 로 정해야 명암비를 볼 수 있다: ${block.slice(0, 60)}`); continue; }
+    const r = ratio(line, bg);
+    if (r < LINE_CONTRAST) out.push(`선 색 ${line} 이 바탕 ${bg} 에서 명암비 ${r.toFixed(2)} 로 흐리다(${LINE_CONTRAST} 이상).`);
+  }
+  if (!out.length && !/--line:/.test(CSS)) out.push("CSS 에서 --line 을 찾지 못했다.");
+  return out;
 }

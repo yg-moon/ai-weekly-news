@@ -264,7 +264,7 @@ h2.sec { font-size:1.15rem; margin:1.5rem 0 .3rem; }
 .om summary { margin-top:.35rem; font-size:.75rem; color:var(--muted); cursor:pointer; }
 .om[open] summary { margin-bottom:.3rem; }
 .og-note { margin:1.25rem 0 0; font-size:.8rem; color:var(--muted); }
-@media (max-width:40rem) { .ogs { grid-template-columns:1fr; gap:1.75rem; } }
+@media (max-width:40rem) { .ogs { grid-template-columns:1fr; gap:1.5rem; } }
 .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin:0 0 1.5rem; }
 .tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:.8rem 1rem; }
 .tile .k { display:block; font-size:.75rem; color:var(--muted); }
@@ -434,6 +434,8 @@ dialog.fb::backdrop { background:rgba(20,20,18,.38); }
 .sort button[aria-pressed="true"] { font-weight:700; }
 .search-results { list-style:none; margin:0; padding:0; }
 .search-results li { padding:1.1rem 0; border-top:1px solid var(--line); }
+/* 결과 목록 뒤 바닥글은 결과 사이 선과 같은 간격에 둔다(2026-10-05). */
+.search-results + script + footer { margin-top:0; }
 .sr-title { display:block; font-weight:700; color:var(--text); text-decoration:none; }
 .sr-title:hover { color:var(--accent); }
 .sr-meta { display:block; color:var(--muted); font-size:.8rem; margin:.25rem 0 .45rem; }

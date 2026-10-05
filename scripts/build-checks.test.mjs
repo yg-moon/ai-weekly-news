@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkContent, dateProblems } from "./build-checks.mjs";
+import { checkContent, dateProblems, checkSelectedFill, checkLineContrast } from "./build-checks.mjs";
 
 const GROUPS = { 국내: "korea", 해외: "world", AI: "ai" };
 const KINDS = { week: { groups: GROUPS }, quarter: { groups: GROUPS }, year: { groups: GROUPS } };
@@ -176,4 +176,19 @@ test("진행 중 분기호의 기준 주와 흐름 수를 본다", () => {
   const year = doc("year", "2026", `\n## 국내\n${single(4, "Q3").replace("../../week/2026-Q3/", "../../quarter/2026-Q3/")}`);
   assert.match(run({ ko: { week: weeks, quarter: [q("2026-W30", ok)], year: [year] } }), /2026 → \.\.\/\.\.\/quarter\/2026-Q3/);
   assert.equal(run({ ko: { week: weeks, quarter: [q(null, ok)], year: [year] } }), "");
+});
+
+test("고른 탭·칩에 배경이 없으면 걸린다", () => {
+  const site = mkdtempSync(join(tmpdir(), "site-"));
+  writeFileSync(join(site, "index.html"), '<span class="tab on">a</span><span class="yr on">b</span><span class="on">c</span>');
+  assert.deepEqual(checkSelectedFill(site, ".tab.on, .yr.on { background:var(--accent); }"), []);
+  const out = checkSelectedFill(site, ".tab.on { background:var(--accent); }\n.yr.on { font-weight:700; }");
+  assert.equal(out.length, 1);
+  assert.match(out[0], /\.yr\.on/);
+});
+
+test("선 색이 바탕에서 흐리면 걸린다", () => {
+  assert.deepEqual(checkLineContrast(":root { --bg:#fbfbf9; --line:#9c9c95; }"), []);
+  assert.equal(checkLineContrast(":root { --bg:#fbfbf9; --line:#e5e5e0; }").length, 1);
+  assert.equal(checkLineContrast(":root { --bg:#fbfbf9; --line:#9c9c95; }\n@media (prefers-color-scheme: dark) { :root { --bg:#151517; --line:#303136; } }").length, 1);
 });
