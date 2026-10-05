@@ -84,7 +84,7 @@ const TEXT = {
     st: {
       back: "← 목록", all: "전체", yearLabel: (y) => `${y}년`,
       tiles: ["주간호", "개", "총 비용", "평균 비용", "평균 소요 시간", "분"],
-      min: (v) => `${v}분`, cost: "비용 (달러)", time: "소요 시간 (분)",
+      min: (v) => `${v}분`, cost: "비용 (달러)", time: "소요 시간 (분)", hint: "막대를 누르면 값이 보입니다",
       more: "더보기", th: ["주간호", "비용", "소요 시간", "읽은 헤드라인", "모델"], empty: "아직 기록이 없습니다.",
       long: "분기호·연간호", longQ: "분기호", longLede: "분기호는 분기 도중 매주 다시 쓰므로, 모든 판의 비용과 시간을 더해 적습니다.",
       longTh: ["발행물", "판 수", "총 비용", "평균 비용", "총 소요 시간", "평균 소요 시간"],
@@ -131,7 +131,7 @@ const TEXT = {
     st: {
       back: "← All publications", all: "All", yearLabel: (y) => y,
       tiles: ["Weekly briefings", "", "Total cost", "Average cost", "Average time", "min"],
-      min: (v) => `${v} min`, cost: "Cost (USD)", time: "Time (minutes)",
+      min: (v) => `${v} min`, cost: "Cost (USD)", time: "Time (minutes)", hint: "Tap a bar to see its value",
       more: "Show more", th: ["Weekly briefing", "Cost", "Time", "Headlines read", "Model"], empty: "No records yet.",
       long: "Quarterly and annual reviews", longQ: "Quarterly reviews", longLede: "Quarterly reviews are rewritten every week during the quarter, so the cost and time of all editions are added up.",
       longTh: ["Publication", "Editions", "Total cost", "Average cost", "Total time", "Average time"],
@@ -589,14 +589,15 @@ function renderDoc(d, years) {
   const p = placeOf(d);
   const T = TEXT[d.lang];
   const main = fallbackLinks(keepNames(structure(marked.parse(d.body), T), d.lang), d.lang);
-  // 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
+  // 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다. 제목 끝의 ↑ 가 그것을 알린다(2026-10-05).
+  // 줄 끝에 ↑ 만 홀로 넘어가지 않게 붙임 공백으로 마지막 낱말에 붙인다.
   const nav = toc(main, T);
   const body = `
 <p class="crumb"><a href="../../${listPath(p)}">← ${listTitle(p, d.lang)}</a></p>
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
 ${nav}
-${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)([\s\S]*?)<\/h3>/g, '$1<a class="to-toc" href="#toc">$2</a></h3>') : main}
+${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)([\s\S]*?)<\/h3>/g, '$1<a class="to-toc" href="#toc">$2\u00a0<span class="up" aria-hidden="true">↑</span></a></h3>') : main}
 ${pager(d)}`;
   return layout({
     title: `${pageTitle(d)} — ${SITE_TITLE}`,
@@ -741,7 +742,7 @@ const runOrder = (r) => {
 // 끝이다(.scroll 의 direction).
 const WRAP = 656; // .wrap 의 max-width 41rem
 const SLOT = 34;
-function barChart(runs, value, fmt, caption, annual) {
+function barChart(runs, value, fmt, caption, annual, hint) {
   const H = 200, L = 44, R = 8, T = 16;
   const years = new Set(runs.map((r) => r.week.slice(0, 4)));
   const B = years.size > 1 ? 38 : 24;
@@ -777,13 +778,15 @@ function barChart(runs, value, fmt, caption, annual) {
     return `<g class="b${last ? " last" : ""}" tabindex="0" aria-label="${r.week} ${fmt(v)}"><rect class="hit" x="${L + slot * i}" y="${T}" width="${slot}" height="${H - T - B}"/><path class="bar" d="${d}"/><text class="val" x="${x + bw / 2}" y="${y1 - 5}" text-anchor="middle">${fmt(v)}</text>${tick}${year}</g>`;
   });
 
+  // 막대를 누르면 값이 뜨는 것을 첫 그래프에만 적는다. 마지막 막대 값만 보여서 알기 어려웠다(2026-10-05).
+  const cap = hint ? ` <span class="hint">${hint}</span>` : "";
   if (!wide)
-    return `<figure class="chart"><figcaption>${caption}</figcaption>
+    return `<figure class="chart"><figcaption>${caption}${cap}</figcaption>
 <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${caption}">
 ${grid.join("")}${axis.join("")}
 ${bars.join("")}
 </svg></figure>`;
-  return `<figure class="chart wide"><figcaption>${caption}</figcaption>
+  return `<figure class="chart wide"><figcaption>${caption}${cap}</figcaption>
 <div class="plot"><svg class="yaxis" width="${L}" height="${H}" viewBox="0 0 ${L} ${H}" aria-hidden="true">${axis.join("")}</svg>
 <div class="scroll"><svg width="${W - L}" height="${H}" viewBox="${L} 0 ${W - L} ${H}" role="img" aria-label="${caption}">
 ${grid.join("")}
@@ -902,7 +905,7 @@ function renderStats(views, view, lang = "ko") {
     : "";
   const body = runs.length
     ? `${tiles}
-${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), S.cost, T.annual)}
+${barChart(runs, (r) => r.cost_usd, (v, axis) => (axis ? `$${v}` : usd(v)), S.cost, T.annual, S.hint)}
 ${barChart(runs, minutes, S.min, S.time, T.annual)}
 ${more ? `<input type="checkbox" id="more-runs" class="more-toggle">` : ""}<div class="table-scroll"><table class="runs">
 <thead><tr><th>${S.th[0]}</th><th class="r">${S.th[1]}</th><th class="r">${S.th[2]}</th><th class="r">${S.th[3]}</th><th class="m">${S.th[4]}</th></tr></thead>
