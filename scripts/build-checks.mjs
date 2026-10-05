@@ -214,11 +214,21 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
   return { errors, warnings };
 }
 
+// 실행 기록이 없는 발행물. 런북은 기록을 발행물과 같은 커밋에 넣게 한다.
+// 빠지면 통계에서 그 호가 소리 없이 빠지고, RSS 발행 시각이 추정값이 된다.
+export function missingRuns(ids, runs) {
+  const have = new Set(runs.map((r) => r.week));
+  return [...new Set(ids)].filter((id) => !have.has(id)).sort();
+}
+
 // 만든 사이트 검사. SITE 에 페이지를 다 쓴 뒤에 부른다.
 export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
   const KIND_NAMES = Object.keys(KINDS);
   const LANG_NAMES = Object.keys(TEXT);
   const errors = [];
+
+  const noRun = missingRuns(LANG_NAMES.flatMap((lang) => KIND_NAMES.flatMap((kind) => SETS[lang][kind].map((d) => d.id))), runs);
+  if (noRun.length) errors.push(`실행 기록이 없는 발행물: ${noRun.join(", ")}. node scripts/record-run.mjs <호> 로 남긴다.`);
 
   // 기간별 통계가 기록을 빠뜨리거나 겹치지 않는지 본다. 분기 페이지의 표(주간호 표와
   // 분기호·연간호 표)를 모두 합치면 기록 전체와 한 번씩 맞아야 한다.

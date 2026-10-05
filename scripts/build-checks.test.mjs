@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkContent, dateProblems, checkSelectedFill, checkLineContrast } from "./build-checks.mjs";
+import { checkContent, dateProblems, checkSelectedFill, checkLineContrast, missingRuns } from "./build-checks.mjs";
 
 const GROUPS = { 국내: "korea", 해외: "world", AI: "ai" };
 const KINDS = { week: { groups: GROUPS }, quarter: { groups: GROUPS }, year: { groups: GROUPS } };
@@ -191,4 +191,10 @@ test("선 색이 바탕에서 흐리면 걸린다", () => {
   assert.deepEqual(checkLineContrast(":root { --bg:#fbfbf9; --line:#9c9c95; }"), []);
   assert.equal(checkLineContrast(":root { --bg:#fbfbf9; --line:#e5e5e0; }").length, 1);
   assert.equal(checkLineContrast(":root { --bg:#fbfbf9; --line:#9c9c95; }\n@media (prefers-color-scheme: dark) { :root { --bg:#151517; --line:#303136; } }").length, 1);
+});
+
+test("실행 기록이 없는 발행물을 잡는다", () => {
+  const runs = [{ week: "2026-W40" }, { week: "2026-Q3" }];
+  assert.deepEqual(missingRuns(["2026-W40", "2026-Q3", "2026-W40"], runs), []);
+  assert.deepEqual(missingRuns(["2026-W41", "2026-W40", "2026-Q4"], runs), ["2026-Q4", "2026-W41"]);
 });
