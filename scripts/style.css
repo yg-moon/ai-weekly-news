@@ -251,10 +251,10 @@ html[lang="en"] .top b { width:2.9rem; }
 /* 분기 이름은 회색 띠에 넣는다. 선 아래 작은 글씨로 두면 아래 주간호 하나의 이름처럼 읽혔다(2026-10-05).
    카드·띠·주간호 배경은 모두 본문 폭 안에 두고, 띠와 주간호 글자는 같은 안쪽 여백(.5rem)에서 시작한다. */
 .archive li.qdiv {
-  margin-top:.5rem; padding:.4rem .5rem; border-radius:8px;
+  padding:.4rem .5rem; border-radius:8px;
   background:var(--press); color:var(--text); font-size:.85rem; font-weight:700;
 }
-.archive li.quarter + li.qdiv, .archive li.year + li.qdiv { margin-top:0; }
+/* 주간호 줄 바로 아래에 붙인다. 마우스를 올린 줄의 배경과 띠 사이가 뜨지 않는다(2026-10-05). */
 .archive li.qdiv + li a { padding-top:.75rem; }
 .archive li.qdiv, .archive li.qdiv + li { border-top:none; }
 .empty {
