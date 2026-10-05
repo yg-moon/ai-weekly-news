@@ -209,6 +209,8 @@ html[lang="en"] .top b { width:2.9rem; }
    위의 세 색 띠는 로고의 세 막대와 같은 국내·해외·AI 색이다. 세 분야를 묶은 요약이라는 표시다. */
 .archive li.quarter, .archive li.year { margin-bottom:.75rem; }
 .archive li.quarter + li, .archive li.year + li { border-top:none; }
+/* 분기 목록에서 분기호 카드(또는 대기 카드) 바로 아래 첫 주간호는 위 여백을 줄여 카드에 붙인다(2026-10-05). */
+.archive li.quarter + li > a, .archive li.pending + li > a { padding-top:.25rem; }
 .archive li.quarter a, .archive li.year a {
   position:relative; overflow:hidden; margin-inline:0; padding:1.35rem 1.2rem 1rem;
   background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
