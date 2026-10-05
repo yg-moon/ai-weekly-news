@@ -46,13 +46,14 @@ a { color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1p
 /* 머리말 */
 /* 머리말 아래에 선을 두지 않고 바로 내용이 온다. 홈과 목록은 탭 밑줄이, 다른 페이지는 이동 경로와
    제목이 머리말과 내용을 가른다(2026-10-05). */
-header.site { margin-bottom:.5rem; }
+/* 머리말 줄·소개 문장·탭 사이를 조금 띄운다. 폰에서 셋이 붙어 답답했다(2026-10-05). */
+header.site { margin-bottom:1rem; }
 /* 줄 간격을 고정한다. 영문판은 본문 줄 간격이 달라서, 물려받으면 언어를 바꿀 때 머리말이 움직인다. */
 header.site h1 { margin:0; font-size:1.4rem; letter-spacing:-.02em; line-height:1.75; }
 /* 사이트 이름을 글자 기준선이 아닌 가운데에 놓아 오른쪽 버튼들과 같은 중앙선에 맞춘다(2026-10-05). */
 header.site h1 { display:flex; align-items:center; }
 /* 사이트 이름과 언어 선택을 한 줄에 둔다. */
-.masthead { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:0 0 .4rem; }
+.masthead { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:0 0 .65rem; }
 header.site.compact .masthead { margin:0; }
 .lang {
   flex:none; display:flex; padding:2px; border:1px solid var(--line); border-radius:999px;
