@@ -24,7 +24,7 @@
 /* 스크롤바 자리를 늘 비워 둔다. 짧은 페이지와 긴 페이지를 오갈 때 본문이 옆으로 밀리지 않는다(2026-10-05). */
 html { scrollbar-gutter:stable; }
 body {
-  margin:0; padding-block:2.5rem 4rem; padding-inline:20px;
+  margin:0; padding-block:1.5rem 2rem; padding-inline:20px;
   background:var(--bg); color:var(--text);
   font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
   font-size:16px; line-height:1.75; -webkit-text-size-adjust:100%;
@@ -116,13 +116,13 @@ header.site.compact { margin-bottom:.75rem; }
 }
 
 /* 항목 */
-.item { padding:1.75rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
+.item { padding:1.25rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
 .group > h2 + .item { border-top:none; padding-top:.75rem; }
 /* 분기호·연간호의 흐름·단발 이름. 단발 이름이 두 묶음을 가르는 선을 갖는다. */
 .kind-h { margin:0; font-size:.78rem; color:var(--muted); }
 .kind-h b { color:var(--accent); margin-right:.5rem; }
 .group > h2 + .kind-h { margin-top:.5rem; }
-.item + .kind-h { border-top:1px solid var(--line); padding-top:1.75rem; }
+.item + .kind-h { border-top:1px solid var(--line); padding-top:1.25rem; }
 .kind-h + .item { border-top:none; padding-top:.6rem; }
 /* 번호 배지는 제목 첫 줄의 가운데에 맞춘다. 제목 줄 높이는 1.2rem × 1.55 다. */
 .item-head { display:flex; gap:.7rem; align-items:flex-start; }
@@ -172,7 +172,7 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
 /* 목록 탭의 둘째 단: 고른 해의 분기와 연간 */
 .subtabs { display:flex; flex-wrap:wrap; gap:.4rem; margin:-.9rem 0 1.4rem; }
 /* 통계 페이지는 제목 바로 아래에 탭이 온다 */
-.issue-title + .tabs { margin-top:1rem; }
+.issue-title + .tabs { margin:1rem 0; }
 .chip { padding:.15rem .75rem; border:1px solid var(--line); border-radius:999px; font-size:.85rem; color:var(--muted); text-decoration:none; }
 .chip:hover { color:var(--text); }
 .chip.on { background:var(--text); border-color:var(--text); color:var(--bg); font-weight:700; }
@@ -224,7 +224,7 @@ html[lang="en"] .top b { width:2.9rem; }
 .archive li.quarter a:hover, .archive li.year a:hover { border-color:var(--muted); }
 .archive li.quarter .wk, .archive li.year .wk { font-size:1.2rem; }
 /* 진행 중 분기호가 나오기 전의 자리. 분기호 카드와 같은 자리에 점선으로 둔다. */
-.archive li.pending { margin-bottom:1.25rem; }
+.archive li.pending { margin-bottom:.75rem; }
 .archive li.pending + li { border-top:none; }
 .archive li.pending > div { padding:1.1rem 1.2rem; border:1px dashed var(--line); border-radius:var(--radius); }
 .archive li.pending .wk { display:block; color:var(--dim); }
@@ -242,7 +242,7 @@ html[lang="en"] .top b { width:2.9rem; }
 
 /* 통계 페이지 */
 .period-now { margin:0 0 .25rem; font-size:.85rem; color:var(--muted); }
-h2.sec { font-size:1.15rem; margin:2rem 0 .3rem; }
+h2.sec { font-size:1.15rem; margin:1.5rem 0 .3rem; }
 /* 소개 페이지 본문. 문단이 짧아 간격이 넓으면 늘려 쓴 글처럼 보였다. 주간호처럼 촘촘히 둔다(2026-10-05). */
 .prose { margin-top:.75rem; }
 .prose h2 { font-size:1.05rem; margin:1.5rem 0 .35rem; }
@@ -263,12 +263,12 @@ h2.sec { font-size:1.15rem; margin:2rem 0 .3rem; }
 .om[open] summary { margin-bottom:.3rem; }
 .og-note { margin:1.25rem 0 0; font-size:.8rem; color:var(--muted); }
 @media (max-width:40rem) { .ogs { grid-template-columns:1fr; gap:1.75rem; } }
-.tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin:0 0 2.25rem; }
+.tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin:0 0 1.5rem; }
 .tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:.8rem 1rem; }
 .tile .k { display:block; font-size:.75rem; color:var(--muted); }
 .tile .v { display:block; font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
 .tile .v small { font-size:.85rem; font-weight:400; color:var(--dim); margin-left:.15rem; }
-figure.chart { margin:0 0 2.25rem; }
+figure.chart { margin:0 0 1.5rem; }
 figure.chart figcaption { font-weight:700; font-size:.95rem; margin-bottom:.5rem; }
 figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
 .chart .grid { stroke:var(--line); stroke-width:1; }
@@ -355,7 +355,7 @@ figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
 .pager .next { margin-left:auto; text-align:right; }
 
 footer {
-  margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--line);
+  margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--line);
   font-size:.82rem; color:var(--muted);
 }
 /* 바닥글 위 간격을 앞의 내용에 맞춘다. 목록은 마지막 발행물에 아래 여백(1rem)이 있어 줄이고,
@@ -416,6 +416,8 @@ dialog.fb::backdrop { background:rgba(20,20,18,.38); }
 @media (min-width:36rem) {
   .archive .counts { width:auto; margin-left:auto; }
 }
+/* 폰은 화면 위아래 여백을 줄여 첫 화면에 내용을 더 둔다. 넓은 화면은 고정 목차(top:2.5rem)와 맞춘다(2026-10-05). */
+@media (min-width:36rem) { body { padding-block:2.5rem 4rem; } }
 
 /* 검색 */
 .search input {
