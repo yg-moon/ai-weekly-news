@@ -908,7 +908,7 @@ ${more ? `<input type="checkbox" id="more-runs" class="more-toggle">` : ""}<div 
 <thead><tr><th>${S.th[0]}</th><th class="r">${S.th[1]}</th><th class="r">${S.th[2]}</th><th class="r">${S.th[3]}</th><th class="m">${S.th[4]}</th></tr></thead>
 <tbody>${rows}</tbody>
 </table></div>
-${more}${tableNotes(runs, view, lang)}`
+${more}${tableNotes(runs, lang)}`
     : `<div class="empty"><p>${S.empty}</p></div>`;
 
   return layout({
@@ -924,12 +924,12 @@ ${view.year ? `<p class="period-now">${label}</p>` : ""}
 <h2 class="sec">${S.sec}</h2>
 <p class="sec-lede">${S.lede}</p>
 ${body}
-${longTable(longRuns, view, lang)}
+${longTable(longRuns, lang)}
 ${outletStats(view, lang)}`,
   });
 }
 
-function longTable(runs, view, lang) {
+function longTable(runs, lang) {
   if (!runs.length) return "";
   const S = TEXT[lang].st;
   const rows = [...runs].reverse().map((r) => {
@@ -941,14 +941,12 @@ function longTable(runs, view, lang) {
 <div class="table-scroll"><table class="runs">
 <thead><tr>${S.longTh.map((h, i) => `<th${i ? ' class="r"' : ""}>${h}</th>`).join("")}</tr></thead>
 <tbody>${rows}</tbody>
-</table></div>${tableNotes(runs, view, lang)}`;
+</table></div>${tableNotes(runs, lang)}`;
 }
 
-// 표 아래 메모. 메모는 그것이 설명하는 기록에 붙고, 그 기록이 들어 있는 연도·분기 탭에만
-// 나온다. 전체 탭에는 해가 쌓이면 낡은 이야기가 되므로 띄우지 않는다. 메모를 나중에 지우거나
-// 옮기지 않아도 되게 하려는 것이다.
-function tableNotes(runs, view, lang) {
-  if (!view.year) return "";
+// 표 아래 메모. 메모는 그것이 설명하는 기록에 붙고, 그 기록이 보이는 탭(전체 포함)에 나온다.
+// 전체 탭에서 낡은 이야기가 되면 notes 에서 지운다.
+function tableNotes(runs, lang) {
   return TEXT[lang].st.notes
     .filter(([ids]) => runs.some((r) => ids.includes(r.week)))
     .map(([, text]) => `\n<p class="table-note">${text}</p>`).join("");
