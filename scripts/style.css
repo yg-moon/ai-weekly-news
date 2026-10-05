@@ -166,7 +166,7 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
 .src em { font-style:normal; color:var(--muted); opacity:.85; }
 
 /* 목록 페이지 */
-.tabs { display:flex; gap:.25rem; margin:0 0 1.75rem; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none; }
+.tabs { display:flex; align-items:center; gap:.35rem; margin:0 0 1.75rem; overflow-x:auto; scrollbar-width:none; }
 .tabs::-webkit-scrollbar { display:none; }
 .tabs > * { flex:none; }
 /* 목록 탭의 둘째 단: 고른 해의 분기와 연간 */
@@ -176,19 +176,18 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
 .chip { padding:.15rem .75rem; border:1px solid var(--line); border-radius:999px; font-size:.85rem; color:var(--muted); text-decoration:none; }
 .chip:hover { color:var(--text); }
 .chip.on { background:var(--text); border-color:var(--text); color:var(--bg); font-weight:700; }
-.tab {
-  padding:.5rem .85rem; font-size:.9rem; text-decoration:none;
-  color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px;
-}
+/* 고른 탭은 분야색으로 채운다. 밑줄로는 골랐는지 잘 보이지 않았다(2026-10-05). 글자색은 바탕색이라
+   어두운 화면에서는 밝은 초록 위 어두운 글자가 된다. 아래 분기 칩(검정 채움)과 색으로 단이 갈린다. */
+.tab { padding:.35rem .9rem; border-radius:8px; font-size:.9rem; text-decoration:none; color:var(--muted); }
 .tab:hover { color:var(--text); }
-.tab.on { color:var(--text); font-weight:700; border-bottom-color:var(--accent); }
+.tab.on { background:var(--accent); color:var(--bg); font-weight:700; }
 .yr {
   padding:.5rem .35rem; font-size:.9rem; text-decoration:none;
   color:var(--muted); font-variant-numeric:tabular-nums;
 }
 .yr:hover { color:var(--text); }
 .yr.on { color:var(--text); font-weight:700; }
-.tabdiv { width:1px; margin:.55rem .45rem; background:var(--line); }
+.tabdiv { width:1px; height:1.1rem; margin:0 .25rem; background:var(--line); }
 
 .archive { list-style:none; margin:0; padding:0; }
 .archive li + li { border-top:1px solid var(--line); }
