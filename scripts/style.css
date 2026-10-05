@@ -357,9 +357,9 @@ footer {
   margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--line);
   font-size:.82rem; color:var(--muted);
 }
-/* 바닥글 위 간격을 앞의 내용에 맞춘다. 목록은 마지막 발행물에 아래 여백(1rem)이 있어 줄이고,
-   이전 호·다음 호 뒤에서는 그 위 선과 같은 간격(1.25rem)을 둬 띠 하나처럼 보이게 한다. */
-.archive + footer { margin-top:1rem; }
+/* 바닥글 위 간격을 앞의 내용에 맞춘다. 목록은 마지막 발행물의 아래 여백(1rem)만 두어 주간호 사이
+   선과 같은 간격이 되게 하고, 이전 호·다음 호 뒤에서는 그 위 선과 같은 간격(1.25rem)을 둬 띠 하나처럼 보이게 한다. */
+.archive + footer { margin-top:0; }
 .og-note + footer { margin-top:1.25rem; }
 .pager + footer { margin-top:1.25rem; }
 footer a { color:var(--muted); }
