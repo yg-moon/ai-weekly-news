@@ -283,7 +283,7 @@ export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
   if (unusedClasses.length) errors.push(`쓰이지 않는 CSS 클래스: ${unusedClasses.join(", ")}. 마크업의 클래스 이름이 바뀌었는지 본다.`);
 
   // ---------- 화면 ----------
-  errors.push(...checkSelectedFill(SITE, CSS), ...checkLineContrast(CSS));
+  errors.push(...checkSelectedFill(SITE, CSS), ...checkThemeContrast(CSS), ...checkStickyHover(CSS));
 
 
   return errors;
@@ -305,22 +305,55 @@ export function checkSelectedFill(SITE, CSS) {
   return missing.length ? [`고른 상태에 배경이 없는 클래스: ${missing.map((c) => `.${c}.on`).join(", ")}. 고른 탭·칩은 채워서 보인다.`] : [];
 }
 
-// 선은 바탕에서 또렷이 보여야 한다. 밝은 화면과 어두운 화면에서 --line 과 --bg 의 명암비를 본다.
-// 1.2~1.4 이던 때는 선이 있는지 알기 어려웠다(2026-10-05).
+// 화면 색의 명암비. 밝은 화면과 어두운 화면 각각에서 바탕(--bg)과 견준다.
+// - 글씨: --text·--dim·--muted 는 작은 글씨 대비 기준(4.5:1) 이상. 회색 글씨가 흐렸다(2026-10-05).
+// - 선: --line 은 LINE_CONTRAST 이상. 1.2~1.4 이던 때는 선이 있는지 알기 어려웠다(2026-10-05).
+// - 눌림·현재 표시: --press 는 PRESS_CONTRAST 이상. --sunken(1.1 안팎)을 쓰던 때는 폰에서 거의 안 보였다(2026-10-05).
+const TEXT_CONTRAST = 4.5;
 const LINE_CONTRAST = 2.5;
-export function checkLineContrast(CSS) {
+const PRESS_CONTRAST = 1.25;
+export function checkThemeContrast(CSS) {
   const lum = (h) => {
     const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   };
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  // --press 는 :root 에 한 번만 color-mix 로 정하고, 테마마다 그 테마의 --line·--bg 로 다시 계산된다.
+  const pressMix = CSS.match(/--press:\s*color-mix\(in srgb,\s*var\(--line\)\s*([\d.]+)%,\s*var\(--bg\)\)/);
+  const mix = (a, b, w) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * w + parseInt(b.slice(i, i + 2), 16) * (1 - w)).toString(16).padStart(2, "0")).join("");
   const out = [];
+  if (!pressMix) out.push("--press 를 color-mix(in srgb, var(--line) N%, var(--bg)) 로 찾지 못했다. 정하는 방식이 바뀌었으면 이 검사를 고친다.");
   for (const block of CSS.match(/\{[^{}]*--line:[^{}]*\}/g) ?? []) {
-    const bg = block.match(/--bg:(#[0-9a-f]{6})/i)?.[1], line = block.match(/--line:(#[0-9a-f]{6})/i)?.[1];
+    const get = (name) => block.match(new RegExp(`--${name}:(#[0-9a-f]{6})`, "i"))?.[1];
+    const bg = get("bg"), line = get("line");
     if (!bg || !line) { out.push(`--line 과 --bg 를 같은 블록에서 #rrggbb 로 정해야 명암비를 볼 수 있다: ${block.slice(0, 60)}`); continue; }
-    const r = ratio(line, bg);
-    if (r < LINE_CONTRAST) out.push(`선 색 ${line} 이 바탕 ${bg} 에서 명암비 ${r.toFixed(2)} 로 흐리다(${LINE_CONTRAST} 이상).`);
+    for (const name of ["text", "dim", "muted"]) {
+      const c = get(name);
+      if (!c) out.push(`--${name} 을 --bg 와 같은 블록에서 #rrggbb 로 정해야 명암비를 볼 수 있다.`);
+      else if (ratio(c, bg) < TEXT_CONTRAST) out.push(`글씨 색 --${name} ${c} 이 바탕 ${bg} 에서 명암비 ${ratio(c, bg).toFixed(2)} 로 흐리다(${TEXT_CONTRAST} 이상).`);
+    }
+    if (ratio(line, bg) < LINE_CONTRAST) out.push(`선 색 ${line} 이 바탕 ${bg} 에서 명암비 ${ratio(line, bg).toFixed(2)} 로 흐리다(${LINE_CONTRAST} 이상).`);
+    if (pressMix) {
+      const press = mix(line, bg, pressMix[1] / 100);
+      if (ratio(press, bg) < PRESS_CONTRAST) out.push(`눌림 색 ${press} 이 바탕 ${bg} 에서 명암비 ${ratio(press, bg).toFixed(2)} 로 흐리다(${PRESS_CONTRAST} 이상).`);
+    }
   }
-  if (!out.length && !/--line:/.test(CSS)) out.push("CSS 에서 --line 을 찾지 못했다.");
-  return out;
+  if (!/--line:/.test(CSS)) out.push("CSS 에서 --line 을 찾지 못했다.");
+  // 어두운 화면은 기기 설정과 버튼 선택으로 두 번 정하므로 같은 말이 겹칠 수 있다.
+  return [...new Set(out)];
+}
+
+// 배경을 바꾸는 호버는 마우스가 있을 때만 준다. 폰에서는 누른 뒤 다른 곳을 누를 때까지 :hover 가
+// 남아, 다크모드 버튼에 강조가 남아 있었다(2026-10-05). 그런 규칙은 @media (hover:hover) 안에 둔다.
+export function checkStickyHover(CSS) {
+  let rest = CSS.replace(/\/\*[\s\S]*?\*\//g, "");
+  for (let m; (m = rest.match(/@media\s*\(hover:\s*hover\)\s*\{/)); ) {
+    let i = m.index + m[0].length, depth = 1;
+    while (depth && i < rest.length) depth += rest[i] === "{" ? 1 : rest[i] === "}" ? -1 : 0, i++;
+    rest = rest.slice(0, m.index) + rest.slice(i);
+  }
+  const bad = [...rest.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter(([, sel, body]) => /:hover/.test(sel) && /background(-color)?\s*:/.test(body))
+    .map(([, sel]) => sel.trim());
+  return bad.length ? [`배경을 바꾸는 호버가 @media (hover:hover) 밖에 있다: ${bad.join(" / ")}. 폰에서 누른 뒤에도 강조가 남는다.`] : [];
 }

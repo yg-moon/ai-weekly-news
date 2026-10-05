@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkContent, dateProblems, checkSelectedFill, checkLineContrast, missingRuns } from "./build-checks.mjs";
+import { checkContent, dateProblems, checkSelectedFill, checkThemeContrast, checkStickyHover, missingRuns } from "./build-checks.mjs";
 
 const GROUPS = { 국내: "korea", 해외: "world", AI: "ai" };
 const KINDS = { week: { groups: GROUPS }, quarter: { groups: GROUPS }, year: { groups: GROUPS } };
@@ -187,10 +187,20 @@ test("고른 탭·칩에 배경이 없으면 걸린다", () => {
   assert.match(out[0], /\.yr\.on/);
 });
 
-test("선 색이 바탕에서 흐리면 걸린다", () => {
-  assert.deepEqual(checkLineContrast(":root { --bg:#fbfbf9; --line:#9c9c95; }"), []);
-  assert.equal(checkLineContrast(":root { --bg:#fbfbf9; --line:#e5e5e0; }").length, 1);
-  assert.equal(checkLineContrast(":root { --bg:#fbfbf9; --line:#9c9c95; }\n@media (prefers-color-scheme: dark) { :root { --bg:#151517; --line:#303136; } }").length, 1);
+test("화면 색이 바탕에서 흐리면 걸린다", () => {
+  const light = ":root { --bg:#fbfbf9; --text:#191918; --dim:#44443f; --muted:#6b6b64; --line:#9c9c95; --press:color-mix(in srgb, var(--line) 35%, var(--bg)); }";
+  assert.deepEqual(checkThemeContrast(light), []);
+  assert.match(checkThemeContrast(light.replace("#9c9c95", "#e5e5e0")).join(), /선 색/);
+  assert.match(checkThemeContrast(light.replace("#6b6b64", "#a0a09a")).join(), /--muted/);
+  assert.match(checkThemeContrast(light.replace("35%", "8%")).join(), /눌림 색/);
+  const dark = "@media (prefers-color-scheme: dark) { :root { --bg:#151517; --text:#eeeeec; --dim:#b6b6b0; --muted:#8d8d87; --line:#303136; } }";
+  assert.match(checkThemeContrast(`${light}\n${dark}`).join(), /선 색 #303136/);
+});
+
+test("배경을 바꾸는 호버가 마우스 전용이 아니면 걸린다", () => {
+  assert.deepEqual(checkStickyHover("@media (hover:hover) { .a:hover { background:red; } }\n.b:hover { color:red; }"), []);
+  assert.match(checkStickyHover(".a:hover, .a[aria-current] { background:red; }").join(), /\.a:hover/);
+  assert.match(checkStickyHover("@media (max-width:460px) { .c:hover { background:red; } }").join(), /\.c:hover/);
 });
 
 test("실행 기록이 없는 발행물을 잡는다", () => {

@@ -218,7 +218,7 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
   padding:1rem .5rem; text-decoration:none; color:inherit;
   border-radius:var(--radius);
 }
-.archive a:hover { background:var(--hover); }
+@media (hover:hover) { .archive a:hover { background:var(--hover); } }
 .archive .wk { font-weight:700; font-variant-numeric:tabular-nums; }
 .archive .period { color:var(--dim); font-size:.9rem; }
 .tops { width:100%; display:flex; flex-direction:column; margin-top:.2rem; }
@@ -412,7 +412,7 @@ dialog.fb::backdrop { background:rgba(20,20,18,.38); }
   width:2rem; height:2rem; margin:-.35rem -.5rem -.35rem 0; border:0; border-radius:999px;
   background:none; color:var(--muted); font-size:1.35rem; line-height:1; cursor:pointer;
 }
-.fb-x:hover { background:var(--sunken); color:var(--text); }
+@media (hover:hover) { .fb-x:hover { background:var(--sunken); color:var(--text); } }
 .fb textarea, .fb input {
   display:block; width:100%; margin:0 0 .75rem; padding:.7rem .85rem;
   font:inherit; font-size:.95rem; line-height:1.6; letter-spacing:inherit; color:var(--text);

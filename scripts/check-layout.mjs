@@ -5,6 +5,7 @@
 //
 // 보는 것
 // - 머리말: 로고·사이트 이름·오른쪽 도구가 모든 페이지에서 같은 자리·같은 크기인지(폰·데스크톱)
+// - 머리말 줄: 로고·검색·테마·언어 선택이 한 중앙선에 있고, 버튼 셋의 높이가 같은지
 // - 빈 곳: 폰에서 글자·상자 사이가 GAP_MAX 를 넘는 곳
 // - 본문 폭: 폰에서 배경·테두리가 있는 상자가 본문 폭 밖으로 나가는지
 // - 좁은 폰: 340px 에서 화면이 옆으로 넘치는지
@@ -78,6 +79,20 @@ for (const width of [390, 1280]) {
     if (!first) first = { path, box };
     else if (box !== first.box) problems.push(`머리말 ${width}px: ${path || "/"} 가 ${first.path || "/"} 와 다르다 (${box} ≠ ${first.box})`);
   }
+}
+
+// 1-1. 머리말 줄. 높이가 다르거나 중앙선이 어긋나면 이유 모를 이질감이 났다(2026-10-05).
+// 언어 선택의 높이를 폭마다 다르게 두므로 그 경계 양쪽을 잰다.
+for (const width of [340, 390, 1280]) {
+  const page = await open("", width);
+  const m = await page.evaluate(() => Object.fromEntries(["logo", "search-link", "theme-toggle", "lang"].map((c) => {
+    const r = document.querySelector(`header.site .${c}`).getBoundingClientRect();
+    return [c, { mid: r.top + r.height / 2, h: r.height }];
+  })));
+  await page.close();
+  const mids = Object.values(m).map((v) => v.mid), hs = ["search-link", "theme-toggle", "lang"].map((c) => m[c].h);
+  if (Math.max(...mids) - Math.min(...mids) > 1) problems.push(`머리말 ${width}px: 중앙선이 어긋난다 (${Object.entries(m).map(([c, v]) => `${c} ${v.mid.toFixed(1)}`).join(", ")})`);
+  if (Math.max(...hs) - Math.min(...hs) > 1) problems.push(`머리말 ${width}px: 버튼 높이가 다르다 (검색 ${hs[0]}, 테마 ${hs[1]}, 언어 ${hs[2]})`);
 }
 
 // 2~3. 폰에서 빈 곳과 본문 폭
