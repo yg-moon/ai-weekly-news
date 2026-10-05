@@ -72,7 +72,7 @@ const TEXT = {
     pending: (need) => `주간호가 ${need}개 이상 쌓이면 흐름을 모아 분기호를 작성하고, 매주 갱신합니다.`,
     theme: "다크 모드 전환",
     search: { label: "검색", placeholder: "지난 호에서 찾기", sort: ["관련도순", "최신순"], count: (n) => `${n}건`, none: "결과가 없습니다.", desc: "지난 호의 항목을 제목과 본문으로 찾습니다." },
-    pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
+    pager: ["이전 호와 다음 호", "이전", "다음"],
     og: "og.png",
     aboutDesc: `${SITE_TITLE}를 만든 이유와 뉴스를 고르고 만드는 방식.`,
     updated: (t) => `마지막 업데이트: ${t.y}년 ${t.m}월 ${t.d}일 ${t.hm} KST`,
@@ -86,7 +86,7 @@ const TEXT = {
       tiles: ["주간호", "개", "총 비용", "평균 비용", "평균 소요 시간", "분"],
       min: (v) => `${v}분`, cost: "비용 (달러)", time: "소요 시간 (분)",
       more: "더보기", th: ["주간호", "비용", "소요 시간", "읽은 헤드라인", "모델"], empty: "아직 기록이 없습니다.",
-      long: "분기호·연간호", longLede: "분기호는 분기 도중 매주 다시 쓰므로, 모든 판의 비용과 시간을 더해 적습니다.",
+      long: "분기호·연간호", longQ: "분기호", longLede: "분기호는 분기 도중 매주 다시 쓰므로, 모든 판의 비용과 시간을 더해 적습니다.",
       longTh: ["발행물", "판 수", "총 비용", "평균 비용", "총 소요 시간", "평균 소요 시간"],
       notes: [
         [["2026-W40"], "W40부터 영문판 번역과 링크·수치 검사를 발행 시 함께 수행합니다. 따라서 지난 호를 한꺼번에 만든 W39까지보다 비용과 시간이 증가했습니다."],
@@ -133,7 +133,7 @@ const TEXT = {
       tiles: ["Weekly briefings", "", "Total cost", "Average cost", "Average time", "min"],
       min: (v) => `${v} min`, cost: "Cost (USD)", time: "Time (minutes)",
       more: "Show more", th: ["Weekly briefing", "Cost", "Time", "Headlines read", "Model"], empty: "No records yet.",
-      long: "Quarterly and annual reviews", longLede: "Quarterly reviews are rewritten every week during the quarter, so the cost and time of all editions are added up.",
+      long: "Quarterly and annual reviews", longQ: "Quarterly reviews", longLede: "Quarterly reviews are rewritten every week during the quarter, so the cost and time of all editions are added up.",
       longTh: ["Publication", "Editions", "Total cost", "Average cost", "Total time", "Average time"],
       notes: [
         [["2026-W40"], "From W40, the English translation and the link and figure checks are done with each publication. So cost and time are higher than up to W39, when past briefings were made all at once."],
@@ -924,19 +924,20 @@ ${view.year ? `<p class="period-now">${label}</p>` : ""}
 <h2 class="sec">${S.sec}</h2>
 <p class="sec-lede">${S.lede}</p>
 ${body}
-${longTable(longRuns, lang)}
+${longTable(longRuns, lang, view)}
 ${outletStats(view, lang)}`,
   });
 }
 
-function longTable(runs, lang) {
+// 분기 탭에는 연간호가 나올 일이 없어 소제목에서 연간호를 뺀다. 연도·전체 탭은 언젠가 연간호가 생기므로 그대로 둔다.
+function longTable(runs, lang, view) {
   if (!runs.length) return "";
   const S = TEXT[lang].st;
   const rows = [...runs].reverse().map((r) => {
     const n = r.editions ?? 1;
     return `<tr><td>${r.week}</td><td class="r">${n}</td><td class="r">${usd(r.cost_usd)}</td><td class="r">${usd(r.cost_usd / n)}</td><td class="r">${S.min(minutes(r))}</td><td class="r">${S.min(Math.round(minutes(r) / n))}</td></tr>`;
   }).join("");
-  return `<h2 class="sec">${S.long}</h2>
+  return `<h2 class="sec">${view.q ? S.longQ : S.long}</h2>
 <p class="sec-lede">${S.longLede}</p>
 <div class="table-scroll"><table class="runs">
 <thead><tr>${S.longTh.map((h, i) => `<th${i ? ' class="r"' : ""}>${h}</th>`).join("")}</tr></thead>
