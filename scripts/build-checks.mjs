@@ -220,11 +220,11 @@ export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
   const LANG_NAMES = Object.keys(TEXT);
   const errors = [];
 
-  // 기간별 통계가 기록을 빠뜨리거나 겹치지 않는지 본다. 분기 페이지의 표를 모두
-  // 합치면 기록 전체와 한 번씩 맞아야 한다.
+  // 기간별 통계가 기록을 빠뜨리거나 겹치지 않는지 본다. 분기 페이지의 표(주간호 표와
+  // 분기호·연간호 표)를 모두 합치면 기록 전체와 한 번씩 맞아야 한다.
   const tableWeeks = (v) =>
-    [...(readFileSync(join(SITE, v.path, "index.html"), "utf8").match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "")
-      .matchAll(/<tr[^>]*>\s*<td>([^<]+)<\/td>/g)].map((m) => m[1]);
+    [...readFileSync(join(SITE, v.path, "index.html"), "utf8").matchAll(/<tbody>([\s\S]*?)<\/tbody>/g)]
+      .flatMap((t) => [...t[1].matchAll(/<tr[^>]*>\s*<td>([^<]+)<\/td>/g)].map((m) => m[1]));
   const inQuarters = statViews.filter((v) => v.q).flatMap(tableWeeks).sort();
   const expected = runs.map((r) => r.week).sort();
   if (inQuarters.join() !== expected.join() || statViews.some((v) => tableWeeks(v).length !== v.runs.length)) errors.push(`기간별 통계 표가 기록과 다르다. 기록 ${expected.length}개, 분기 표 합 ${inQuarters.length}개.`);

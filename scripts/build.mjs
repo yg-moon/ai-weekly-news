@@ -68,7 +68,7 @@ const TEXT = {
     why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", stats: "통계", about: "사이트 소개",
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
-    state: ["진행중", "완결"], editions: (n) => `${n}판`,
+    state: ["진행중", "완결"],
     pending: (need) => `주간호가 ${need}개 이상 쌓이면 흐름을 모아 분기호를 작성하고, 매주 갱신합니다.`,
     theme: "다크 모드 전환",
     search: { label: "검색", placeholder: "지난 호에서 찾기", sort: ["관련도순", "최신순"], count: (n) => `${n}건`, none: "결과가 없습니다.", desc: "지난 호의 항목을 제목과 본문으로 찾습니다." },
@@ -83,9 +83,11 @@ const TEXT = {
     },
     st: {
       back: "← 목록", all: "전체", yearLabel: (y) => `${y}년`,
-      tiles: ["발행물", "개", "총 비용", "평균 비용", "평균 소요 시간", "분"],
+      tiles: ["주간호", "개", "총 비용", "평균 비용", "평균 소요 시간", "분"],
       min: (v) => `${v}분`, cost: "비용 (달러)", time: "소요 시간 (분)",
-      more: "더보기", th: ["발행물", "비용", "소요 시간", "읽은 헤드라인", "모델"], empty: "아직 기록이 없습니다.",
+      more: "더보기", th: ["주간호", "비용", "소요 시간", "읽은 헤드라인", "모델"], empty: "아직 기록이 없습니다.",
+      long: "분기호·연간호", longLede: "분기호는 분기 도중 매주 다시 쓰므로, 모든 판의 비용과 시간을 더해 적습니다.",
+      longTh: ["발행물", "판 수", "총 비용", "판당 비용", "총 소요 시간"],
       sec: "발행 비용 및 시간",
       lede: "AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 API 정가 환산이며 실제 청구액이 아닙니다.",
       desc: (label) => `발행물을 만드는 데 든 비용과 시간, 인용한 매체. ${label}.`,
@@ -109,7 +111,7 @@ const TEXT = {
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", stats: "Stats", about: "About",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
-    state: ["In progress", "Complete"], editions: (n) => `${n} editions`,
+    state: ["In progress", "Complete"],
     pending: (need) => `Once ${["zero", "one", "two", "three", "four", "five"][need]} or more weekly briefings are out, a quarterly review of their developing stories will be written and updated weekly.`,
     theme: "Toggle dark mode",
     search: { label: "Search", placeholder: "Search past publications", sort: ["Relevance", "Newest"], count: (n) => (n === 1 ? "1 result" : `${n} results`), none: "No results.", desc: "Search past items by title and text." },
@@ -124,9 +126,11 @@ const TEXT = {
     },
     st: {
       back: "← All publications", all: "All", yearLabel: (y) => y,
-      tiles: ["Publications", "", "Total cost", "Average cost", "Average time", "min"],
+      tiles: ["Weekly briefings", "", "Total cost", "Average cost", "Average time", "min"],
       min: (v) => `${v} min`, cost: "Cost (USD)", time: "Time (minutes)",
-      more: "Show more", th: ["Publication", "Cost", "Time", "Headlines read", "Model"], empty: "No records yet.",
+      more: "Show more", th: ["Weekly briefing", "Cost", "Time", "Headlines read", "Model"], empty: "No records yet.",
+      long: "Quarterly and annual reviews", longLede: "Quarterly reviews are rewritten every week during the quarter, so these figures add up the cost and time of all editions.",
+      longTh: ["Publication", "Editions", "Total cost", "Cost per edition", "Total time"],
       sec: "Cost and time per publication",
       lede: "How much it cost the AI to make each publication, and how long it took. Costs are at API list prices, not the amount actually billed.",
       desc: (label) => `Cost and time to make each publication, and the outlets cited. ${label}.`,
@@ -845,8 +849,12 @@ ${rest.length ? `<details class="om"><summary>${S.rest(rest.length)}</summary>${
 <p class="og-note">${S.outletNote}</p>`;
 }
 
+// 타일·그래프·첫 표는 주간호만 센다. 분기호는 분기 도중 매주 다시 써서 판의 비용이 한 줄에
+// 쌓이므로, 주간호와 섞으면 막대가 튀고 평균이 부푼다. 분기호·연간호는 아래 표에 따로 둔다
+// (사용자 2026-10-05).
 function renderStats(views, view, lang = "ko") {
-  const { runs } = view;
+  const runs = view.runs.filter((r) => /-W\d+$/.test(r.week));
+  const longRuns = view.runs.filter((r) => !/-W\d+$/.test(r.week));
   const T = TEXT[lang], S = T.st;
   const root = "../".repeat((T.dir + view.path).split("/").filter(Boolean).length);
   const base = root + T.dir;
@@ -872,7 +880,7 @@ function renderStats(views, view, lang = "ko") {
   const SHOWN = 16;
   const rows = [...runs].reverse().map((r, i) => `<tr${i >= SHOWN ? ' class="old"' : ""}>
   <td>${r.week}</td>
-  <td class="r">${usd(r.cost_usd)}${r.editions > 1 ? ` <small>${T.editions(r.editions)}</small>` : ""}</td><td class="r">${S.min(minutes(r))}</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td><td class="m">${r.model}</td>
+  <td class="r">${usd(r.cost_usd)}</td><td class="r">${S.min(minutes(r))}</td><td class="r">${r.headlines == null ? "—" : r.headlines.toLocaleString("en-US")}</td><td class="m">${r.model}</td>
 </tr>`).join("");
   const more = runs.length > SHOWN
     ? `<label for="more-runs" class="more">${S.more}</label>`
@@ -901,8 +909,24 @@ ${view.year ? `<p class="period-now">${label}</p>` : ""}
 <h2 class="sec">${S.sec}</h2>
 <p class="sec-lede">${S.lede}</p>
 ${body}
+${longTable(longRuns, lang)}
 ${outletStats(view, lang)}`,
   });
+}
+
+function longTable(runs, lang) {
+  if (!runs.length) return "";
+  const S = TEXT[lang].st;
+  const rows = [...runs].reverse().map((r) => {
+    const n = r.editions ?? 1;
+    return `<tr><td>${r.week}</td><td class="r">${n}</td><td class="r">${usd(r.cost_usd)}</td><td class="r">${usd(r.cost_usd / n)}</td><td class="r">${S.min(minutes(r))}</td></tr>`;
+  }).join("");
+  return `<h2 class="sec">${S.long}</h2>
+<p class="sec-lede">${S.longLede}</p>
+<div class="table-scroll"><table class="runs">
+<thead><tr>${S.longTh.map((h, i) => `<th${i ? ' class="r"' : ""}>${h}</th>`).join("")}</tr></thead>
+<tbody>${rows}</tbody>
+</table></div>`;
 }
 
 // 소개 페이지. 본문은 content/about.md(영문판 content/en/about.md)이고 첫 줄 # 이 제목이다.
