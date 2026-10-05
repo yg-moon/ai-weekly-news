@@ -87,7 +87,7 @@ const TEXT = {
       min: (v) => `${v}분`, cost: "비용 (달러)", time: "소요 시간 (분)",
       more: "더보기", th: ["주간호", "비용", "소요 시간", "읽은 헤드라인", "모델"], empty: "아직 기록이 없습니다.",
       long: "분기호·연간호", longLede: "분기호는 분기 도중 매주 다시 쓰므로, 모든 판의 비용과 시간을 더해 적습니다.",
-      longTh: ["발행물", "판 수", "총 비용", "판당 비용", "총 소요 시간"],
+      longTh: ["발행물", "판 수", "총 비용", "평균 비용", "총 소요 시간", "평균 소요 시간"],
       sec: "발행 비용 및 시간",
       lede: "AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 API 정가 환산이며 실제 청구액이 아닙니다.",
       desc: (label) => `발행물을 만드는 데 든 비용과 시간, 인용한 매체. ${label}.`,
@@ -130,7 +130,7 @@ const TEXT = {
       min: (v) => `${v} min`, cost: "Cost (USD)", time: "Time (minutes)",
       more: "Show more", th: ["Weekly briefing", "Cost", "Time", "Headlines read", "Model"], empty: "No records yet.",
       long: "Quarterly and annual reviews", longLede: "Quarterly reviews are rewritten every week during the quarter, so these figures add up the cost and time of all editions.",
-      longTh: ["Publication", "Editions", "Total cost", "Cost per edition", "Total time"],
+      longTh: ["Publication", "Editions", "Total cost", "Average cost", "Total time", "Average time"],
       sec: "Cost and time per publication",
       lede: "How much it cost the AI to make each publication, and how long it took. Costs are at API list prices, not the amount actually billed.",
       desc: (label) => `Cost and time to make each publication, and the outlets cited. ${label}.`,
@@ -919,7 +919,7 @@ function longTable(runs, lang) {
   const S = TEXT[lang].st;
   const rows = [...runs].reverse().map((r) => {
     const n = r.editions ?? 1;
-    return `<tr><td>${r.week}</td><td class="r">${n}</td><td class="r">${usd(r.cost_usd)}</td><td class="r">${usd(r.cost_usd / n)}</td><td class="r">${S.min(minutes(r))}</td></tr>`;
+    return `<tr><td>${r.week}</td><td class="r">${n}</td><td class="r">${usd(r.cost_usd)}</td><td class="r">${usd(r.cost_usd / n)}</td><td class="r">${S.min(minutes(r))}</td><td class="r">${S.min(Math.round(minutes(r) / n))}</td></tr>`;
   }).join("");
   return `<h2 class="sec">${S.long}</h2>
 <p class="sec-lede">${S.longLede}</p>
