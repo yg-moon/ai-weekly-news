@@ -306,6 +306,7 @@ figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
 /* 모델은 모든 호가 같아 보조 정보다. 맨 오른쪽에 흐리게 둔다. */
 .runs .m { padding-left:1.25rem; color:var(--muted); }
 .table-scroll { overflow-x:auto; }
+.table-note { color:var(--muted); font-size:.8rem; margin:.6rem 0 0; }
 @media (max-width:30rem) {
   .tiles { grid-template-columns:repeat(2,1fr); gap:.5rem; }
   .tile { padding:.6rem .7rem; }

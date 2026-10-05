@@ -88,6 +88,10 @@ const TEXT = {
       more: "더보기", th: ["주간호", "비용", "소요 시간", "읽은 헤드라인", "모델"], empty: "아직 기록이 없습니다.",
       long: "분기호·연간호", longLede: "분기호는 분기 도중 매주 다시 쓰므로, 모든 판의 비용과 시간을 더해 적습니다.",
       longTh: ["발행물", "판 수", "총 비용", "평균 비용", "총 소요 시간", "평균 소요 시간"],
+      notes: [
+        [["2026-W40"], "W40부터 영문판 번역과 링크·수치 검사를 발행 시 함께 수행합니다. 따라서 지난 호를 한꺼번에 만든 W39까지보다 비용과 시간이 증가했습니다."],
+        [["2026-Q2", "2026-Q3"], "2026-Q2·Q3는 분기가 끝난 뒤 한 번에 써서 판이 하나입니다."],
+      ],
       sec: "발행 비용 및 시간",
       lede: "AI가 각 발행물을 만드는 데 든 비용과 시간입니다. 비용은 API 정가 환산이며 실제 청구액이 아닙니다.",
       desc: (label) => `발행물을 만드는 데 든 비용과 시간, 인용한 매체. ${label}.`,
@@ -131,6 +135,10 @@ const TEXT = {
       more: "Show more", th: ["Weekly briefing", "Cost", "Time", "Headlines read", "Model"], empty: "No records yet.",
       long: "Quarterly and annual reviews", longLede: "Quarterly reviews are rewritten every week during the quarter, so these figures add up the cost and time of all editions.",
       longTh: ["Publication", "Editions", "Total cost", "Average cost", "Total time", "Average time"],
+      notes: [
+        [["2026-W40"], "From W40, the English translation and the link and figure checks run with each publication. Cost and time rose from W39 and earlier, when past briefings were produced in one batch."],
+        [["2026-Q2", "2026-Q3"], "2026-Q2 and Q3 were written once after their quarters ended, so each has one edition."],
+      ],
       sec: "Cost and time per publication",
       lede: "How much it cost the AI to make each publication, and how long it took. Costs are at API list prices, not the amount actually billed.",
       desc: (label) => `Cost and time to make each publication, and the outlets cited. ${label}.`,
@@ -893,7 +901,7 @@ ${more ? `<input type="checkbox" id="more-runs" class="more-toggle">` : ""}<div 
 <thead><tr><th>${S.th[0]}</th><th class="r">${S.th[1]}</th><th class="r">${S.th[2]}</th><th class="r">${S.th[3]}</th><th class="m">${S.th[4]}</th></tr></thead>
 <tbody>${rows}</tbody>
 </table></div>
-${more}`
+${more}${tableNotes(runs, view, lang)}`
     : `<div class="empty"><p>${S.empty}</p></div>`;
 
   return layout({
@@ -909,12 +917,12 @@ ${view.year ? `<p class="period-now">${label}</p>` : ""}
 <h2 class="sec">${S.sec}</h2>
 <p class="sec-lede">${S.lede}</p>
 ${body}
-${longTable(longRuns, lang)}
+${longTable(longRuns, view, lang)}
 ${outletStats(view, lang)}`,
   });
 }
 
-function longTable(runs, lang) {
+function longTable(runs, view, lang) {
   if (!runs.length) return "";
   const S = TEXT[lang].st;
   const rows = [...runs].reverse().map((r) => {
@@ -926,7 +934,17 @@ function longTable(runs, lang) {
 <div class="table-scroll"><table class="runs">
 <thead><tr>${S.longTh.map((h, i) => `<th${i ? ' class="r"' : ""}>${h}</th>`).join("")}</tr></thead>
 <tbody>${rows}</tbody>
-</table></div>`;
+</table></div>${tableNotes(runs, view, lang)}`;
+}
+
+// 표 아래 메모. 메모는 그것이 설명하는 기록에 붙고, 그 기록이 들어 있는 연도·분기 탭에만
+// 나온다. 전체 탭에는 해가 쌓이면 낡은 이야기가 되므로 띄우지 않는다. 메모를 나중에 지우거나
+// 옮기지 않아도 되게 하려는 것이다.
+function tableNotes(runs, view, lang) {
+  if (!view.year) return "";
+  return TEXT[lang].st.notes
+    .filter(([ids]) => runs.some((r) => ids.includes(r.week)))
+    .map(([, text]) => `\n<p class="table-note">${text}</p>`).join("");
 }
 
 // 소개 페이지. 본문은 content/about.md(영문판 content/en/about.md)이고 첫 줄 # 이 제목이다.
