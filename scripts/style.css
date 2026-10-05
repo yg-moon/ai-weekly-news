@@ -180,13 +180,9 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
    어두운 화면에서는 밝은 초록 위 어두운 글자가 된다. 아래 분기 칩(검정 채움)과 색으로 단이 갈린다. */
 .tab { padding:.35rem .9rem; border-radius:8px; font-size:.9rem; text-decoration:none; color:var(--muted); }
 .tab:hover { color:var(--text); }
-.tab.on { background:var(--accent); color:var(--bg); font-weight:700; }
-.yr {
-  padding:.5rem .35rem; font-size:.9rem; text-decoration:none;
-  color:var(--muted); font-variant-numeric:tabular-nums;
-}
+.tab.on, .yr.on { background:var(--accent); color:var(--bg); font-weight:700; }
+.yr { padding:.35rem .6rem; border-radius:8px; font-size:.9rem; text-decoration:none; color:var(--muted); font-variant-numeric:tabular-nums; }
 .yr:hover { color:var(--text); }
-.yr.on { color:var(--text); font-weight:700; }
 .tabdiv { width:1px; height:1.1rem; margin:0 .25rem; background:var(--line); }
 
 .archive { list-style:none; margin:0; padding:0; }
