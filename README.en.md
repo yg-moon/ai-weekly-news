@@ -28,10 +28,10 @@ The past week's news in five stories each: Korea, World, and AI. Weekly briefing
 ## Repository
 
 - `content/`: manuscripts of every publication (`content/en/` for English)
-- `docs/`: design intent and publishing procedures (Korean)
-- `static/`: icons and link preview images
-- `scripts/`: site build and checks
-- `data/`: run records for each publication
+- `docs/`: design documents and publishing procedures (Korean)
+- `static/`: static files such as images
+- `scripts/`: site build and test scripts
+- `data/`: run records
 
 ## License
 
