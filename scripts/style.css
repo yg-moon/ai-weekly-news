@@ -228,7 +228,7 @@ html[lang="en"] .top b { width:2.9rem; }
 /* 홈(최근 호)에서 분기가 바뀌는 곳의 이름 */
 /* 분기 이름은 회색 띠에 넣는다. 선 아래 작은 글씨로 두면 아래 주간호 하나의 이름처럼 읽혔다(2026-10-05). */
 .archive li.qdiv {
-  margin-top:.5rem; padding:.4rem .75rem; border-radius:8px; background:var(--sunken);
+  margin:.5rem -.5rem 0; padding:.4rem .5rem; border-radius:8px; background:var(--sunken);
   color:var(--dim); font-size:.85rem; font-weight:700;
 }
 .archive li.quarter + li.qdiv, .archive li.year + li.qdiv { margin-top:0; }
