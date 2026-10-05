@@ -225,11 +225,14 @@ html[lang="en"] .top b { width:2.9rem; }
 .archive li.pending .wk { display:block; color:var(--dim); }
 .archive li.pending .note { display:block; margin-top:.2rem; color:var(--muted); font-size:.875rem; }
 /* 홈(최근 호)에서 분기가 바뀌는 곳의 이름 */
-/* 분기 이름 위에도 주간호 사이와 같은 선과 간격을 둔다. 띄우기만 하면 너무 떨어져 보였다(2026-10-05). */
-.archive li.qdiv { padding:1rem 0 0; color:var(--muted); font-size:.8rem; font-weight:700; }
-.archive li.quarter + li.qdiv { padding-top:.25rem; }
-.archive li.qdiv + li a { padding-top:.45rem; }
-.archive li.qdiv + li, .archive li.quarter + li.qdiv, .archive li.year + li.qdiv { border-top:none; }
+/* 분기 이름은 회색 띠에 넣는다. 선 아래 작은 글씨로 두면 아래 주간호 하나의 이름처럼 읽혔다(2026-10-05). */
+.archive li.qdiv {
+  margin-top:1rem; padding:.4rem .75rem; border-radius:8px; background:var(--sunken);
+  color:var(--dim); font-size:.85rem; font-weight:700;
+}
+.archive li.quarter + li.qdiv, .archive li.year + li.qdiv { margin-top:0; }
+.archive li.qdiv + li a { padding-top:.75rem; }
+.archive li.qdiv, .archive li.qdiv + li { border-top:none; }
 .empty {
   padding:1.5rem; border:1px dashed var(--line); border-radius:var(--radius);
   color:var(--muted); background:var(--surface);
