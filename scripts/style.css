@@ -1,5 +1,5 @@
 :root {
-  --bg:#fbfbf9; --surface:#fff; --sunken:#f4f4f1;
+  --bg:#fbfbf9; --surface:#fff; --sunken:#f4f4f1; --press:#e4e4de;
   --text:#191918; --dim:#55554f; --muted:#84847c; --line:#9c9c95;
   --korea:#0f6b57; --world:#2a5aa8; --ai:#6d3fa8;
   --accent:var(--korea); --radius:12px;
@@ -8,14 +8,14 @@
 /* 어두운 화면. 기기 설정을 따르고, 머리글의 버튼으로 고르면 data-theme 이 그것을 덮는다. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:#151517; --surface:#1d1e21; --sunken:#232428;
+    --bg:#151517; --surface:#1d1e21; --sunken:#232428; --press:#38393e;
     --text:#eeeeec; --dim:#b6b6b0; --muted:#8d8d87; --line:#767774;
     --korea:#63c3a6; --world:#82aeee; --ai:#bb9af0;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"] {
-    --bg:#151517; --surface:#1d1e21; --sunken:#232428;
+    --bg:#151517; --surface:#1d1e21; --sunken:#232428; --press:#38393e;
     --text:#eeeeec; --dim:#b6b6b0; --muted:#8d8d87; --line:#767774;
     --korea:#63c3a6; --world:#82aeee; --ai:#bb9af0;
     color-scheme:dark;
@@ -56,7 +56,8 @@ header.site.compact .masthead { margin:0; }
 .lang a:hover { color:var(--text); }
 .tools { flex:none; display:flex; align-items:center; gap:.5rem; }
 .search-link, .theme-toggle { display:flex; padding:.35rem; border:0; border-radius:999px; background:none; color:var(--muted); cursor:pointer; }
-.search-link:hover, .search-link[aria-current], .theme-toggle:hover { color:var(--text); background:var(--sunken); }
+/* 머리글 버튼의 눌림·현재 표시는 배경과 확실히 구분되는 색을 쓴다(폰에서 --sunken 은 거의 안 보였다). */
+.search-link:hover, .search-link[aria-current], .theme-toggle:hover { color:var(--text); background:var(--press); }
 /* 밝은 화면에서는 달(어둡게), 어두운 화면에서는 해(밝게)를 보인다. */
 .theme-toggle .i-sun { display:none; }
 :root[data-theme="dark"] .theme-toggle .i-sun { display:block; }
@@ -65,7 +66,7 @@ header.site.compact .masthead { margin:0; }
   :root:not([data-theme="light"]) .theme-toggle .i-sun { display:block; }
   :root:not([data-theme="light"]) .theme-toggle .i-moon { display:none; }
 }
-.lang [aria-current] { background:var(--sunken); color:var(--text); }
+.lang [aria-current] { background:var(--press); color:var(--text); }
 header.site h1 a { color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:.5em; }
 /* 파비콘과 같은 그림이다. 글자 크기를 따라 커지고 작아진다. */
 .logo { width:1.2em; height:1.2em; flex:none; }
