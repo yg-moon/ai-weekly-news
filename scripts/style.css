@@ -5,6 +5,8 @@
   --accent:var(--korea); --radius:12px;
   /* 회색 띠와 눌림 표시. 홈의 분기 띠와 머리글 버튼이 같이 쓴다. 어두운 화면에서는 바뀐 --line·--bg 로 다시 계산된다. */
   --press:color-mix(in srgb, var(--line) 35%, var(--bg));
+  /* 목록에서 마우스를 올린 줄. 분기 띠의 절반쯤 진하기라 띠와 구분된다. */
+  --hover:color-mix(in srgb, var(--line) 18%, var(--bg));
   --indent:2.3rem; --pad:1rem; color-scheme:light;
 }
 /* 어두운 화면. 기기 설정을 따르고, 머리글의 버튼으로 고르면 data-theme 이 그것을 덮는다. */
@@ -47,17 +49,22 @@ a { color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1p
 header.site { margin-bottom:.5rem; }
 /* 줄 간격을 고정한다. 영문판은 본문 줄 간격이 달라서, 물려받으면 언어를 바꿀 때 머리말이 움직인다. */
 header.site h1 { margin:0; font-size:1.4rem; letter-spacing:-.02em; line-height:1.75; }
+/* 사이트 이름을 글자 기준선이 아닌 가운데에 놓아 오른쪽 버튼들과 같은 중앙선에 맞춘다(2026-10-05). */
+header.site h1 { display:flex; align-items:center; }
 /* 사이트 이름과 언어 선택을 한 줄에 둔다. */
 .masthead { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:0 0 .4rem; }
 header.site.compact .masthead { margin:0; }
 .lang {
   flex:none; display:flex; padding:2px; border:1px solid var(--line); border-radius:999px;
   background:var(--surface); font-size:.72rem; font-weight:700; letter-spacing:.04em; line-height:1.6;
+  /* 높이를 옆의 동그란 버튼과 같게 한다. 테두리가 위아래로 어긋나 보이지 않게 한다(2026-10-05). */
+  height:calc(18px + .7rem);
 }
-.lang a, .lang span { padding:.1rem .55rem; border-radius:999px; color:var(--muted); text-decoration:none; }
+.lang a, .lang span { display:flex; align-items:center; padding:.1rem .55rem; border-radius:999px; color:var(--muted); text-decoration:none; }
 .lang a:hover { color:var(--text); }
 .tools { flex:none; display:flex; align-items:center; gap:.5rem; }
-.search-link, .theme-toggle { display:flex; padding:.35rem; border:0; border-radius:999px; background:none; color:var(--muted); cursor:pointer; }
+/* 누르기 전에도 버튼임이 보이게 언어 선택과 같은 테두리를 두른다. 안쪽 그림자라 크기는 그대로다(2026-10-05). */
+.search-link, .theme-toggle { display:flex; padding:.35rem; border:0; border-radius:999px; background:none; box-shadow:inset 0 0 0 1px var(--line); color:var(--muted); cursor:pointer; }
 /* 머리글 버튼의 눌림·현재 표시는 분기 띠와 같은 색이다(폰에서 --sunken 은 거의 안 보였다). */
 .search-link:hover, .search-link[aria-current], .theme-toggle:hover { color:var(--text); background:var(--press); }
 /* 밝은 화면에서는 달(어둡게), 어두운 화면에서는 해(밝게)를 보인다. */
@@ -81,16 +88,18 @@ header.site.compact { margin-bottom:.75rem; }
   header.site h1 a { gap:.4em; }
   .masthead { gap:.75rem; }
   /* 폰에서는 손가락으로 누르므로 버튼을 키운다(아이폰 15 393px 기준). */
-  .tools { gap:.25rem; }
+  .tools { gap:.5rem; }
   .search-link, .theme-toggle { padding:7px; }
   .search-link svg, .theme-toggle svg { width:20px; height:20px; }
   .lang a, .lang span { padding:.1rem .45rem; }
+  .lang { height:34px; }
 }
 @media (max-width:365px) {
   header.site h1 { font-size:1.02rem; }
-  .tools { gap:.1rem; }
+  .tools { gap:.3rem; }
   .search-link, .theme-toggle { padding:6px; }
   .search-link svg, .theme-toggle svg { width:18px; height:18px; }
+  .lang { height:30px; }
 }
 @media (max-width:350px) { header.site h1 { font-size:.9rem; } }
 .tagline { margin:0; color:var(--dim); font-size:.95rem; }
@@ -203,7 +212,7 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
   padding:1rem .5rem; text-decoration:none; color:inherit;
   border-radius:var(--radius);
 }
-.archive a:hover { background:var(--surface); }
+.archive a:hover { background:var(--hover); }
 .archive .wk { font-weight:700; font-variant-numeric:tabular-nums; }
 .archive .period { color:var(--dim); font-size:.9rem; }
 .tops { width:100%; display:flex; flex-direction:column; margin-top:.2rem; }
