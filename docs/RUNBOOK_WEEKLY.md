@@ -414,8 +414,8 @@ echo "영문 항목: $(grep -c '<article class="item"' /tmp/pub-en.html)건"
 
 ### 공통
 
-- 스케줄: 크론 `0 23 * * 0` (UTC) = **월요일 08:00 KST**. KST는 일광절약시간이 없어 연중 고정이다.
-- 실제 발화는 몇 분 늦는다. 서버가 루틴마다 고정 오프셋을 줘서 한 시각에 몰리지 않게 한다. 이 저장소의 루틴은 08:05 KST 무렵이다.
+- 스케줄: 크론 `CRON_TZ=Asia/Seoul 0 6 * * 1` = **월요일 06:00 KST**. KST는 일광절약시간이 없어 연중 고정이다.
+- 실제 발화는 몇 분 늦는다. 서버가 루틴마다 고정 오프셋을 줘서 한 시각에 몰리지 않게 한다. 이 저장소의 루틴은 정각에서 몇 분 뒤에 돈다.
 - 매 실행은 이전 실행과 문맥을 공유하지 않는 새 세션이어야 한다. 주간호끼리 섞이면 안 된다.
 - 실행 세션에 주는 지시는 저장소를 받아 `AGENTS.md` 를 따르라는 포인터와 대상 주차 지정만 담는다. 사양은 저장소 문서가 가진다.
 
@@ -426,7 +426,7 @@ echo "영문 항목: $(grep -c '<article class="item"' /tmp/pub-en.html)건"
 | 필드 | 값 |
 |---|---|
 | `name` | `ai-weekly-news 정기 발행` |
-| `cron_expression` | `0 23 * * 0` |
+| `cron_expression` | `CRON_TZ=Asia/Seoul 0 6 * * 1` |
 | `create_new_session_on_fire` | `true` |
 | `notifications` | `{"push": true}` |
 | `initiation` | `human_request` |

@@ -8,7 +8,7 @@ The past week's news in five stories each: Korea, World, and AI. Weekly briefing
 
 ## Publications
 
-- **Weekly**: published every Monday at 8 AM KST.
+- **Weekly**: published every Monday at 6 AM KST.
 - **Quarterly**: gathers the weekly briefings into the quarter's developing stories. While a quarter is under way, an in-progress edition is updated weekly from its fourth week.
 - **Annual**: gathers the quarterly reviews into the year.
 

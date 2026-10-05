@@ -1172,12 +1172,12 @@ writeFileSync(
 );
 
 // RSS. 언어판마다 하나이고 최근 발행물 20개를 싣는다. 항목 제목을 분야별로 적는다.
-// 발행 시각은 실행 기록에서 읽고, 기록이 없으면 기간 다음 날 오전 8시(KST)로 둔다.
+// 발행 시각은 실행 기록에서 읽고, 기록이 없으면 기간 다음 날 오전 6시(KST)로 둔다.
 const FEED_SIZE = 20;
 const xml = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const pubDate = (d) => {
   const r = runs.find((x) => x.week === d.id);
-  return new Date(r ? r.published : new Date(Date.parse(`${d.meta.period_end}T08:00:00+09:00`) + 864e5)).toUTCString();
+  return new Date(r ? r.published : new Date(Date.parse(`${d.meta.period_end}T06:00:00+09:00`) + 864e5)).toUTCString();
 };
 for (const lang of LANG_NAMES) {
   const T = TEXT[lang];
