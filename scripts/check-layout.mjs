@@ -18,9 +18,8 @@ const SITE = join(import.meta.dirname, "..", "site");
 const GAP_MAX = 30;
 // 일부러 비워 둔 곳. 검색어가 없을 때 결과 수 줄 자리는 비어 있다.
 const GAP_ALLOWED = [{ page: "search/", from: "INPUT" }];
-// 일부러 본문 폭 밖으로 내민 상자. "왜 중요한가" 상자는 안의 글자를 본문 글자와 같은 선에 두려고
-// 좌우로 내민다(DECISIONS 의 본문 정렬).
-const OUTSIDE_ALLOWED = [".why"];
+// 일부러 본문 폭 밖으로 내민 상자. 지금은 없다.
+const OUTSIDE_ALLOWED = [];
 
 const { chromium } = await import("playwright").catch(() => import("/opt/node22/lib/node_modules/playwright/index.mjs"));
 const executablePath = process.env.CHROMIUM_PATH ?? (existsSync("/opt/pw-browsers/chromium") ? "/opt/pw-browsers/chromium" : undefined);

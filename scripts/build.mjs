@@ -61,7 +61,7 @@ const TEXT = {
     dir: "", locale: "ko_KR", name: "KOR",
     groups: KINDS.week.groups,
     suffix: Object.fromEntries(KIND_NAMES.map((k) => [k, KINDS[k].suffix])),
-    period: (meta) => `${koDate(meta.period_start)}–${koDate(meta.period_end)}`,
+    period: (meta) => `${koDate(meta.period_start)} – ${koDate(meta.period_end)}`,
     listTitle: (p) => (p.q ? `${p.year}년 ${p.q}분기` : `${p.year}년 연간`),
     tagline: SITE_TAGLINE,
     home: "주간 뉴스 브리핑", recent: "최근",

@@ -143,8 +143,9 @@ header.site.compact { margin-bottom:.75rem; }
 .item-head + .what { margin-top:.9rem; }
 .what p { margin:0; color:var(--dim); }
 .what p + p { margin-top:.85rem; }
+/* 상자는 본문 폭 안에 둔다. 폰에서 좌우로 내밀면 화면 끝에 거의 닿았다(2026-10-05). */
 .why {
-  margin:1.1rem calc(var(--pad) * -1) 0 calc(var(--indent) - var(--pad) - 3px);
+  margin:1.1rem 0 0 max(0px, calc(var(--indent) - var(--pad) - 3px));
   padding:.85rem var(--pad);
   background:var(--sunken); border-left:3px solid var(--accent);
   border-radius:0 var(--radius) var(--radius) 0;
@@ -408,8 +409,6 @@ dialog.fb::backdrop { background:rgba(20,20,18,.38); }
 
 @media (max-width:30rem) {
   :root { --indent:0rem; --pad:.9rem; }
-  /* 왼쪽처럼 오른쪽도 본문 밖으로 같은 만큼 낸다. 글은 본문과 같은 폭이다. */
-  .why { margin-right:calc((var(--pad) + 3px) * -1); }
   /* 좁은 화면은 본문을 들여 쓰지 않는다. 배지를 제목 글 속에 띄워 제목 둘째 줄이
      본문과 같은 왼쪽 선에서 시작하게 한다. */
   .item-head { display:block; margin-bottom:.2rem; }
