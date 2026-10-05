@@ -21,6 +21,8 @@
     color-scheme:dark;
 }
 *,*::before,*::after { box-sizing:border-box; }
+/* 스크롤바 자리를 늘 비워 둔다. 짧은 페이지와 긴 페이지를 오갈 때 본문이 옆으로 밀리지 않는다(2026-10-05). */
+html { scrollbar-gutter:stable; }
 body {
   margin:0; padding-block:2.5rem 4rem; padding-inline:20px;
   background:var(--bg); color:var(--text);
@@ -67,13 +69,12 @@ header.site.compact .masthead { margin:0; }
 header.site h1 a { color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:.5em; }
 /* 파비콘과 같은 그림이다. 글자 크기를 따라 커지고 작아진다. */
 .logo { width:1.2em; height:1.2em; flex:none; }
-/* 발행물과 통계 페이지는 사이트 이름만 둔다. 소개는 목록에만 있다. */
+/* 발행물과 통계 페이지는 사이트 이름만 둔다. 소개는 목록에만 있다. 이름과 로고 크기는 모든
+   페이지가 같다. 페이지를 오갈 때 머리말이 움직이지 않게 한다(2026-10-05). */
 header.site.compact { padding-bottom:.9rem; margin-bottom:1.75rem; }
-header.site.compact h1 { font-size:1.05rem; }
 /* 좁은 폰(갤럭시 360px, 폴드 바깥 화면 340px대)에서도 사이트 이름이 한 줄에 들어가게 줄인다. */
 @media (max-width:460px) {
   header.site h1 { font-size:1.15rem; }
-  header.site.compact h1 { font-size:1rem; }
   header.site h1 a { gap:.4em; }
   .tools { gap:.1rem; }
   .search-link, .theme-toggle { padding:.3rem; }
@@ -81,9 +82,8 @@ header.site.compact h1 { font-size:1.05rem; }
 }
 @media (max-width:365px) {
   header.site h1 { font-size:1.02rem; }
-  header.site.compact h1 { font-size:.95rem; }
 }
-@media (max-width:350px) { header.site h1, header.site.compact h1 { font-size:.9rem; } }
+@media (max-width:350px) { header.site h1 { font-size:.9rem; } }
 .tagline { margin:0; color:var(--dim); font-size:.95rem; }
 .crumb { font-size:.875rem; margin:0 0 1rem; }
 .crumb a { color:var(--muted); text-decoration:none; }
