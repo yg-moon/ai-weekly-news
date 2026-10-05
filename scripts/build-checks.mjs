@@ -250,6 +250,7 @@ export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
   // 아래는 특정 내용이 있을 때만 나오는 클래스라, 지금 콘텐츠에 없어도 정상이다.
   const CONDITIONAL = new Set([
     "quarter", // 분기호가 있을 때
+    "year", // 연간호가 있을 때
     "empty", // 목록이나 기록이 비었을 때
     "pending", "note", // 새 분기의 1~3주차, 진행 중 분기호가 나오기 전
     "counts", "issue-meta", // 건수가 국내·해외·AI 5건씩이 아닌 호
