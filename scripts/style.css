@@ -190,7 +190,7 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
 .archive li + li { border-top:1px solid var(--line); }
 .archive a {
   display:flex; flex-wrap:wrap; gap:.15rem .75rem; align-items:baseline;
-  padding:1rem .5rem; margin-inline:-.5rem; text-decoration:none; color:inherit;
+  padding:1rem .5rem; text-decoration:none; color:inherit;
   border-radius:var(--radius);
 }
 .archive a:hover { background:var(--surface); }
@@ -226,9 +226,10 @@ html[lang="en"] .top b { width:2.9rem; }
 .archive li.pending .wk { display:block; color:var(--dim); }
 .archive li.pending .note { display:block; margin-top:.2rem; color:var(--muted); font-size:.875rem; }
 /* 홈(최근 호)에서 분기가 바뀌는 곳의 이름 */
-/* 분기 이름은 회색 띠에 넣는다. 선 아래 작은 글씨로 두면 아래 주간호 하나의 이름처럼 읽혔다(2026-10-05). */
+/* 분기 이름은 회색 띠에 넣는다. 선 아래 작은 글씨로 두면 아래 주간호 하나의 이름처럼 읽혔다(2026-10-05).
+   카드·띠·주간호 배경은 모두 본문 폭 안에 두고, 띠와 주간호 글자는 같은 안쪽 여백(.5rem)에서 시작한다. */
 .archive li.qdiv {
-  margin:.5rem -.5rem 0; padding:.4rem .5rem; border-radius:8px; background:var(--sunken);
+  margin-top:.5rem; padding:.4rem .5rem; border-radius:8px; background:var(--sunken);
   color:var(--dim); font-size:.85rem; font-weight:700;
 }
 .archive li.quarter + li.qdiv, .archive li.year + li.qdiv { margin-top:0; }
