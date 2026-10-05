@@ -39,7 +39,7 @@ const UMAMI_ID = "23e118f1-1e88-4802-952a-7bc65d7e05a5";
 // 발행물의 종류. 순서가 곧 탭 순서다.
 const KINDS = {
   week: {
-    label: "주간호", suffix: "주간 브리핑",
+    label: "주간호", suffix: "주간호",
     groups: { 국내: "korea", 해외: "world", AI: "ai" },
   },
   quarter: {
@@ -643,12 +643,12 @@ function pendingCard(p, docs, lang) {
   if (!p.q || docs.some((d) => d.kind === "quarter") || docs.length >= PENDING_WEEKS) return "";
   const T = TEXT[lang];
   return `
-  <li class="pending"><div><span class="wk">${p.year}-Q${p.q} (${T.state[0]})</span><span class="note">${T.pending(PENDING_WEEKS)}</span></div></li>`;
+  <li class="pending"><div><span class="wk">${p.year}-Q${p.q} ${T.suffix.quarter} (${T.state[0]})</span><span class="note">${T.pending(PENDING_WEEKS)}</span></div></li>`;
 }
 
 const card = (d, base) => `
   <li class="${d.kind}"><a href="${base}${d.kind}/${d.id}/">
-    <span class="wk">${d.id}${d.kind === "year" ? ` ${TEXT[d.lang].suffix.year}` : ""}${stateMark(d)}</span>
+    <span class="wk">${d.id}${d.kind === "week" ? "" : ` ${TEXT[d.lang].suffix[d.kind]}`}${stateMark(d)}</span>
     <span class="period">${period(d)}</span>
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
     ${tops(d)}
