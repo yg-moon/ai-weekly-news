@@ -69,7 +69,7 @@ const TEXT = {
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
     state: ["진행중", "완결"], editions: (n) => `${n}판`,
-    pending: (need, n) => `이 분기 주간호가 ${need}개 쌓이면 흐름을 모아 매주 고쳐 씁니다. (지금 ${n}개)`,
+    pending: (need) => `주간호가 ${need}개 이상 쌓이면 흐름을 모아 분기호를 작성하고, 매주 갱신합니다.`,
     theme: "다크 모드 전환",
     search: { label: "검색", placeholder: "지난 호에서 찾기", sort: ["관련도순", "최신순"], count: (n) => `${n}건`, none: "결과가 없습니다.", desc: "지난 호의 항목을 제목과 본문으로 찾습니다." },
     pager: ["이전 호와 다음 호", "이전 호", "다음 호"],
@@ -110,7 +110,7 @@ const TEXT = {
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
     state: ["In progress", "Complete"], editions: (n) => `${n} editions`,
-    pending: (need, n) => `Once this quarter has ${["zero", "one", "two", "three", "four", "five"][need]} weekly briefings, its developing stories will be collected here and updated weekly (${n} so far).`,
+    pending: (need) => `Once ${["zero", "one", "two", "three", "four", "five"][need]} or more weekly briefings are out, a quarterly review of their developing stories will be written and updated weekly.`,
     theme: "Toggle dark mode",
     search: { label: "Search", placeholder: "Search past publications", sort: ["Relevance", "Newest"], count: (n) => (n === 1 ? "1 result" : `${n} results`), none: "No results.", desc: "Search past items by title and text." },
     pager: ["Previous and next publications", "Previous", "Next"],
@@ -620,14 +620,14 @@ function tops(d) {
 // 한 분기의 목록. 홈은 가장 나중 분기와 같은 내용이고 root 와 제목만 다르다.
 // root 는 사이트 최상위까지, base 는 그 언어판 최상위까지의 상대 경로다.
 // 진행 중 분기호는 그 분기 주간호가 4개 쌓인 주부터 나온다(분기 런북 1절). 그 전에는 분기호
-// 자리에 주간호가 몇 개 쌓이면 나오는지와 지금 몇 개인지 적는다. 날짜를 적으면 그날이 특별한
-// 날처럼 읽힌다(사용자 2026-10-05).
+// 자리에 주간호가 몇 개 쌓이면 나오는지 적는다. 날짜를 적으면 그날이 특별한 날처럼 읽힌다
+// (사용자 2026-10-05).
 const PENDING_WEEKS = 4;
 function pendingCard(p, docs, lang) {
   if (docs.some((d) => d.kind === "quarter") || docs.length >= PENDING_WEEKS) return "";
   const T = TEXT[lang];
   return `
-  <li class="pending"><div><span class="wk">${p.year}-Q${p.q} ${T.suffix.quarter} (${T.state[0]})</span><span class="note">${T.pending(PENDING_WEEKS, docs.length)}</span></div></li>`;
+  <li class="pending"><div><span class="wk">${p.year}-Q${p.q} (${T.state[0]})</span><span class="note">${T.pending(PENDING_WEEKS)}</span></div></li>`;
 }
 
 const card = (d, base) => `
