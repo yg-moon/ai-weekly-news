@@ -1,4 +1,4 @@
-# About this site
+# About
 
 There are too many sensational stories to follow the news every day, and the issues that really matter are repeated in similar stories for a long time. So once a week, this site picks only what you should not miss and sums it up.
 
