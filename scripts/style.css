@@ -76,12 +76,18 @@ header.site.compact { margin-bottom:.75rem; }
 @media (max-width:460px) {
   header.site h1 { font-size:1.15rem; }
   header.site h1 a { gap:.4em; }
-  .tools { gap:.1rem; }
-  .search-link, .theme-toggle { padding:.3rem; }
+  .masthead { gap:.75rem; }
+  /* 폰에서는 손가락으로 누르므로 버튼을 키운다(아이폰 15 393px 기준). */
+  .tools { gap:.25rem; }
+  .search-link, .theme-toggle { padding:7px; }
+  .search-link svg, .theme-toggle svg { width:20px; height:20px; }
   .lang a, .lang span { padding:.1rem .45rem; }
 }
 @media (max-width:365px) {
   header.site h1 { font-size:1.02rem; }
+  .tools { gap:.1rem; }
+  .search-link, .theme-toggle { padding:6px; }
+  .search-link svg, .theme-toggle svg { width:18px; height:18px; }
 }
 @media (max-width:350px) { header.site h1 { font-size:.9rem; } }
 .tagline { margin:0; color:var(--dim); font-size:.95rem; }
