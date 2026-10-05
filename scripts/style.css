@@ -185,7 +185,8 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
 .tabdiv { width:1px; margin:.55rem .45rem; background:var(--line); }
 
 .archive { list-style:none; margin:0; padding:0; }
-.archive li + li { border-top:1px solid var(--line); }
+/* 주간호 사이 선은 다른 선보다 조금 진하게 한다. 같은 색이면 목록에서 호가 잘 갈리지 않았다(2026-10-05). */
+.archive li + li { border-top:1px solid color-mix(in srgb, var(--line), var(--muted) 40%); }
 .archive a {
   display:flex; flex-wrap:wrap; gap:.15rem .75rem; align-items:baseline;
   padding:1rem .5rem; margin-inline:-.5rem; text-decoration:none; color:inherit;
