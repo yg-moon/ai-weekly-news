@@ -98,9 +98,11 @@ header.site.compact { margin-bottom:.75rem; }
 .issue-meta { color:var(--muted); font-size:.875rem; margin:0 0 1rem; }
 
 /* 분야 */
-.group { --accent:var(--korea); margin-top:3.5rem; }
-/* 분야가 바뀌는 곳은 색과 제목이 가르므로 간격은 항목 사이 정도로 둔다(2026-10-05). */
-.group + .group { margin-top:1.25rem; }
+.group { --accent:var(--korea); margin-top:1.75rem; }
+/* 분야가 바뀌는 곳은 색과 제목이 가르므로 간격을 넓게 두지 않는다. 분야의 마지막 항목도
+   아래 여백을 줄여 다음 분야 제목이나 이전 호·다음 호 선에 붙인다(2026-10-05). */
+.group + .group { margin-top:0; }
+.group > .item:last-child { padding-bottom:1.5rem; }
 .group--world { --accent:var(--world); }
 .group--ai { --accent:var(--ai); }
 .group > h2 {
@@ -346,7 +348,7 @@ figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
 }
 
 /* 이전 호·다음 호 */
-.pager { display:flex; gap:1rem; margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--line); }
+.pager { display:flex; gap:1rem; margin-top:0; padding-top:1.25rem; border-top:1px solid var(--line); }
 .pager a { display:flex; flex-direction:column; text-decoration:none; color:var(--text); font-weight:700; font-variant-numeric:tabular-nums; line-height:1.5; }
 .pager a:hover { color:var(--accent); }
 .pager small { font-size:.75rem; font-weight:400; color:var(--muted); }
