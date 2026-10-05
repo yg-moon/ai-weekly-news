@@ -141,11 +141,6 @@ header.site.compact { margin-bottom:.75rem; }
 
 /* 항목 */
 .item { padding:1.25rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
-/* 목차나 분기호 출처에서 건너온 항목은 잠깐 칠했다가 지운다. 어디에 도착했는지 보인다(2026-10-05).
-   안쪽 여백이 없는 상자라 그림자로 칠한 면을 넓힌다. 자리는 움직이지 않는다. */
-@keyframes arrive { from { background:var(--press); box-shadow:0 0 0 .6rem var(--press); } to { background:transparent; box-shadow:0 0 0 .6rem transparent; } }
-.item:target { border-radius:2px; animation:arrive 1.8s ease-out; }
-@media (prefers-reduced-motion:reduce) { .item:target { animation:none; } }
 .group > h2 + .item { border-top:none; padding-top:.75rem; }
 /* 분기호·연간호의 흐름·단발 이름. 단발 이름이 두 묶음을 가르는 선을 갖는다. */
 .kind-h { margin:0; font-size:.78rem; color:var(--muted); }
@@ -369,7 +364,6 @@ figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
 .toc a:hover { color:var(--text); }
 .toc { scroll-margin-top:1rem; }
 .item h3 a.to-toc { color:inherit; text-decoration:none; -webkit-tap-highlight-color:transparent; }
-.item h3 .up { color:var(--muted); font-weight:400; }
 .toc .tn { flex:none; width:.8rem; color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; }
 @media (min-width:78rem) {
   .toc {
@@ -379,7 +373,6 @@ figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
   .toc li { font-size:.8rem; }
   /* 목차가 늘 옆에 있으니 제목은 눌러도 움직이지 않는다. */
   .item h3 a.to-toc { pointer-events:none; }
-  .item h3 .up { display:none; }
 }
 
 /* 이전 호·다음 호 */
