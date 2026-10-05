@@ -166,13 +166,14 @@ html[lang="en"] .why .lbl { text-transform:uppercase; }
 .src em { font-style:normal; color:var(--muted); opacity:.85; }
 
 /* 목록 페이지 */
-.tabs { display:flex; align-items:center; gap:.35rem; margin:0 0 1.75rem; overflow-x:auto; scrollbar-width:none; }
+.tabs { display:flex; align-items:center; gap:.35rem; margin:0 0 .875rem; overflow-x:auto; scrollbar-width:none; }
 .tabs::-webkit-scrollbar { display:none; }
 .tabs > * { flex:none; }
 /* 목록 탭의 둘째 단: 고른 해의 분기와 연간 */
-.subtabs { display:flex; flex-wrap:wrap; gap:.4rem; margin:-.9rem 0 1.4rem; }
+.subtabs { display:flex; flex-wrap:wrap; gap:.4rem; margin:0 0 .875rem; }
 /* 통계 페이지는 제목 바로 아래에 탭이 온다 */
-.issue-title + .tabs { margin:1rem 0; }
+.issue-title + .tabs { margin:1rem 0 .875rem; }
+.tabs + h2.sec { margin-top:0; }
 .chip { padding:.15rem .75rem; border:1px solid var(--line); border-radius:999px; font-size:.85rem; color:var(--muted); text-decoration:none; }
 .chip:hover { color:var(--text); }
 .chip.on { background:var(--text); border-color:var(--text); color:var(--bg); font-weight:700; }
@@ -227,7 +228,7 @@ html[lang="en"] .top b { width:2.9rem; }
 /* 홈(최근 호)에서 분기가 바뀌는 곳의 이름 */
 /* 분기 이름은 회색 띠에 넣는다. 선 아래 작은 글씨로 두면 아래 주간호 하나의 이름처럼 읽혔다(2026-10-05). */
 .archive li.qdiv {
-  margin-top:1rem; padding:.4rem .75rem; border-radius:8px; background:var(--sunken);
+  margin-top:.5rem; padding:.4rem .75rem; border-radius:8px; background:var(--sunken);
   color:var(--dim); font-size:.85rem; font-weight:700;
 }
 .archive li.quarter + li.qdiv, .archive li.year + li.qdiv { margin-top:0; }
