@@ -10,7 +10,7 @@ Weekly briefings are combined into **quarterly reviews**, and quarterly reviews 
 
 ## Selection
 
-It starts with **reading every headline of the week**. For Korea, that means 15 major news outlets. For the world, Wikipedia’s current events page and The Guardian. For AI, company announcements and tech media.
+It starts with **reading every headline of the week**. For Korea, that means 15 major news outlets. For the world, Wikipedia’s current events page and major international media. For AI, company announcements and tech media.
 
 Stories are ranked by **how much coverage they got that week**: on how many days, and in how many outlets, the same story ran. When two are close, the one that is harder to reverse or affects more people comes first.
 
