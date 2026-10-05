@@ -241,10 +241,10 @@ html[lang="en"] .top b { width:2.9rem; }
 /* 통계 페이지 */
 .period-now { margin:0 0 .25rem; font-size:.85rem; color:var(--muted); }
 h2.sec { font-size:1.15rem; margin:2rem 0 .3rem; }
-/* 소개 페이지 본문 */
-.prose { margin-top:1.25rem; }
-.prose h2 { font-size:1.15rem; margin:2.25rem 0 .6rem; }
-.prose p { margin:0 0 1rem; font-size:1.0625rem; color:var(--dim); }
+/* 소개 페이지 본문. 문단이 짧아 간격이 넓으면 늘려 쓴 글처럼 보였다. 주간호처럼 촘촘히 둔다(2026-10-05). */
+.prose { margin-top:.75rem; }
+.prose h2 { font-size:1.05rem; margin:1.5rem 0 .35rem; }
+.prose p { margin:0 0 .6rem; font-size:1rem; line-height:1.7; color:var(--dim); }
 .prose strong { color:var(--text); font-weight:600; }
 .period-now + h2.sec { margin-top:.35rem; }
 .sec-lede { color:var(--dim); font-size:.9rem; margin:0 0 1.25rem; }
