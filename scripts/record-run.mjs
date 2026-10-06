@@ -38,7 +38,7 @@ const week = args.find((a) => /^\d{4}(-W\d{2}|-Q[1-4])?$/.test(a));
 const quarterly = !/-W/.test(week ?? "");
 const given = args.includes("--transcript") ? args[args.indexOf("--transcript") + 1] : null;
 if (!week) {
-  console.error("사용법: node scripts/record-run.mjs <WEEK|QUARTER|YEAR> [--transcript <jsonl>]");
+  console.error("사용법: node scripts/record-run.mjs <WEEK|QUARTER|YEAR> [--add] [--transcript <jsonl>]");
   process.exit(1);
 }
 

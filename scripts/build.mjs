@@ -670,7 +670,7 @@ function tops(d) {
   return lines.length ? `<span class="tops">${lines.join("")}</span>` : "";
 }
 
-// 한 분기의 목록. 홈은 가장 나중 분기와 같은 내용이고 root 와 제목만 다르다.
+// 한 분기의 목록. 연간 목록도 같은 모양이다.
 // root 는 사이트 최상위까지, base 는 그 언어판 최상위까지의 상대 경로다.
 // 진행 중 분기호는 그 분기 주간호가 4개 쌓인 주부터 나온다(분기 런북 1절). 그 전에는 분기호
 // 자리에 주간호가 몇 개 쌓이면 나오는지 적는다. 날짜를 적으면 그날이 특별한 날처럼 읽힌다
@@ -927,7 +927,7 @@ function renderStats(views, view, lang = "ko") {
     : "";
 
   // 읽은 헤드라인은 기록이 없으면 비운다. 표는 최근 16개만 펼쳐 두고 나머지는 "더보기"로
-  // 편다. 한 분기는 53주인 해의 4분기가 주간호 14개, 분기호, 연간호로 16개가 최대라
+  // 편다. 이 표는 주간호만 싣고 한 분기는 53주인 해의 4분기가 14개로 최대라
   // 분기 화면에는 버튼이 안 생긴다. 체크박스와 CSS 로 하고, 행은 모두 HTML 에 있다. CSS 가 형제
   // 선택자(~)로 표를 고르므로 체크박스는 표보다 앞에, 라벨은 뒤에 둔다. 순서가 바뀌면
   // 버튼이 오류 없이 안 먹는다.
@@ -1148,7 +1148,7 @@ for (const p of [...enAll, ...annuals(YEARS.en)]) {
 }
 if (enAll.length) writeFileSync(join(SITE, "en", "index.html"), renderHome(YEARS.en, "../", "en"));
 
-// 홈은 가장 나중 분기다. 분기가 바뀐 첫 주에는 그 분기에 주간호 한 건뿐이다.
+// 홈은 최근 호들이다(renderHome). 발행물이 하나도 없으면 빈 화면을 낸다.
 const latest = all[all.length - 1];
 writeFileSync(
   join(SITE, "index.html"),
