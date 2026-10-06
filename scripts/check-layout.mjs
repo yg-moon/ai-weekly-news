@@ -10,7 +10,8 @@
 // - 본문 폭: 폰에서 배경·테두리가 있는 상자가 본문 폭 밖으로 나가는지
 // - 좁은 폰: 340px 에서 화면이 옆으로 넘치는지
 // - 목차 버튼: 주간호에서 아래로 읽을 때는 숨고, 목차를 지나 위로 스크롤하면 나타나고, 데스크톱에는 없는지
-// - 옆 목차: 데스크톱에서 주간호·분기호의 목차가 옆으로 넘쳐 좌우 스크롤이 생기는지
+// - 옆 목차: 데스크톱에서 주간호·분기호의 목차가 옆으로 넘쳐 좌우 스크롤이 생기는지,
+//   낮은 화면에서 끝 항목을 읽을 때 지금 읽는 항목이 목차 안에 보이는지
 // 걸린 것이 있으면 종료 코드 1 로 끝난다.
 
 import { createServer } from "node:http";
@@ -171,6 +172,21 @@ for (const path of [`week/${latest("week")}/`, `quarter/${latest("quarter")}/`])
   const over = await page.evaluate(() => { const t = document.getElementById("toc"); return t.scrollWidth - t.clientWidth; });
   if (over > 0) problems.push(`옆 목차 ${path}: 옆으로 ${over}px 넘친다`);
   await page.close();
+  // 작은 노트북 높이. 목차가 화면보다 길어 안에서 스크롤된다.
+  const low = await browser.newPage({ viewport: { width: 1280, height: 600 } });
+  await low.goto(base + path, { waitUntil: "networkidle" });
+  const hidden = await low.evaluate(async () => {
+    const t = document.getElementById("toc"), last = [...t.querySelectorAll("a")].pop();
+    const e = document.getElementById(last.hash.slice(1));
+    scrollTo(0, e.getBoundingClientRect().top + scrollY - 100);
+    await new Promise((r) => setTimeout(r, 300));
+    const c = t.querySelector("[aria-current]");
+    if (c !== last) return "끝 항목이 지금 읽는 항목으로 표시되지 않는다";
+    const box = t.getBoundingClientRect(), r = c.getBoundingClientRect();
+    return r.top >= box.top && r.bottom <= box.bottom ? "" : "지금 읽는 항목이 목차 밖에 있다";
+  });
+  if (hidden) problems.push(`옆 목차 ${path}: 낮은 화면에서 ${hidden}`);
+  await low.close();
 }
 
 await browser.close();

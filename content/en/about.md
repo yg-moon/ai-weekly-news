@@ -8,7 +8,7 @@ Every Monday at 6 AM KST, this site publishes the news of the past week: **five 
 
 Weekly briefings are gathered into **quarterly reviews**, and quarterly reviews into an **annual review**, to see trends that you cannot see week by week.
 
-## Selection
+## Principles
 
 It starts by **reading all the headlines of the week**. The sources are 15 major news outlets for Korea, Wikipedia’s current events page and major international media for the world, and company announcements and tech media for AI.
 
