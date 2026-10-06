@@ -241,14 +241,13 @@ export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
 
   // 목차가 항목을 빠짐없이 가리키는지 본다. 목차는 빌드가 만든 HTML 을 다시 읽어
   // 만들므로, 항목 마크업이 바뀌면 목차가 오류 없이 비거나 모자랄 수 있다. 원고의 항목
-  // 수(보통 15개)와 목차 줄 수, 목차로 돌아가는 제목 링크 수가 모두 같아야 한다.
+  // 수(보통 15개)와 목차 줄 수가 같아야 한다.
   const badToc = LANG_NAMES.flatMap((lang) => KIND_NAMES.flatMap((kind) =>
     SETS[lang][kind].flatMap((d) => {
       const html = readFileSync(join(SITE, TEXT[lang].dir, kind, d.id, "index.html"), "utf8");
       const want = Object.values(d.n).reduce((a, b) => a + b, 0);
       const lines = (html.match(/<nav class="toc"[\s\S]*?<\/nav>/)?.[0].match(/<li>/g) ?? []).length;
-      const back = (html.match(/class="to-toc"/g) ?? []).length;
-      return lines === want && back === want ? [] : [`${TEXT[lang].dir}${d.id} 항목 ${want} · 목차 ${lines} · 제목 링크 ${back}`];
+      return lines === want ? [] : [`${TEXT[lang].dir}${d.id} 항목 ${want} · 목차 ${lines}`];
     })
   ));
   if (badToc.length) errors.push(`목차가 항목과 맞지 않는다: ${badToc.join(", ")}. 항목 마크업이 바뀌었는지 본다.`);

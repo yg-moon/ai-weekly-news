@@ -610,14 +610,14 @@ function renderDoc(d, years) {
   const p = placeOf(d);
   const T = TEXT[d.lang];
   const main = fallbackLinks(keepNames(structure(marked.parse(d.body), T), d.lang), d.lang);
-  // 목차를 둔다. 항목 제목을 누르면 목차로 돌아간다.
+  // 목차를 둔다.
   const nav = toc(main, T);
   const body = `
 <p class="crumb"><a href="../../${listPath(p)}">← ${listTitle(p, d.lang)}</a></p>
 <h1 class="issue-title">${pageTitleHtml(d)}</h1>
 ${isStandard(d) ? "" : `<p class="issue-meta">${counts(d)}</p>`}
 ${nav}
-${nav ? main.replace(/(<div class="item-head"><span class="num">\d+<\/span><h3>)([\s\S]*?)<\/h3>/g, '$1<a class="to-toc" href="#toc">$2</a></h3>') : main}
+${main}
 ${pager(d)}${nav ? tocButton(T) : ""}`;
   return layout({
     title: `${pageTitle(d)} — ${SITE_TITLE}`,
