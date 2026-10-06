@@ -203,7 +203,8 @@ const koDate = (iso) => {
   const [, m, d] = iso.split("-").map(Number);
   return `${m}월 ${d}일`;
 };
-const period = (d) => TEXT[d.lang].period(d.meta);
+// 연간호는 기간을 적지 않는다. ISO 연도라 달력 연도와 며칠 어긋나, 연도 없이 쓰면 한 주처럼 읽힌다.
+const period = (d) => (d.kind === "year" ? "" : TEXT[d.lang].period(d.meta));
 const groupsOf = (d) => Object.keys(TEXT[d.lang].groups);
 const counts = (d) => groupsOf(d).map((g) => `${g} ${d.n[g] ?? 0}`).join(" · ");
 // 어느 종류든 구획마다 5건이 표준이다. 표준이면 건수를 화면에서 반복하지 않고,
@@ -211,10 +212,10 @@ const counts = (d) => groupsOf(d).map((g) => `${g} ${d.n[g] ?? 0}`).join(" · ")
 const isStandard = (d) => groupsOf(d).every((g) => d.n[g] === 5);
 // 분기호는 진행 중인지 끝났는지를 제목에 붙인다. 진행 중인 판은 프런트매터에 through(기준 주)가 있다.
 const stateMark = (d) => (d.kind === "quarter" ? ` (${TEXT[d.lang].state[d.meta.through ? 0 : 1]})` : "");
-const pageTitle = (d) => `${d.id} ${TEXT[d.lang].suffix[d.kind]}${stateMark(d)} (${period(d)})`;
+const pageTitle = (d) => `${d.id} ${TEXT[d.lang].suffix[d.kind]}${stateMark(d)}${period(d) ? ` (${period(d)})` : ""}`;
 // 화면에서는 기간을 다음 줄로 내린다. 한 줄에 두면 좁은 화면에서 어중간하게 잘린다.
 const pageTitleHtml = (d) =>
-  `${d.id} ${TEXT[d.lang].suffix[d.kind]}${stateMark(d)}<span class="period">${period(d)}</span>`;
+  `${d.id} ${TEXT[d.lang].suffix[d.kind]}${stateMark(d)}${period(d) ? `<span class="period">${period(d)}</span>` : ""}`;
 
 // ---------- 본문 구조화 ----------
 // marked 가 낸 h3 + ul 을 항목 블록으로 바꾼다. 라벨을 화면에서 없애고
@@ -636,7 +637,7 @@ ${main}
 ${pager(d)}${nav ? tocButton(T) : ""}`;
   return layout({
     title: `${pageTitle(d)} — ${SITE_TITLE}`,
-    description: `${d.id} (${period(d)}) ${T.suffix[d.kind]}. ${counts(d)}.`,
+    description: `${d.id}${period(d) ? ` (${period(d)})` : ""} ${T.suffix[d.kind]}. ${counts(d)}.`,
     root: "../../" + "../".repeat(T.dir.split("/").filter(Boolean).length),
     body,
     lang: d.lang,
@@ -685,7 +686,7 @@ function pendingCard(p, docs, lang) {
 const card = (d, base) => `
   <li class="${d.kind}"><a href="${base}${d.kind}/${d.id}/">
     <span class="wk">${d.id}${d.kind === "week" ? "" : ` ${TEXT[d.lang].suffix[d.kind]}`}${stateMark(d)}</span>
-    <span class="period">${period(d)}</span>
+    ${period(d) ? `<span class="period">${period(d)}</span>` : ""}
     ${isStandard(d) ? "" : `<span class="counts">${counts(d)}</span>`}
     ${tops(d)}
   </a></li>`;
@@ -1184,7 +1185,7 @@ for (const lang of LANG_NAMES) {
       const href = `${d.kind}/${d.id}/#${T.groups[it.group]}-${it.num}`;
       const page = readFileSync(join(SITE, T.dir, d.kind, d.id, "index.html"), "utf8");
       if (!page.includes(`id="${T.groups[it.group]}-${it.num}"`)) badIndex.push(`${T.dir}${href}`);
-      return [it.title, it.text, href, `${d.id}${stateMark(d)} · ${it.group} ${it.num} · ${period(d)}`];
+      return [it.title, it.text, href, [`${d.id}${stateMark(d)}`, `${it.group} ${it.num}`, period(d)].filter(Boolean).join(" · ")];
     })
   );
   const want = KIND_NAMES.flatMap((k) => SETS[lang][k]).reduce((n, d) => n + Object.values(d.n).reduce((a, b) => a + b, 0), 0);

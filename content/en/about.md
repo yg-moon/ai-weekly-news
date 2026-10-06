@@ -16,7 +16,7 @@ Stories are ranked by **how big the coverage was that week**. The count is how m
 
 **Only what could be known that week** is written. Outcomes that came out later are not added, so each briefing stays a record of that week.
 
-## Production
+## How it is made
 
 AI collects and summarizes the news, and a person sets the selection criteria and the process. A person does not review every item. Instead, figures, dates and quotes are checked against the original articles, and **every item links to its sources**. You can check anything doubtful in the original right away.
 

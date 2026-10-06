@@ -95,12 +95,12 @@ git push origin main
 SITE=https://yg-moon.github.io/ai-weekly-news
 curl -s "$SITE/year/<Y>/" -o /tmp/pub.html -w '응답: %{http_code}\n'
 echo "항목: $(grep -c '<article class="item"' /tmp/pub.html)건"
-echo "목록: $(curl -s "$SITE/<Y>/Q4/" | grep -c "year/<Y>/")건"
+echo "목록: $(curl -s "$SITE/<Y>/annual/" | grep -c "year/<Y>/")건"
 curl -s "$SITE/en/year/<Y>/" -o /tmp/pub-en.html -w '영문 응답: %{http_code}\n'
 echo "영문 항목: $(grep -c '<article class="item"' /tmp/pub-en.html)건"
 ```
 
-응답 200, 항목 15건, 목록 1건이어야 한다. 목록은 분기 탭 옆의 `연간` 칩이다. 영문도 응답 200, 항목 15건이어야 한다.
+응답 200, 항목 15건, 목록 1건이어야 한다. 목록은 분기 칩 옆의 `연간` 칩이 여는 연간 목록 페이지다. 영문도 응답 200, 항목 15건이어야 한다.
 
 ## 아직 검증되지 않은 것
 

@@ -22,7 +22,7 @@ The past week's news in five stories each: Korea, World, and AI. Weekly briefing
 ## How it is made
 
 - AI collects and summarizes the news, following procedures designed by a person. Every item links to its sources.
-- The cost and time of each publication, and the outlets cited, are published on the [Stats](https://yg-moon.github.io/ai-weekly-news/en/stats/) page.
+- Cost and time, and the outlets cited, are published on the [Stats](https://yg-moon.github.io/ai-weekly-news/en/stats/) page.
 - English editions are translations of the Korean originals. Project documents in `docs/` are written in Korean.
 
 ## Repository
