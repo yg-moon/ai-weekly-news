@@ -10,6 +10,7 @@
 // - 본문 폭: 폰에서 배경·테두리가 있는 상자가 본문 폭 밖으로 나가는지
 // - 좁은 폰: 340px 에서 화면이 옆으로 넘치는지
 // - 목차 버튼: 주간호에서 아래로 읽을 때는 숨고, 목차를 지나 위로 스크롤하면 나타나고, 데스크톱에는 없는지
+// - 옆 목차: 데스크톱에서 주간호·분기호의 목차가 옆으로 넘쳐 좌우 스크롤이 생기는지
 // 걸린 것이 있으면 종료 코드 1 로 끝난다.
 
 import { createServer } from "node:http";
@@ -162,6 +163,14 @@ for (const path of PAGES) {
   const desk = await open(path, 1280);
   if (await desk.evaluate(() => getComputedStyle(document.querySelector(".toc-fab")).display) !== "none") problems.push(`목차 버튼 ${path}: 데스크톱에 있다`);
   await desk.close();
+}
+
+// 6. 옆 목차. 데스크톱의 목차는 세로 스크롤 상자라, 줄이 상자보다 넓으면 좌우 스크롤이 생긴다.
+for (const path of [`week/${latest("week")}/`, `quarter/${latest("quarter")}/`]) {
+  const page = await open(path, 1280);
+  const over = await page.evaluate(() => { const t = document.getElementById("toc"); return t.scrollWidth - t.clientWidth; });
+  if (over > 0) problems.push(`옆 목차 ${path}: 옆으로 ${over}px 넘친다`);
+  await page.close();
 }
 
 await browser.close();

@@ -12,7 +12,7 @@ The past week's news in five stories each: Korea, World, and AI. Weekly briefing
 - **Quarterly**: gathers the weekly briefings into the quarter's developing stories. Writing starts once four or more of the quarter's weekly briefings are in, and the review is revised every week.
 - **Annual**: gathers the quarterly reviews into the year.
 
-## Principles
+## Selection
 
 - **Read every headline of the week.** Each briefing starts from the full headline lists of major outlets and headline sources.
 - **Rank by coverage.** How many days and how many outlets carried a story measures how big it was.
