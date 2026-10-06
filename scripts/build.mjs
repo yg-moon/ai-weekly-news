@@ -65,7 +65,7 @@ const TEXT = {
     listTitle: (p) => (p.q ? `${p.year}년 ${p.q}분기` : `${p.year}년 연간`),
     tagline: SITE_TAGLINE,
     home: "주간 뉴스 브리핑", recent: "최근",
-    why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", tocGo: "목차로", stats: "통계", about: "소개",
+    why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", tocGo: "목차로", tocHint: "항목을 누르면 이동합니다", stats: "통계", about: "소개",
     flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
     state: ["진행중", "완결"],
@@ -112,7 +112,7 @@ const TEXT = {
     // 세 분야 이름은 줄이 바뀌어도 함께 넘어가게 붙인다(\u00a0). 좁은 폰에서 "AI." 만 떨어졌다.
     tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI. Collected and summarized by AI, with sources for every item.",
     home: "Weekly News Briefing", recent: "Latest",
-    why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", tocGo: 'Contents <span aria-hidden="true">↑</span>', stats: "Stats", about: "About",
+    why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", tocGo: 'Contents <span aria-hidden="true">↑</span>', tocHint: "Tap a headline to jump to it", stats: "Stats", about: "About",
     flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
     state: ["In progress", "Complete"],
@@ -569,25 +569,35 @@ function toc(html, T) {
       .map(([, id, num, title]) => `<li><a href="#${id}"><span class="tn">${num}</span><span class="tt">${plainTitle(title)}</span></a></li>`);
     return items.length ? [`<div class="toc-group group--${g[1]}"><p class="toc-name">${g[2].trim()}</p><ol>${items.join("")}</ol></div>`] : [];
   });
-  return groups.length ? `<nav class="toc" id="toc" aria-label="${T.toc}">${groups.join("")}</nav>` : "";
+  return groups.length ? `<nav class="toc" id="toc" aria-label="${T.toc}">${groups.join("")}<p class="toc-hint">${T.tocHint}</p></nav>` : "";
 }
 
 // 좁은 화면의 목차 버튼. 목차가 화면 위로 지나간 뒤 위로 스크롤하면 나타나고,
 // 아래로 읽어 내려가면 숨는다. 넓은 화면에서는 목차가 늘 옆에 있어 CSS 가 감춘다.
+// 넓은 화면의 옆 목차에서는 지금 읽는 항목을 aria-current 로 표시한다. 화면 위쪽 3분의 1 선을
+// 지난 마지막 항목이 지금 읽는 항목이다.
 function tocButton(T) {
   return `<a class="toc-fab" href="#toc">${T.tocGo}</a>
 <script>
 (function () {
   var b = document.querySelector(".toc-fab"), t = document.getElementById("toc"), y = scrollY, busy = false;
+  var links = [].slice.call(t.querySelectorAll("a")), items = links.map(function (a) { return document.getElementById(a.hash.slice(1)); }), cur;
   function set(on) { b.classList.toggle("on", on); }
+  function spy() {
+    var i = items.length; while (i-- && items[i].getBoundingClientRect().top > innerHeight / 3);
+    if (links[i] === cur) return;
+    if (cur) cur.removeAttribute("aria-current");
+    cur = links[i]; if (cur) cur.setAttribute("aria-current", "location");
+  }
   addEventListener("scroll", function () {
     if (busy) return; busy = true;
     requestAnimationFrame(function () {
-      busy = false;
+      busy = false; spy();
       var d = scrollY - y; if (Math.abs(d) < 6) return; y = scrollY;
       set(d < 0 && t.getBoundingClientRect().bottom < 0);
     });
   }, { passive: true });
+  spy();
   b.addEventListener("click", function () { set(false); });
 })();
 </script>`;

@@ -361,7 +361,11 @@ figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
 .toc ol { list-style:none; margin:0; padding:0; }
 .toc li { font-size:.875rem; line-height:1.5; }
 .toc a { display:flex; gap:.5rem; padding:.2rem 0; color:var(--dim); text-decoration:none; }
-.toc a:hover { color:var(--text); }
+@media (hover:hover) {
+  .toc a { margin:0 -.5rem; padding:.2rem .5rem; border-radius:8px; }
+  .toc a:hover { color:var(--text); background:var(--hover); }
+}
+.toc-hint { margin:.6rem 0 0; font-size:.75rem; color:var(--muted); }
 .toc { scroll-margin-top:1rem; }
 .toc .tn { flex:none; width:.8rem; color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; }
 .toc-fab {
@@ -380,6 +384,8 @@ figure.chart svg { display:block; width:100%; height:auto; overflow:visible; }
     left:calc(50% - 20.5rem - 2.5rem - 15rem); margin:0; background:none; border:none; padding:0;
   }
   .toc li { font-size:.8rem; }
+  .toc-hint { display:none; }
+  .toc a[aria-current] { color:var(--text); font-weight:700; }
 }
 
 /* 이전 호·다음 호 */
