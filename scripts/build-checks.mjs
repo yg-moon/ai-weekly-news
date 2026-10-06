@@ -7,11 +7,17 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { OUTLETS_EN } from "./outlets-en.mjs";
 
-// 날짜 칸("9월 21일–26일 (월–토)", "5월 11일 (월)~5월 15일 (금)", "Sep 21–26 (Mon–Sat)", "Mar 31–Apr 2 (Tue–Thu)")을
+// 날짜 칸("9월 21일–26일 (월–토)", "6월 29일–7월 3일 (월–금)", "Sep 21–26 (Mon–Sat)", "Mar 31–Apr 2 (Tue–Thu)")을
 // 읽어 문제를 낸다. 연도는 주차에서 정하고, 주 경계를 넘는 1월·12월은 그 주에 가까운 해로 본다.
+// 형식은 한 가지만 쓴다. 2026-W28~W35 가 "7월 28일 (화)~7월 31일 (금)"으로 써서 목록에서 두 형식이 섞였다.
 const DOW = { ko: [..."일월화수목금토"], en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] };
 const MONTH_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DATE_FORM = {
+  ko: /^\d{1,2}월 \d{1,2}일(–(\d{1,2}월 )?\d{1,2}일)? \([일월화수목금토](–[일월화수목금토])?\)$/,
+  en: /^[A-Z][a-z]{2} \d{1,2}(–([A-Z][a-z]{2} )?\d{1,2})? \([A-Z][a-z]{2}(–[A-Z][a-z]{2})?\)$/,
+};
 export function dateProblems(value, weekId, lang = "ko") {
+  if (!DATE_FORM[lang].test(value)) return [`형식이 다르다(${lang === "en" ? "Sep 21–26 (Mon–Sat)" : "9월 21일–26일 (월–토)"})`];
   const [y, w] = weekId.split("-W").map(Number);
   const jan4 = Date.UTC(y, 0, 4), monday = jan4 - (((new Date(jan4).getUTCDay() + 6) % 7) - (w - 1) * 7) * 864e5;
   const dates = [];
@@ -115,6 +121,22 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
       .map((m) => `${p.kind}/${p.id} "${m[0]}"`)
   );
   if (mixedNames.length) errors.push(`이름 표기가 규칙과 다르다: ${mixedNames.join(", ")}`);
+
+  // 사람 이름은 앞선 호의 표기를 그대로 쓴다(주간 런북 10절). 2026-10-06 지난 호를 읽어 보니 같은 사람이
+  // 호마다 다르게 적혀 있었다. 그때 하나로 맞춘 이름의 다른 표기를 막는다. 새로 갈린 이름은 여기에 더한다.
+  const PERSON_VARIANTS = {
+    "그렉 브록먼": "그레그 브록먼", "술료크": "셔요크", "페도로프": "페도로우", "번햄": "버넘", "아락치": "아라그치",
+    "탕 유 탄": "탕 탄", "마저르": "머저르", "페테르 머저르": "머저르 페테르", "J.D. 밴스": "JD 밴스",
+    "나임 카심": "나임 카셈", "로드리게스 권한대행": "로드리게스 임시 대통령", "분디부조": "분디부교",
+  };
+  const variantRe = new RegExp(Object.keys(PERSON_VARIANTS).map((k) => k.replace(/[.]/g, "\\.")).join("|"), "g");
+  const personVariants = Object.values(sets).flat().flatMap((p) =>
+    p.body.split("\n")
+      .filter((l) => !/^- \*\*(출처|근거)\*\*/.test(l))
+      .flatMap((l) => [...l.matchAll(variantRe)])
+      .map((m) => `${p.kind}/${p.id} "${m[0]}" → "${PERSON_VARIANTS[m[0]]}"`)
+  );
+  if (personVariants.length) errors.push(`사람 이름이 앞선 호와 다르게 적혔다: ${personVariants.join(", ")}`);
 
 
   // 주간호 날짜 칸의 요일이 날짜와 맞는지, 범위의 시작이 끝보다 늦지 않은지 본다(주간 런북 11절).

@@ -57,13 +57,18 @@ test("AI 기업 이름을 한글로 쓰면 잡는다", () => {
   assert.match(run({ ko: { week: [doc("week", "2026-W39", weekBody("국내 사안", "앤트로픽이 발표했다."))] } }), /이름 표기/);
 });
 
+test("앞선 호와 다른 사람 이름 표기를 잡는다", () => {
+  assert.match(run({ ko: { week: [doc("week", "2026-W39", weekBody("국내 사안", "번햄 총리가 말했다."))] } }), /사람 이름이 앞선 호와 다르게 적혔다: .*"번햄" → "버넘"/);
+  assert.equal(run({ ko: { week: [doc("week", "2026-W39", weekBody("국내 사안", "버넘 총리가 말했다."))] } }), "");
+});
+
 test("날짜 칸의 요일과 범위를 본다", () => {
   const week = (date) => run({ ko: { week: [doc("week", "2026-W39", weekBody("국내 사안", "일이 있었다.", date))] } });
   assert.equal(week("9월 21일–26일 (월–토)"), "");
-  assert.equal(week("9월 21일 (월)~9월 22일 (화)"), "");
+  assert.match(week("9월 21일 (월)~9월 22일 (화)"), /형식이 다르다/);
   assert.match(week("9월 21일 (화)"), /9\/21 은 월요일이다/);
   assert.match(week("9월 22일–21일 (화–월)"), /시작이 끝보다/);
-  assert.match(week("9월 21일"), /날짜를 읽지 못했다/);
+  assert.match(week("9월 21일"), /형식이 다르다/);
 });
 
 test("주 경계를 넘는 날짜는 가까운 해로 읽는다", () => {
