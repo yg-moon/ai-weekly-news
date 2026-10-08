@@ -576,7 +576,8 @@ function toc(html, T) {
 // 좁은 화면의 목차 버튼. 목차가 화면 위로 지나간 뒤 위로 스크롤하면 나타나고,
 // 아래로 읽어 내려가면 숨는다. 넓은 화면에서는 목차가 늘 옆에 있어 CSS 가 감춘다.
 // 넓은 화면의 옆 목차에서는 지금 읽는 항목을 aria-current 로 표시한다. 화면 위쪽 3분의 1 선을
-// 지난 마지막 항목이 지금 읽는 항목이다. 옆 목차가 화면보다 길어 안에서 스크롤될 때는
+// 지난 마지막 항목이 지금 읽는 항목이다. 다만 끝의 짧은 항목들은 그 선까지 못 올라오므로,
+// 페이지 맨 아래에 닿으면 마지막 항목으로 친다. 옆 목차가 화면보다 길어 안에서 스크롤될 때는
 // 읽는 항목이 목차 밖으로 나가지 않게 목차를 그만큼 옮긴다.
 function tocButton(T) {
   return `<a class="toc-fab" href="#toc">${T.tocGo}</a>
@@ -586,7 +587,9 @@ function tocButton(T) {
   var links = [].slice.call(t.querySelectorAll("a")), items = links.map(function (a) { return document.getElementById(a.hash.slice(1)); }), cur;
   function set(on) { b.classList.toggle("on", on); }
   function spy() {
-    var i = items.length; while (i-- && items[i].getBoundingClientRect().top > innerHeight / 3);
+    var i = items.length;
+    if (innerHeight + scrollY < document.documentElement.scrollHeight - 2) while (i-- && items[i].getBoundingClientRect().top > innerHeight / 3);
+    else i--;
     if (links[i] === cur) return;
     if (cur) cur.removeAttribute("aria-current");
     cur = links[i]; if (!cur) { t.scrollTop = 0; return; }
