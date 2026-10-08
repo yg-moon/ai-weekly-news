@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkContent, dateProblems, checkSelectedFill, checkThemeContrast, checkStickyHover, missingRuns } from "./build-checks.mjs";
+import { checkContent, dateProblems, checkSelectedFill, checkThemeContrast, checkStickyHover, missingRuns, badSelections } from "./build-checks.mjs";
 
 const GROUPS = { 국내: "korea", 해외: "world", AI: "ai" };
 const KINDS = { week: { groups: GROUPS }, quarter: { groups: GROUPS }, year: { groups: GROUPS } };
@@ -214,4 +214,13 @@ test("실행 기록이 없는 발행물을 잡는다", () => {
   const runs = [{ week: "2026-W40" }, { week: "2026-Q3" }];
   assert.deepEqual(missingRuns(["2026-W40", "2026-Q3", "2026-W40"], runs), []);
   assert.deepEqual(missingRuns(["2026-W41", "2026-W40", "2026-Q4"], runs), ["2026-Q4", "2026-W41"]);
+});
+
+test("W41 부터 선정 기록이 모자란 주간호를 잡는다", () => {
+  const five = [1, 2, 3, 4, 5].map((rank) => ({ topic: `t${rank}`, rank })).concat({ topic: "x", out: "단발" });
+  const full = { korea: five, world: five, ai: five };
+  assert.deepEqual(badSelections([{ week: "2026-W40" }, { week: "2026-Q4" }, { week: "2026-W41", selection: full }]), []);
+  assert.deepEqual(badSelections([{ week: "2026-W41" }]), ["2026-W41: selection 이 없다"]);
+  assert.deepEqual(badSelections([{ week: "2026-W42", selection: { ...full, world: [] } }]), ["2026-W42: world 가 비었다"]);
+  assert.deepEqual(badSelections([{ week: "2027-W01", selection: { ...full, ai: five.filter((t) => t.rank !== 3) } }]), ["2027-W01: ai 에 rank 3 가 없다"]);
 });

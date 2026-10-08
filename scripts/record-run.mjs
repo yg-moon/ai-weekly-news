@@ -14,8 +14,9 @@
 // session 은 CLI 세션 ID 이고 대화 기록 파일 이름과 같다. 커밋의 Claude-Session 링크에 있는
 // claude.ai 세션 ID 와는 다르다. 정기 실행의 claude.ai 세션은 루틴 실행 목록에서 시각으로 찾는다.
 //
-// 읽은 헤드라인은 2절이 /tmp/<WEEK>/ 에 받아 둔 다섯 목록의 항목 수다. 이 세션이 시작되기
+// 읽은 헤드라인은 2절이 /tmp/<WEEK>/ 에 받아 둔 여섯 목록의 항목 수다. 이 세션이 시작되기
 // 전에 만들어진 목록은 다른 주차의 것일 수 있어 세지 않는다.
+// 선정 기록은 4절이 /tmp/<WEEK>/selection.json 에 적은 것을 selection 으로 담는다(주간호만).
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
@@ -112,7 +113,7 @@ for (const { model, u } of calls.values()) {
 
 // 분기호와 연간호는 헤드라인을 받지 않고 주간호·분기호를 읽는다. 비워 둔다.
 let headlines = quarterly ? null : 0;
-for (const s of quarterly ? [] : ["domestic", "world", "tech", "ai", "aimedia"]) {
+for (const s of quarterly ? [] : ["domestic", "front", "world", "tech", "ai", "aimedia"]) {
   const f = `/tmp/${week}/${s}.md`;
   if (!existsSync(f) || statSync(f).mtime < new Date(started)) {
     console.error(`경고: ${f} 가 없거나 이 세션보다 오래됐다. 읽은 헤드라인을 비워 둔다.`);
@@ -120,6 +121,19 @@ for (const s of quarterly ? [] : ["domestic", "world", "tech", "ai", "aimedia"])
     break;
   }
   headlines += readFileSync(f, "utf8").split("\n").filter((l) => l.startsWith("- ")).length;
+}
+
+// ---------- 선정 기록 ----------
+
+// 4절이 적은 분야별 선정과 뺀 후보. 없으면 넣지 않는다. 깨졌으면 고쳐서 다시 돌린다.
+let selection;
+const selFile = `/tmp/${week}/selection.json`;
+if (!quarterly && existsSync(selFile)) {
+  try {
+    selection = JSON.parse(readFileSync(selFile, "utf8"));
+  } catch (e) {
+    fail(`${selFile} 를 읽을 수 없다 (${e.message})`);
+  }
 }
 
 // ---------- 쓰기 ----------
@@ -140,6 +154,7 @@ const run = {
   cost_usd: Math.round(Object.values(costBy).reduce((a, b) => a + b, 0) * 100) / 100,
   headlines,
   tokens,
+  ...(selection ? { selection } : {}),
 };
 
 // --add 는 진행 중 분기호를 다시 쓴 판이다(분기 런북 8절). 지난 기록에 이번 판의 비용·시간·토큰을

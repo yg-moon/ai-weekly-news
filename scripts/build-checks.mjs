@@ -250,6 +250,25 @@ export function missingRuns(ids, runs) {
   return [...new Set(ids)].filter((id) => !have.has(id)).sort();
 }
 
+// 선정 기록이 없거나 모자란 주간호. 런북 4절이 분야마다 실린 5개(rank 1~5)와 뺀 후보를
+// 적게 한다. 선정 기록은 2026-10-08 에 정했으므로 그 뒤 첫 호인 2026-W41 부터 본다.
+const SELECTION_FROM = "2026-W41";
+export function badSelections(runs) {
+  return runs
+    .filter((r) => /^\d{4}-W\d{2}$/.test(r.week) && r.week >= SELECTION_FROM)
+    .flatMap((r) => {
+      if (!r.selection) return [`${r.week}: selection 이 없다`];
+      return ["korea", "world", "ai"].flatMap((f) => {
+        const list = r.selection[f];
+        if (!Array.isArray(list) || !list.length) return [`${r.week}: ${f} 가 비었다`];
+        const ranks = list.map((t) => t.rank);
+        const lack = [1, 2, 3, 4, 5].filter((n) => !ranks.includes(n));
+        return lack.length ? [`${r.week}: ${f} 에 rank ${lack.join(",")} 가 없다`] : [];
+      });
+    })
+    .sort();
+}
+
 // 만든 사이트 검사. SITE 에 페이지를 다 쓴 뒤에 부른다.
 export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
   const KIND_NAMES = Object.keys(KINDS);
@@ -258,6 +277,8 @@ export function checkSite({ SETS, TEXT, KINDS, SITE, CSS, runs, statViews }) {
 
   const noRun = missingRuns(LANG_NAMES.flatMap((lang) => KIND_NAMES.flatMap((kind) => SETS[lang][kind].map((d) => d.id))), runs);
   if (noRun.length) errors.push(`실행 기록이 없는 발행물: ${noRun.join(", ")}. node scripts/record-run.mjs <호> 로 남긴다.`);
+  const noSel = badSelections(runs);
+  if (noSel.length) errors.push(`선정 기록이 모자란 주간호:\n  ${noSel.join("\n  ")}\n  /tmp/<WEEK>/selection.json 을 적고 node scripts/record-run.mjs <WEEK> 로 다시 남긴다.`);
 
   // 기간별 통계가 기록을 빠뜨리거나 겹치지 않는지 본다. 분기 페이지의 표(주간호 표와
   // 분기호·연간호 표)를 모두 합치면 기록 전체와 한 번씩 맞아야 한다.
