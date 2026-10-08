@@ -2,15 +2,17 @@
 // 검색으로 후보를 찾으면 검색어가 결과를 정하므로, 후보 풀은 이 목록에서 시작한다.
 // RUNBOOK_WEEKLY 2절 참고.
 //
-//   node scripts/collect-headlines.mjs 2026-08-31 2026-09-06 [domestic|world|tech|ai|aimedia]
+//   node scripts/collect-headlines.mjs 2026-08-31 2026-09-06 [domestic|front|world|tech|ai|aimedia]
 //
 // domestic  네이버 뉴스 랭킹 — 날짜별·언론사별 많이 본 기사
-// world     Wikipedia Portal:Current events(날짜별, 인용 URL 포함) + The Guardian 날짜 목록
+// front     10개 일간지 A1면 — 대상 주 화요일 ~ 다음 주 월요일 신문. 신문 없는 날은 연합 주요뉴스로 메운다
+// world     Wikipedia Portal:Current events(날짜별, 인용 URL 포함) + The Guardian 날짜 목록(영상·라이브·브리핑 제외)
 // tech      Hacker News 프런트 페이지 — 날짜별 기술 화제
 // ai        AI 연구소·기업 뉴스룸 1차 출처
 // aimedia   TechCrunch·The Verge 날짜별 AI 기사 — AI 의 보도량을 센다
 
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const UA =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36";
@@ -83,6 +85,96 @@ function domestic(day) {
   return out;
 }
 
+// ---------- 국내 신문 1면 ----------
+// 클릭 랭킹은 인물 논란 쪽으로 기울고 정책 결정을 낮게 잡는다. 신문 1면은 편집 판단이라
+// 보도량의 1차 기준으로 쓴다. 네이버 지면 보기는 지난 날짜의 A1면 기사 목록도 준다.
+// 근거는 docs/PLAN.md "선정 측정과 기록" 1단계.
+
+// 성향이 고르게 들도록 보수 4·진보 2·중도 4로 정했다.
+const FRONT_PAPERS = [
+  ["023", "조선일보"], ["025", "중앙일보"], ["020", "동아일보"], ["021", "문화일보"],
+  ["028", "한겨레"], ["032", "경향신문"],
+  ["469", "한국일보"], ["005", "국민일보"], ["081", "서울신문"], ["022", "세계일보"],
+];
+
+const addDays = (day, n) => new Date(Date.parse(day + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
+const weekday = (day) => WEEKDAYS[new Date(day + "T00:00:00Z").getUTCDay()];
+
+// 지면 보기 한 쪽에서 A1면 기사를 꺼낸다. 그날 신문이 없으면 빈 배열이다.
+// 쪽 머리의 날짜가 요청한 날과 다르면 다른 날 지면이 온 것이라 버린다.
+export function parseFront(html, ymd) {
+  const shown = html.match(/(\d{4})\.(\d\d)\.(\d\d)\.[월화수목금토일]/);
+  if (shown && shown.slice(1).join("") !== ymd) return [];
+  for (const brick of html.split("newspaper_brick_item").slice(1)) {
+    const page = brick.match(/page_notation"><em>([^<]*)<\/em>/);
+    if (!page) continue;
+    if (!["A1", "1"].includes(page[1].trim())) continue;
+    const items = [];
+    for (const m of brick.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>[\s\S]*?<strong>([\s\S]*?)<\/strong>/g))
+      items.push({ title: clean(m[2]), url: m[1].split("?")[0] });
+    return items;
+  }
+  return [];
+}
+
+// 연합뉴스 주요뉴스 이력. 하루 100건에서 잘린다.
+export function parseYna(html) {
+  const items = [];
+  const re = /href="(https:\/\/www\.yna\.co\.kr\/view\/AKR\d+)[^"]*" class="tit-news">\s*<span class="title01">([\s\S]*?)<\/span>/g;
+  for (const m of html.matchAll(re))
+    if (!items.some((i) => i.url === m[1])) items.push({ title: clean(m[2]), url: m[1] });
+  return items;
+}
+
+// 월요일 신문은 앞 주 토·일 사건을 싣는다. 그래서 대상 주 화요일 신문부터 다음 주
+// 월요일 신문까지 센다. 창 끝에 신문 없는 날(휴간)이 걸리면 휴간 뒤 첫 발행일까지 늘린다.
+// 신문이 하나도 없는 날은 연합 주요뉴스로 메운다. 이 두 묶음은 따로 센다.
+function front(from, to) {
+  const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  const end0 = addDays(to, 1);
+  const days = [];
+  const out = [];
+  const empty = [];
+  for (let day = addDays(from, 1); day <= end0 || (empty.at(-1) === days.at(-1) && day <= addDays(end0, 7)); day = addDays(day, 1)) {
+    if (day > today) {
+      console.error(`경고: front ${day} 는 아직 오지 않았다. 창이 ${days.at(-1) ?? "-"} 에서 끊긴다.`);
+      break;
+    }
+    days.push(day);
+    const ymd = day.replace(/-/g, "");
+    let papers = 0;
+    let failed = 0;
+    for (const [oid, name] of FRONT_PAPERS) {
+      let items;
+      try {
+        items = parseFront(get(`https://media.naver.com/press/${oid}/newspaper?date=${ymd}`), ymd);
+      } catch (e) {
+        failed++;
+        console.error(`경고: front ${name} ${day} 를 못 받았다 (${e.message}). 이 신문의 1면이 빠진다.`);
+        continue;
+      }
+      if (!items.length) continue;
+      papers++;
+      out.push({ group: `${day} (${weekday(day)}) · ${name} A1`, items });
+    }
+    // 받기가 모두 실패한 날은 휴간이 아니다. 휴간으로 보지 않고 경고만 남긴다.
+    if (papers || failed) continue;
+    empty.push(day);
+    console.error(`경고: front ${day} 는 신문이 없다. 연합 주요뉴스로 메운다.`);
+  }
+  if (days.at(-1) > end0) console.error(`front: 휴간 탓에 창을 ${days.at(-1)} 까지 늘렸다.`);
+  for (const day of empty) {
+    try {
+      const items = parseYna(get(`https://www.yna.co.kr/theme/headlines-history?date=${day.replace(/-/g, "")}`));
+      if (!items.length) throw new Error("빈 목록");
+      out.push({ group: `${day} (${weekday(day)}) · 연합뉴스 주요뉴스 (신문 없는 날)`, items });
+    } catch (e) {
+      console.error(`경고: front 연합뉴스 ${day} 를 못 받았다 (${e.message}). 이 날의 사안이 후보 풀에서 빠진다.`);
+    }
+  }
+  return out;
+}
+
 // ---------- 해외 ----------
 
 function wikipediaDay(day) {
@@ -139,15 +231,26 @@ const FEEDS = [
 
 // 해외 보조. Wikipedia 가 약한 경제·기업 사안을 메운다.
 // 피드는 최근 8.5일치뿐이라 지난 주차에서 비었다. 날짜 목록은 과거 날짜도 준다.
+// 영상·라이브블로그·사진·오디오와 매일 나오는 브리핑("Ukraine war briefing:")은 뺀다.
+// 같은 사건을 형식만 바꿔 여러 번 내거나, 계속되는 전쟁이 날마다 자동으로 잡히기 때문이다.
+const GUARDIAN_SKIP_URL = /\/(video|live|gallery|audio)\//;
+const GUARDIAN_SKIP_TITLE = /briefing:/i;
+
+export function parseGuardian(html, path) {
+  const items = [];
+  const re = new RegExp(`<a href="(https://www\\.theguardian\\.com/[a-z/-]+/${path}/[^"]+)" class="fc-item__link"[^>]*>([\\s\\S]*?)</a>`, "g");
+  for (const m of html.matchAll(re)) {
+    const title = clean(m[2]);
+    if (GUARDIAN_SKIP_URL.test(m[1]) || GUARDIAN_SKIP_TITLE.test(title)) continue;
+    if (!items.some((i) => i.url === m[1])) items.push({ title, url: m[1] });
+  }
+  return items;
+}
+
 function guardianDay(day) {
   const [yy, mm, dd] = day.split("-").map(Number);
   const path = `${yy}/${MONTHS[mm - 1].slice(0, 3).toLowerCase()}/${String(dd).padStart(2, "0")}`;
-  const html = get(`https://www.theguardian.com/world/${path}/all`);
-  const items = [];
-  const re = new RegExp(`<a href="(https://www\\.theguardian\\.com/[a-z/-]+/${path}/[^"]+)" class="fc-item__link"[^>]*>([\\s\\S]*?)</a>`, "g");
-  for (const m of html.matchAll(re))
-    if (!items.some((i) => i.url === m[1])) items.push({ title: clean(m[2]), url: m[1] });
-  return items;
+  return parseGuardian(get(`https://www.theguardian.com/world/${path}/all`), path);
 }
 
 // ---------- AI 테크 매체 ----------
@@ -270,6 +373,7 @@ function collectFeeds(list, from, to) {
 const ai = (from, to) => collectFeeds(FEEDS, from, to);
 
 // 해외는 날짜별 Wikipedia 를 뼈대로 하고 Guardian 날짜 목록을 덧붙인다.
+// Guardian 은 날짜마다 한 묶음이라 며칠에 걸쳐 다뤘는지 셀 수 있다. 기사 수는 점수로 쓰지 않는다.
 function world(from, to) {
   const out = [];
   const guardian = [];
@@ -294,56 +398,59 @@ function world(from, to) {
 // ---------- 실행 ----------
 
 const SOURCES = { domestic, tech };
-const RANGE_SOURCES = { world, ai, aimedia };
+const RANGE_SOURCES = { front, world, ai, aimedia };
 
-const args = process.argv.slice(2);
-const ALL = { ...SOURCES, ...RANGE_SOURCES };
-const [from, to] = args.filter((a) => !ALL[a]);
-const want = args.filter((a) => ALL[a]);
-if (!from || !to) {
-  console.error("usage: node scripts/collect-headlines.mjs <YYYY-MM-DD> <YYYY-MM-DD> [domestic|world|tech|ai|aimedia]");
-  process.exit(1);
-}
-const picked = want.length ? want : Object.keys(ALL);
-
-for (const src of picked) {
-  console.log(`\n${"=".repeat(70)}\n# ${src}\n${"=".repeat(70)}`);
-  if (RANGE_SOURCES[src]) {
-    // 구간 단위로 한 번만 받는다.
-    for (const g of RANGE_SOURCES[src](from, to)) {
-      console.log(`\n### ${g.group}`);
-      for (const it of g.items) console.log(`- ${it.title}${it.url ? `\n  ${it.url}` : ""}`);
-    }
-    continue;
+// 테스트가 파싱 함수만 가져다 쓸 때는 받지 않는다.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const args = process.argv.slice(2);
+  const ALL = { ...SOURCES, ...RANGE_SOURCES };
+  const [from, to] = args.filter((a) => !ALL[a]);
+  const want = args.filter((a) => ALL[a]);
+  if (!from || !to) {
+    console.error("usage: node scripts/collect-headlines.mjs <YYYY-MM-DD> <YYYY-MM-DD> [domestic|front|world|tech|ai|aimedia]");
+    process.exit(1);
   }
-  for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1)) {
-    const day = dt.toISOString().slice(0, 10);
-    const wd = WEEKDAYS[new Date(day + "T00:00:00Z").getUTCDay()];
-    // 빈 목록으로 끝나는 날은 하루가 통째로 후보 풀에서 빠진다. 네이버가
-    // 정상 응답에 빈 목록을 준 적이 있어 다시 받아 본다. 실패는 stdout 이
-    // 아니라 stderr 로 낸다. stdout 은 파일로 보내져 수백 줄에 묻힌다.
-    let groups = [];
-    let err;
-    for (let attempt = 1; attempt <= 3 && !groups.length; attempt++) {
-      try {
-        groups = SOURCES[src](day);
-        err = null;
-      } catch (e) {
-        err = e;
+  const picked = want.length ? want : Object.keys(ALL);
+
+  for (const src of picked) {
+    console.log(`\n${"=".repeat(70)}\n# ${src}\n${"=".repeat(70)}`);
+    if (RANGE_SOURCES[src]) {
+      // 구간 단위로 한 번만 받는다.
+      for (const g of RANGE_SOURCES[src](from, to)) {
+        console.log(`\n### ${g.group}`);
+        for (const it of g.items) console.log(`- ${it.title}${it.url ? `\n  ${it.url}` : ""}`);
       }
-      if (!groups.length && attempt < 3)
-        console.error(`재시도 ${attempt}/3 — ${src} ${day} 가 비었다`);
-    }
-    if (!groups.length) {
-      const why = err ? `수집 실패: ${err.message}` : "빈 목록";
-      console.log(`\n## ${day} (${wd}) — ${why}`);
-      console.error(`경고: ${src} ${day} 를 못 받았다 (${why}). 이 날의 사안이 후보 풀에서 빠진다.`);
       continue;
     }
-    console.log(`\n## ${day} (${wd}) — ${groups.length}개 묶음`);
-    for (const g of groups) {
-      console.log(`\n### ${g.group}`);
-      for (const it of g.items) console.log(`- ${it.title}${it.url ? `\n  ${it.url}` : ""}`);
+    for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1)) {
+      const day = dt.toISOString().slice(0, 10);
+      const wd = WEEKDAYS[new Date(day + "T00:00:00Z").getUTCDay()];
+      // 빈 목록으로 끝나는 날은 하루가 통째로 후보 풀에서 빠진다. 네이버가
+      // 정상 응답에 빈 목록을 준 적이 있어 다시 받아 본다. 실패는 stdout 이
+      // 아니라 stderr 로 낸다. stdout 은 파일로 보내져 수백 줄에 묻힌다.
+      let groups = [];
+      let err;
+      for (let attempt = 1; attempt <= 3 && !groups.length; attempt++) {
+        try {
+          groups = SOURCES[src](day);
+          err = null;
+        } catch (e) {
+          err = e;
+        }
+        if (!groups.length && attempt < 3)
+          console.error(`재시도 ${attempt}/3 — ${src} ${day} 가 비었다`);
+      }
+      if (!groups.length) {
+        const why = err ? `수집 실패: ${err.message}` : "빈 목록";
+        console.log(`\n## ${day} (${wd}) — ${why}`);
+        console.error(`경고: ${src} ${day} 를 못 받았다 (${why}). 이 날의 사안이 후보 풀에서 빠진다.`);
+        continue;
+      }
+      console.log(`\n## ${day} (${wd}) — ${groups.length}개 묶음`);
+      for (const g of groups) {
+        console.log(`\n### ${g.group}`);
+        for (const it of g.items) console.log(`- ${it.title}${it.url ? `\n  ${it.url}` : ""}`);
+      }
     }
   }
 }
