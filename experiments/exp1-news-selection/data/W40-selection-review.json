@@ -1,0 +1,47 @@
+{
+  "week": "2026-W40",
+  "backfill": true,
+  "selection": {
+    "korea": [
+      { "topic": "DMZ 지뢰 폭발 북한 매설 판정·김여정 담화·북한 탄도미사일 발사", "days": 6, "outlets": 11, "rank": 1, "over": "되돌리기 어려움: 인명 피해와 미사일 발사. 보도량이 더 많은 '암살자(들)'(7일·12곳)보다 위에 둔 것이 납득된다" },
+      { "topic": "검찰청 폐지, 중수청·공소청 출범", "days": 4, "outlets": 4, "rank": 2, "over": "되돌리기 어려움: 78년 된 제도 폐지가 집행된 결정이다. 랭킹이 '많이 본' 기준이라 정책 사안의 보도량이 낮게 잡힌다. 납득된다" },
+      { "topic": "영화 '암살자(들)' 역사 왜곡 논란, 고발·불매·집회", "days": 7, "outlets": 12, "rank": 3 },
+      { "topic": "청와대-우크라이나 북한 포로 송환 비공개 공방, 이 대통령 사과 요구", "days": 6, "outlets": 11, "rank": 4 },
+      { "topic": "트럼프 '알래스카 투자 안 하면 두 배 청구', 한국 투자 일방 발표", "days": 2, "outlets": 4, "rank": 5, "over": "영향 범위·독자 근접성: 대미 투자와 관세 부담. 보도량이 더 많은 후보는 모두 게이트에 걸린다. 납득된다" },
+      { "topic": "상어 '부캉이' 부산 북항 수로 구조 작전", "days": 4, "outlets": 9, "out": "단발" },
+      { "topic": "아시안게임 축구 대표 '전역모' 언행, 병역특례 논란", "days": 3, "outlets": 10, "out": "단발" },
+      { "topic": "한동훈 '노무현 3억 시계는 팩트' 발언 공방", "days": 3, "outlets": 6, "out": "단발" },
+      { "topic": "조희대 대법원장 재제청 거부·국감 증인 출석 거부", "days": 5, "outlets": 4, "out": "국면 없음" }
+    ],
+    "world": [
+      { "topic": "flydubai 1073편 부기장 기장 공격, 사우디 비상착륙", "days": 5, "outlets": 3, "rank": 1 },
+      { "topic": "프랑스 고교생 시위 확산, 대량 체포", "days": 5, "outlets": 3, "rank": 2 },
+      { "topic": "미군 이라크 철수 완료 (23년 만)", "days": 2, "outlets": 3, "rank": 3, "over": "되돌리기 어려움·축적 가치: 23년 주둔을 끝내는 철수가 집행됐다. 티그라이(4일·6곳)와의 보도량 차이는 위키 인용 수에서 온 것이라 약한 신호다. 납득된다" },
+      { "topic": "G7 비축 원유·경유 1억 배럴 방출", "days": 1, "outlets": 2, "rank": 4, "over": "영향 범위·독자 근접성(연료 가격)을 근거로 댈 수 있다. 하지만 보도량(1번 기준)과 되돌리기 어려움(2번 기준)은 모두 티그라이가 앞선다. 5위 티그라이보다 위에 둔 것은 납득되지 않는다. 뺄 사안은 아니고 순위를 바꿔야 한다" },
+      { "topic": "에티오피아 정부군 메켈레 탈환, 에리트레아와 단교", "days": 4, "outlets": 6, "rank": 5 },
+      { "topic": "브라질 대선 (트럼프 개입 논란, 1차 투표에서 플라비우 보우소나루 1위)", "days": 5, "outlets": 2, "out": "예고" },
+      { "topic": "러시아 키이우 공습 (교량·전력망)", "days": 7, "outlets": 5, "out": "국면 없음" },
+      { "topic": "스페인 주택 위기 시위, 의회의 주택 법령 부결", "days": 3, "outlets": 2, "out": "국면 없음" },
+      { "topic": "가자·서안 정착민 폭력과 휴전 중 공습", "days": 4, "outlets": 5, "out": "국면 없음" },
+      { "topic": "DMZ 지뢰·북한 미사일 (해외 보도)", "days": 3, "outlets": 2, "out": "중복" }
+    ],
+    "ai": [
+      { "topic": "OpenAI DevDay: 개인 에이전트 Dots·GPT-6.1 Sol 공개", "days": 4, "outlets": 2, "rank": 1 },
+      { "topic": "OpenAI, 안전 문제로 GPT-6.1 Astra 보류, 안전 연구자 결별·사임", "days": 5, "outlets": 2, "rank": 2 },
+      { "topic": "트럼프·빅테크 수장, 구속력 없는 AI 안전 서약", "days": 3, "outlets": 2, "rank": 3 },
+      { "topic": "Anthropic 상장 투자설명서: 손실과 '인류 위험' 경고", "days": 1, "outlets": 2, "rank": 4, "over": "축적 가치: 첫 상장 서류로 재무가 처음 공개됐다. 보도량이 더 많은 Muse(3일·2곳)는 국면이 없다. 납득된다" },
+      { "topic": "구글 Gemini 4 Argon 공개", "days": 1, "outlets": 1, "rank": 5, "over": "축적 가치: 구글의 새 최상위 세대 모델이다. 다만 보도량(1일·1곳)이 Sonnet 5.5(1일·2곳)보다 적고, 제한 공개라 지금의 영향 범위도 좁다. 부분적으로만 납득된다" },
+      { "topic": "OpenAI 에이전트의 외부 사이트 침입 (UN·호주 정부·Hugging Face)", "days": 4, "outlets": 2, "out": "중복" },
+      { "topic": "메타 Muse 소상공인 확대·개인 메시지 열람 논란", "days": 3, "outlets": 2, "out": "국면 없음" },
+      { "topic": "Anthropic Claude Sonnet 5.5 출시", "days": 1, "outlets": 2, "out": "단발" },
+      { "topic": "AMD, World Labs 82억 달러에 인수", "days": 1, "outlets": 1, "out": "단발" }
+    ]
+  },
+  "notes": [
+    "국내 outlets는 네이버 '많이 본' 랭킹(주요 15곳×7일×5건=525건)에 실린 언론사 수다. 클릭 기준이라 검찰청 폐지 같은 정책 사안은 적게 잡힌다.",
+    "해외 outlets는 위키 Current events 항목의 인용 매체('AFP via X'는 AFP로 셈)에 Guardian 날짜 목록을 더한 수다. Guardian 기사가 많아도 1곳으로 센다. 그래서 flydubai(Guardian 15건)와 이라크 철수(Guardian 0건)의 차이가 거의 드러나지 않는다.",
+    "AI는 aimedia가 TechCrunch와 The Verge 두 곳뿐이라 outlets가 최대 2다. 10-05로 찍힌 TechCrunch 항목은 뺐다. The Verge 10-01 목록에는 같은 항목이 두 번 나와 일부가 빠졌을 수 있다. Anthropic 뉴스룸 수집에는 Sonnet 5.5가 없다.",
+    "사안 묶기는 정규식 근사치다. 오탐은 직접 지웠다(예: 'Lula'가 'Alula'에 걸림, '대대장'이 드라마 기사에 걸림, '보완수사'가 성범죄 기사에 걸림).",
+    "Gemini 4 Argon과 Sonnet 5.5는 우열이 근소하다. 보도량과 영향 범위는 Sonnet 5.5가, 축적 가치는 Argon이 앞선다."
+  ]
+}

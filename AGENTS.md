@@ -68,6 +68,7 @@
 | `static/` | 빌드가 그대로 복사하는 아이콘과 미리보기 이미지 |
 | `site/` | 빌드 산출물. 커밋하지 않으며 CI 가 배포한다 |
 | `docs/` | 프로젝트 문서. 코드를 두지 않는다 |
+| `experiments/` | 기준을 정하거나 바꾼 실험의 근거. 실험마다 `exp<번호>-` 폴더 하나, 설계·목표·지표·결론은 그 README 에. 결정 자체는 `DECISIONS.md` 에 쓴다 |
 
 ```bash
 npm ci && npm run build              # content/ → site/
