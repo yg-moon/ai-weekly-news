@@ -217,10 +217,46 @@ test("실행 기록이 없는 발행물을 잡는다", () => {
 });
 
 test("W41 부터 선정 기록이 모자란 주간호를 잡는다", () => {
-  const five = [1, 2, 3, 4, 5].map((rank) => ({ topic: `t${rank}`, rank })).concat({ topic: "x", out: "단발" });
-  const full = { korea: five, world: five, ai: five };
+  // 보도량이 rank 순으로 줄고, 빠진 후보는 가장 작다.
+  const five = [1, 2, 3, 4, 5].map((rank) => ({ topic: `t${rank}`, days: 6 - rank, outlets: 12 - rank, rank })).concat({ topic: "x", days: 1, outlets: 2, out: "단발" });
+  const kor = five.map((t) => ({ ...t, click: [0, 0] }));
+  const full = { korea: kor, world: five, ai: five };
   assert.deepEqual(badSelections([{ week: "2026-W40" }, { week: "2026-Q4" }, { week: "2026-W41", selection: full }]), []);
   assert.deepEqual(badSelections([{ week: "2026-W41" }]), ["2026-W41: selection 이 없다"]);
   assert.deepEqual(badSelections([{ week: "2026-W42", selection: { ...full, world: [] } }]), ["2026-W42: world 가 비었다"]);
   assert.deepEqual(badSelections([{ week: "2027-W01", selection: { ...full, ai: five.filter((t) => t.rank !== 3) } }]), ["2027-W01: ai 에 rank 3 가 없다"]);
+});
+
+test("W41 부터 선정 기록의 형식과 1면 우선 순서를 본다", () => {
+  const five = [1, 2, 3, 4, 5].map((rank) => ({ topic: `t${rank}`, days: 6 - rank, outlets: 12 - rank, rank })).concat({ topic: "x", days: 1, outlets: 2, out: "단발" });
+  const kor = five.map((t) => ({ ...t, click: [0, 0] }));
+  const full = { korea: kor, world: five, ai: five };
+  const sel = (over) => [{ week: "2026-W41", selection: { ...full, ...over } }];
+  const swap = (list, a, b) => list.map((t) => (t.rank === a ? { ...t, rank: b } : t.rank === b ? { ...t, rank: a } : t));
+  assert.deepEqual(badSelections(sel({})), []);
+
+  // 국내 click 이 없거나 모양이 틀리면 걸린다. 해외는 click 을 보지 않는다.
+  assert.match(badSelections(sel({ korea: five })).join(), /korea "t1" 에 click/);
+  assert.match(badSelections(sel({ korea: kor.map((t) => (t.rank === 2 ? { ...t, click: [1] } : t)) })).join(), /"t2" 에 click/);
+  // 빠진 후보에 out 이 없거나, rank 와 out 이 함께 있거나, days·outlets 가 없으면 걸린다.
+  assert.match(badSelections(sel({ world: five.map((t) => (t.out ? { topic: t.topic, days: 1, outlets: 2 } : t)) })).join(), /world "x" 에 rank 1~5 와 out 중 하나/);
+  assert.match(badSelections(sel({ ai: five.map((t) => (t.rank === 1 ? { ...t, out: "단발" } : t)) })).join(), /ai "t1" 에 rank 1~5 와 out/);
+  assert.match(badSelections(sel({ ai: five.map((t) => (t.rank === 1 ? { topic: "t1", rank: 1 } : t)) })).join(), /"t1" 에 days·outlets/);
+
+  // 역전에 over 가 없으면 걸리고, over 가 있으면 통과한다.
+  assert.deepEqual(badSelections(sel({ world: swap(five, 1, 2) })), ['2026-W41: world rank 1 "t2" 에 over 가 없다. 더 크게 다뤄진 "t1" 가 rank 2 다']);
+  assert.deepEqual(badSelections(sel({ world: swap(five, 1, 2).map((t) => (t.rank === 1 ? { ...t, over: "되돌리기 어려움" } : t)) })), []);
+  // 빠진 후보가 더 크면 실린 항목마다 over 가 있어야 한다.
+  const bigOut = five.map((t) => (t.out ? { ...t, outlets: 20 } : t));
+  assert.equal(badSelections(sel({ ai: bigOut })).length, 5);
+  assert.match(badSelections(sel({ ai: bigOut })).join(), /"x" 가 빠졌다/);
+  // 국내는 1면 신문 수와 날 수가 같으면 클릭의 곳, 날 순으로 가른다.
+  const tie = (click1, click2) => kor.map((t) => (t.rank === 1 ? { ...t, days: 3, outlets: 9, click: click1 } : t.rank === 2 ? { ...t, days: 3, outlets: 9, click: click2 } : t));
+  assert.deepEqual(badSelections(sel({ korea: tie([1, 5], [4, 4]) })), []);
+  assert.match(badSelections(sel({ korea: tie([4, 4], [1, 5]) })).join(), /korea rank 1 "t1" 에 over 가 없다/);
+  assert.match(badSelections(sel({ korea: tie([2, 5], [3, 5]) })).join(), /korea rank 1 "t1" 에 over 가 없다/);
+  assert.deepEqual(badSelections(sel({ korea: tie([3, 5], [3, 5]) })), []);
+
+  // W40 이전은 형식이 달라도 보지 않는다.
+  assert.deepEqual(badSelections([{ week: "2026-W40", selection: { korea: five, world: swap(five, 1, 2), ai: [] } }]), []);
 });

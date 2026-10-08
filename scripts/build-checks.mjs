@@ -250,8 +250,8 @@ export function missingRuns(ids, runs) {
   return [...new Set(ids)].filter((id) => !have.has(id)).sort();
 }
 
-// 선정 기록이 없거나 모자란 주간호. 런북 4절이 분야마다 실린 5개(rank 1~5)와 뺀 후보를
-// 적게 한다. 선정 기록은 2026-10-08 에 정했으므로 그 뒤 첫 호인 2026-W41 부터 본다.
+// 선정 기록이 없거나 모자란 주간호. 런북 4절이 분야마다 실린 5개(rank 1~5)와 뺀 후보(out)를
+// 보도량(국내는 click 포함)과 함께 적게 한다. 선정 기록은 2026-10-08 에 정했으므로 그 뒤 첫 호인 2026-W41 부터 본다.
 const SELECTION_FROM = "2026-W41";
 export function badSelections(runs) {
   return runs
@@ -261,9 +261,34 @@ export function badSelections(runs) {
       return ["korea", "world", "ai"].flatMap((f) => {
         const list = r.selection[f];
         if (!Array.isArray(list) || !list.length) return [`${r.week}: ${f} 가 비었다`];
-        const ranks = list.map((t) => t.rank);
+        const where = `${r.week}: ${f}`;
+        const shape = list.flatMap((t) => {
+          const name = typeof t?.topic === "string" ? t.topic : JSON.stringify(t);
+          const bad = [];
+          if (typeof t?.topic !== "string") bad.push("topic");
+          if (typeof t?.days !== "number" || typeof t?.outlets !== "number") bad.push("days·outlets");
+          if (f === "korea" && !(Array.isArray(t?.click) && t.click.length === 2 && t.click.every((n) => typeof n === "number"))) bad.push("click");
+          const isRank = [1, 2, 3, 4, 5].includes(t?.rank), isOut = typeof t?.out === "string" && t.out !== "";
+          if (isRank === isOut || (t?.rank !== undefined && !isRank) || (t?.out !== undefined && !isOut)) bad.push("rank 1~5 와 out 중 하나");
+          return bad.length ? [`${where} "${name}" 에 ${bad.join(", ")} 가 맞지 않다`] : [];
+        });
+        const ranks = list.map((t) => t?.rank);
         const lack = [1, 2, 3, 4, 5].filter((n) => !ranks.includes(n));
-        return lack.length ? [`${r.week}: ${f} 에 rank ${lack.join(",")} 가 없다`] : [];
+        if (lack.length) shape.push(`${where} 에 rank ${lack.join(",")} 가 없다`);
+        if (shape.length) return shape;
+        // 1면 우선 순서가 실제로 지켜지는지 본다(2026-10-08). 더 크게 다뤄진 사안을 아래에 두거나 뺐으면 over 로 이유를 댄다.
+        const size = (t) => (f === "korea" ? [t.outlets, t.days, t.click[1], t.click[0]] : [t.outlets, t.days]);
+        const bigger = (a, b) => {
+          const x = size(a), y = size(b);
+          const i = x.findIndex((v, k) => v !== y[k]);
+          return i >= 0 && x[i] > y[i];
+        };
+        return list
+          .filter((a) => a.rank && !(typeof a.over === "string" && a.over.trim()))
+          .flatMap((a) => {
+            const b = list.find((t) => (t.out || t.rank > a.rank) && bigger(t, a));
+            return b ? [`${where} rank ${a.rank} "${a.topic}" 에 over 가 없다. 더 크게 다뤄진 "${b.topic}" 가 ${b.out ? "빠졌다" : `rank ${b.rank} 다`}`] : [];
+          });
       });
     })
     .sort();
