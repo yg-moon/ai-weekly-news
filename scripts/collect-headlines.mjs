@@ -230,12 +230,13 @@ function parseRss(xml) {
 
 function parseAnthropic(html) {
   const out = [];
-  // 카드마다 링크와 "Aug 31, 2026" 형태의 날짜가 함께 나온다.
-  for (const m of html.matchAll(/href="(\/news\/[^"]+)"[\s\S]{0,600}?([A-Z][a-z]{2}) (\d{1,2}), (\d{4})/g)) {
+  // 카드마다 링크와 "Aug 31, 2026" 형태의 날짜가 함께 나온다. 모델 발표는 /news/ 밖의 /claude-sonnet-5-5
+  // 같은 주소라, /news/ 만 잡던 때는 Opus 5.5·Sonnet 5.5·Haiku 5.5 가 빠졌다(2026-10-08).
+  for (const m of html.matchAll(/href="(\/(?:news\/[^"]+|claude-[a-z0-9-]+))"[\s\S]{0,600}?([A-Z][a-z]{2}) (\d{1,2}), (\d{4})/g)) {
     const mi = MONTHS.findIndex((x) => x.startsWith(m[2]));
     if (mi < 0) continue;
     const day = `${m[4]}-${String(mi + 1).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}`;
-    const slug = m[1].replace("/news/", "").replace(/-/g, " ");
+    const slug = m[1].replace(/^\/(news\/)?/, "").replace(/-/g, " ");
     out.push({ title: slug, url: `https://www.anthropic.com${m[1]}`, day });
   }
   return out;
