@@ -92,6 +92,13 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
       .map((s) => `en/${kind}/${d.id}: ${s.slice(0, 80)}…`)));
   if (longSentences.length) warnings.push(`40단어가 넘는 영문 문장이 있다(나누기를 권한다):\n  ${longSentences.join("\n  ")}`);
 
+  // 영문판에 "this week" 같은 주 단위 상대 시점을 쓰면 빌드를 멈춘다(주간 런북 13절). 한국어판은
+  // 품질 점검 3.3.4 가 보지만 영문판은 보지 않아, 번역에서 세 곳이 새로 생긴 적이 있다(2026-10-06).
+  // 따옴표 안의 인용은 원문 그대로 두므로 보지 않는다.
+  const relWeeks = KIND_NAMES.flatMap((kind) => SETS.en[kind].flatMap((d) =>
+    [...d.body.replace(/“[^”]*”/g, "").matchAll(/.{0,20}\b(?:this|last|next) week\b.{0,20}/gi)].map((m) => `en/${kind}/${d.id}: …${m[0]}…`)));
+  if (relWeeks.length) errors.push(`영문판에 상대 시점 표기가 있다. 날짜로 바꾸거나 뺀다:\n  ${relWeeks.join("\n  ")}`);
+
   // 다른 항목을 번호로 가리키면 빌드를 멈춘다. "(국내 2번)" 은 분기호가 항목을 떼어
   // 다시 묶으면 가리킬 곳이 없다. 2026-W31~W38 에서 16곳이 나와 모두 고쳤다.
   const crossRefs = Object.values(sets).flat().flatMap((p) =>

@@ -78,7 +78,7 @@ test("주 경계를 넘는 날짜는 가까운 해로 읽는다", () => {
   assert.deepEqual(dateProblems("Sep 21 (Tue)", "2026-W39", "en"), ["9/21 은 Mon이다"]);
 });
 
-test("영문판이 원본과 어긋나면 잡는다", () => {
+test("영문판이 원본과 어긋나거나 상대 시점을 쓰면 잡는다", () => {
   const dir = mkdtempSync(join(tmpdir(), "checks-"));
   mkdirSync(join(dir, "week"));
   const koBody = weekBody();
@@ -100,6 +100,8 @@ test("영문판이 원본과 어긋나면 잡는다", () => {
   assert.match(run({ ko, en: en("He said \"no\"."), content: dir }), /곧은 따옴표/);
   assert.match(run({ ko, en: en("Something happened.", "000000000000"), content: dir }), /원본이 바뀌었다/);
   assert.match(run({ ko: { week: [] }, en: en("Something happened."), content: dir }), /한국어 원본이 없다/);
+  assert.match(run({ ko, en: en("Prices fell steeply this week."), content: dir }), /상대 시점/);
+  assert.equal(run({ ko, en: en("He said, “We will decide next week.”"), content: dir }), "");
 });
 
 test("분기호 항목의 모양을 잡는다", () => {

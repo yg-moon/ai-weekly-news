@@ -11,7 +11,8 @@
 // - 좁은 폰: 340px 에서 화면이 옆으로 넘치는지
 // - 목차 버튼: 주간호에서 아래로 읽을 때는 숨고, 목차를 지나 위로 스크롤하면 나타나고, 데스크톱에는 없는지
 // - 옆 목차: 데스크톱에서 주간호·분기호의 목차가 옆으로 넘쳐 좌우 스크롤이 생기는지,
-//   낮은 화면에서 끝 항목을 읽을 때 지금 읽는 항목이 목차 안에 보이는지
+//   낮은 화면에서 끝 항목을 읽을 때 지금 읽는 항목이 목차 안에 보이는지, 높은 화면에서 맨 아래까지 내리면
+//   끝 항목이 지금 읽는 항목인지
 // 걸린 것이 있으면 종료 코드 1 로 끝난다.
 
 import { createServer } from "node:http";
@@ -187,6 +188,17 @@ for (const path of [`week/${latest("week")}/`, `quarter/${latest("quarter")}/`])
   });
   if (hidden) problems.push(`옆 목차 ${path}: 낮은 화면에서 ${hidden}`);
   await low.close();
+  // 큰 모니터 높이. 끝의 짧은 항목은 화면 위쪽 3분의 1 선까지 못 올라와, 맨 아래에서도 강조가
+  // 그 앞 항목에 머물렀다(2026-10-08).
+  const tall = await browser.newPage({ viewport: { width: 1280, height: 1440 } });
+  await tall.goto(base + path, { waitUntil: "networkidle" });
+  const stuck = await tall.evaluate(async () => {
+    scrollTo(0, document.documentElement.scrollHeight);
+    await new Promise((r) => setTimeout(r, 300));
+    return document.querySelector("#toc [aria-current]") !== [...document.querySelectorAll("#toc a")].pop();
+  });
+  if (stuck) problems.push(`옆 목차 ${path}: 높은 화면에서 맨 아래까지 내려도 끝 항목이 지금 읽는 항목으로 표시되지 않는다`);
+  await tall.close();
 }
 
 await browser.close();
