@@ -91,3 +91,4 @@
 - `data/domestic-front/<WEEK>/`: 사안별 정규식(`topics.tsv`)과 걸린 1면 제목(`count-detail.txt`). W40 은 집계표(`count.txt`)만 있다.
 - `data/world-ai-W36-W39-tables.md`: 해외·AI 네 주의 방식별 순위표.
 - `data/W40-selection-review.json`: 1번 시범의 선정 기록.
+- `data/W40-topics.json`: W40 세 분야 사안 정의. `scripts/count-topics.mjs` 의 입력 예시다(2026-10-11). 국내 1면 값이 실험 집계와 다른 것은 창 차이다. 실험은 월~토 신문을, 지금 수집기는 화~다음 주 월 신문을 센다.
