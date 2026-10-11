@@ -84,7 +84,7 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --top 40
 
 | 분야 | 측정 방법 |
 |---|---|
-| 국내 | **1면에서 센다.** 사안마다 며칠에 걸쳐 몇 개 신문이 1면에 실었는지 센다. 클릭 랭킹의 일·곳은 참고값으로 함께 적는다. 정규식으로 묶은 뒤 걸린 제목을 눈으로 확인한다. 해외 분야에 실린 사안은 국내 순위에서 뺀다 |
+| 국내 | **1면에서 센다.** 사안마다 며칠에 걸쳐 몇 개 신문이 1면에 실었는지 센다. 클릭 랭킹의 일·곳은 참고값으로 함께 적는다. 정규식으로 묶은 뒤 걸린 제목을 눈으로 확인한다(4절 `count-topics.mjs`). 해외 분야에 실린 사안은 국내 순위에서 뺀다 |
 | 해외 | 도구로 빈도를 뽑고 묶는다. 영어는 고유명사만 센다. 보도량은 (날짜, 매체) 쌍의 수다. Guardian·NPR 은 하루 1곳으로 센다. 기사 수는 참고값으로만 적는다 |
 | AI | **목록 전체를 읽고 `aimedia` 에서 센다.** 사안마다 며칠에 걸쳐 몇 개 매체가 다뤘는지 센다. 기사 수는 TechCrunch 가 절반을 넘어 매체 수로 센다. 뉴스룸과 HN 은 후보를 보탤 뿐 보도량이 아니다. HN 은 개발자 관심사로 치우쳐 제품 출시를 부풀린다 |
 
@@ -130,6 +130,27 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --covered "용혜인,호르
 
 걸린 주제마다 뺀 이유를 댈 수 있어야 한다. 5절 게이트에 걸린 것이면 그대로 두고, 아니면 순위를 다시 본다.
 
+**보도량은 `scripts/count-topics.mjs` 로 센다.** 손으로 센 숫자를 쓰지 않는다. 실린 5개와 그 아래 상위 후보마다 사안 정의를 JSON 으로 쓴다. 한 줄이 한 사안이고 `pattern`·`exclude` 는 제목에 거는 정규식이다(대소문자 무시).
+
+```json
+[
+ { "field": "korea", "topic": "종부세 개편", "pattern": "종부세|종합부동산세", "exclude": "재산세만" },
+ { "field": "world", "topic": "Gaza ceasefire", "pattern": "Gaza|Hamas" },
+ { "field": "ai", "topic": "GPT-6 출시", "pattern": "GPT-6" }
+]
+```
+
+정의 파일은 `data/topics/<WEEK>.json` 에 쓴다. `data/runs/` 에 두지 않는다. 빌드가 그 폴더의 `*.json` 을 모두 실행 기록으로 읽기 때문이다. 백필의 정의는 `experiments/exp1-news-selection/data/backfill-topics/` 에 둔다.
+
+```bash
+mkdir -p data/topics
+node scripts/count-topics.mjs /tmp/<WEEK> data/topics/<WEEK>.json --detail
+```
+
+1. `--detail` 이 stderr 로 내는 걸린 제목을 사안마다 읽는다.
+2. 다른 사안이 걸렸으면 그 사안의 `exclude` 에 넣고(모든 사안에 걸리는 것은 `--exclude`) 다시 센다. 빠진 제목이 있으면 `pattern` 을 넓힌다.
+3. 오탐이 없을 때 stdout 의 숫자를 `selection.json` 에 그대로 옮긴다. 순위·`out`·`over` 는 그 숫자로 정한다.
+
 **고른 결과를 기록한다.** 순위를 확정하면 `/tmp/<WEEK>/selection.json` 에 분야마다 실린 5개와 그 아래 보도량 상위 후보 세 개쯤을 적는다. 실행 기록이 이 파일을 함께 담아, 나중에 무엇이 왜 실리고 빠졌는지 돌아볼 수 있게 한다.
 
 ```json
@@ -139,7 +160,9 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --covered "용혜인,호르
 ], "world": [ … ], "ai": [ … ] }
 ```
 
-- `out` 은 뺀 이유 하나다: `예고` `단발` `중복` `국면 없음` `원문 확인 불가`.
+- `out` 은 뺀 이유 하나다: `예고` `단발` `중복` `국면 없음` `원문 확인 불가` `발언` `경계`.
+  - `발언`: 발언·제안·계획에 그쳐 집행된 것이 없다.
+  - `경계`: 실린 것보다 보도량이 크지만 실을 만큼 확정되지 않았거나 실린 항목과 겹쳐 싣지 않은 사안이다.
 - 보도량이 더 많은 후보보다 위에 올린 항목에는 `over` 에 어느 기준 때문인지 한 줄 쓴다.
 - AI 항목이 `aimedia` 0곳인데 실으면 `over` 에 실을 이유와 그 사안을 다룬 다른 매체를 적는다. 뉴스룸 발표라고 후보에서 빼지는 않는다.
 - 국내의 `days`·`outlets` 는 1면 값이다. 국내 항목은 `click` 에 클릭 랭킹의 날·곳을 함께 적는다. 클릭에 없으면 `[0, 0]` 이다.
@@ -360,7 +383,7 @@ W=content/week/<WEEK>.md
 
 **영문판을 만든다.** 기계 검사를 통과한 한국어 원고를 [`TRANSLATION_EN.md`](TRANSLATION_EN.md) 대로 옮겨 `content/en/week/<WEEK>.md` 에 쓰고, `node scripts/en-fill.mjs week <WEEK>` 로 마무리한다. 두 언어판은 한 커밋으로 함께 발행한다. 빌드가 두 원고를 맞춰 보므로 어긋난 채로는 배포되지 않는다.
 
-**실행 기록을 남긴다.** 푸시 직전에 이 세션의 대화 기록으로 비용·시간·모델과 읽은 헤드라인 수를 계산하고, 4절의 선정 기록과 함께 `data/runs/<WEEK>.json` 에 쓴다. 발행물과 같은 커밋에 넣는다.
+**실행 기록을 남긴다.** 푸시 직전에 이 세션의 대화 기록으로 비용·시간·모델과 읽은 헤드라인 수를 계산하고, 4절의 선정 기록과 함께 `data/runs/<WEEK>.json` 에 쓴다. 4절의 사안 정의 `data/topics/<WEEK>.json` 과 함께 발행물과 같은 커밋에 넣는다.
 
 ```bash
 node scripts/record-run.mjs <WEEK>
@@ -371,7 +394,7 @@ node scripts/record-run.mjs <WEEK>
 
 ```bash
 npm ci && npm run build
-git add content/week/<WEEK>.md content/en/week/<WEEK>.md data/runs/
+git add content/week/<WEEK>.md content/en/week/<WEEK>.md data/runs/<WEEK>.json data/topics/<WEEK>.json
 git commit -m "Publish <WEEK> (<MON>~<SUN>)"
 git push origin main
 ```
