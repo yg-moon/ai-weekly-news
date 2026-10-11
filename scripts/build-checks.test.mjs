@@ -257,6 +257,12 @@ test("W41 부터 선정 기록의 형식과 1면 우선 순서를 본다", () =>
   assert.match(badSelections(sel({ korea: tie([2, 5], [3, 5]) })).join(), /korea rank 1 "t1" 에 over 가 없다/);
   assert.deepEqual(badSelections(sel({ korea: tie([3, 5], [3, 5]) })), []);
 
+  // AI 항목이 aimedia 0곳이면 순서와 관계없이 over 가 있어야 한다. 해외는 0곳이어도 보지 않는다.
+  const zero = (list) => list.map((t) => (t.rank === 5 ? { ...t, days: 0, outlets: 0 } : t.out ? { ...t, days: 0, outlets: 0 } : t));
+  assert.deepEqual(badSelections(sel({ ai: zero(five) })), ['2026-W41: ai rank 5 "t5" 는 aimedia 0곳이라 over 가 있어야 한다']);
+  assert.deepEqual(badSelections(sel({ ai: zero(five).map((t) => (t.rank === 5 ? { ...t, over: "Google 발표, Ars Technica 보도" } : t)) })), []);
+  assert.deepEqual(badSelections(sel({ world: zero(five) })), []);
+
   // W40 이전은 형식이 달라도 보지 않는다.
   assert.deepEqual(badSelections([{ week: "2026-W40", selection: { korea: five, world: swap(five, 1, 2), ai: [] } }]), []);
 });

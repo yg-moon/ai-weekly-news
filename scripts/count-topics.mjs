@@ -13,10 +13,10 @@
 //        click = [날, 곳] 네이버 랭킹(domestic). yna = 신문 없는 날 연합 주요뉴스에 걸린 건수(참고).
 //        articles = 1면 기사 수(참고).
 // world  outlets = (날짜, 매체) 쌍의 수 — 해외 보도량 그 자체다. Wikipedia 항목은 인용 URL 의
-//        도메인마다, Guardian 은 기사 수와 관계없이 하루 1곳이다. 위키가 인용한 Guardian 도
+//        도메인마다, Guardian·NPR 은 기사 수와 관계없이 하루 1곳이다. 위키가 인용한 Guardian·NPR 도
 //        같은 날이면 한 쌍이다. days = 걸린 날 수. media = 서로 다른 매체 수, articles = 걸린 항목 수(참고).
 // ai     days·outlets = aimedia 에 걸린 날 수·매체 수. articles = 기사 수(참고).
-// --detail 은 사안마다 걸린 제목을 stderr 로 낸다(F 1면, Y 연합, C 클릭, W 위키, G Guardian, A 매체).
+// --detail 은 사안마다 걸린 제목을 stderr 로 낸다(F 1면, Y 연합, C 클릭, W 위키, G Guardian, N NPR, A 매체).
 // 오탐은 정의의 exclude 나 --exclude(모든 사안에 적용)로 뺀다.
 
 import { readFileSync, readdirSync } from "node:fs";
@@ -65,6 +65,7 @@ function itemOf(source, day, group, title) {
   }
   if (source === "world") {
     if (rest === "The Guardian") return { ...base, kind: "guardian", day: d, outlet: "theguardian.com" };
+    if (rest === "NPR") return { ...base, kind: "npr", day: d, outlet: "npr.org" };
     return { ...base, kind: "wiki", day: d, outlet: null };
   }
   if (source === "aimedia") return { ...base, kind: "aimedia", day: d, outlet: rest };
@@ -100,7 +101,7 @@ export function parseDefs(text, name = "") {
   return defs;
 }
 
-const KINDS = { korea: ["front", "yna", "click"], world: ["wiki", "guardian"], ai: ["aimedia"] };
+const KINDS = { korea: ["front", "yna", "click"], world: ["wiki", "guardian", "npr"], ai: ["aimedia"] };
 const size = (field, t) => (field === "korea" ? [t.outlets, t.days, t.click[1], t.click[0]] : [t.outlets, t.days]);
 
 // 사안마다 센다. 반환: { result: { korea, world, ai }, hits: [{ field, topic, items }] }
@@ -136,7 +137,7 @@ export function countTopics(items, defs, { exclude } = {}) {
     } else if (d.field === "world") {
       const pairs = new Set();
       for (const i of hit) {
-        const names = i.kind === "guardian" ? [i.outlet] : i.urls.map(outletOf).filter(Boolean);
+        const names = i.kind !== "wiki" ? [i.outlet] : i.urls.map(outletOf).filter(Boolean);
         for (const o of names) pairs.add(`${i.day}\t${o}`);
       }
       result.world.push({
@@ -159,7 +160,7 @@ export function countTopics(items, defs, { exclude } = {}) {
   return { result, hits };
 }
 
-const MARK = { front: "F", yna: "Y", click: "C", wiki: "W", guardian: "G", aimedia: "A" };
+const MARK = { front: "F", yna: "Y", click: "C", wiki: "W", guardian: "G", npr: "N", aimedia: "A" };
 export function formatDetail(hits) {
   const order = Object.keys(MARK);
   return hits

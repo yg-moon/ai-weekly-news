@@ -3,7 +3,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseFront, parseYna, parseGuardian } from "./collect-headlines.mjs";
+import { parseFront, parseYna, parseGuardian, parseNpr } from "./collect-headlines.mjs";
 
 const brick = (page, links) => `
 <div class="newspaper_brick_item _start_page">
@@ -59,4 +59,22 @@ test("Guardian 날짜 목록에서 영상·라이브블로그·브리핑을 뺀�
     a(`world/${path}/flydubai-pilot-stabbing`, "Flydubai pilot arrested after stabbing"),
   ].join("\n");
   assert.deepEqual(parseGuardian(html, path).map((i) => i.title), ["Flydubai pilot arrested after stabbing", "Sydney floods"]);
+});
+
+test("NPR business 아카이브에서 그날 기사만 남기고 같은 기사는 한 번만 둔다", () => {
+  // 2026-10-11 받은 9-16-2026 쪽에서 줄였다. 쪽은 그 날짜부터 거슬러 15건이라 앞 날짜가 섞인다.
+  const a = (href, t) => `<article class="item has-image"><div class="item-info"><h2 class="title"><a href="https://www.npr.org/${href}"  data-metrics-ga4='{"action":"topic_homepage_recirculation_click","clickPosition":"2.1"}' >${t}</a></h2></div></article>`;
+  const html = [
+    a("2026/09/16/nx-s1-5968724/federal-reserve-interest-rates-inflation-economy", "The Fed raises interest rates for the first time in over three years"),
+    a("2026/09/16/nx-s1-5971223/how-will-the-feds-interest-rate-hike", "How will the Fed&#8217;s interest rate hike affect costs?"),
+    a("2026/09/16/nx-s1-5968724/federal-reserve-interest-rates-inflation-economy", "The Fed raises interest rates for the first time in over three years"),
+    a("2026/09/15/nx-s1-5968711/clarity-act-crypto-senate-vote", "A Trump-backed crypto bill suffered a defeat"),
+    a("sections/planet-money/2026/09/16/g-s1-1/millionaires", "The powerful millionaires hiding in plain sight"),
+  ].join("\n");
+  assert.deepEqual(parseNpr(html, "2026-09-16"), [
+    { title: "The Fed raises interest rates for the first time in over three years", url: "https://www.npr.org/2026/09/16/nx-s1-5968724/federal-reserve-interest-rates-inflation-economy" },
+    { title: "How will the Fed’s interest rate hike affect costs?", url: "https://www.npr.org/2026/09/16/nx-s1-5971223/how-will-the-feds-interest-rate-hike" },
+    { title: "The powerful millionaires hiding in plain sight", url: "https://www.npr.org/sections/planet-money/2026/09/16/g-s1-1/millionaires" },
+  ]);
+  assert.deepEqual(parseNpr(html, "2026-09-17"), []);
 });

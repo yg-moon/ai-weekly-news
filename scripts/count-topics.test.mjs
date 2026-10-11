@@ -143,3 +143,32 @@ test("실험 형식의 TSV 정의를 국내 사안으로 읽는다", () => {
   ]);
   assert.throws(() => parseDefs('[{"field":"econ","topic":"x","pattern":"y"}]'), /field/);
 });
+
+test("해외: NPR 묶음은 하루 1곳, 위키가 같은 날 인용한 NPR 과 한 쌍이다", () => {
+  const text = head("world") + `
+### 2026-09-16 · Business and economy
+- The Federal Reserve raises its benchmark interest rate by a quarter point. (NPR)
+  https://www.npr.org/2026/09/16/x
+
+### 2026-09-16 · NPR
+- The Fed raises interest rates for the first time in over three years
+  https://www.npr.org/2026/09/16/a
+- How will the Fed's interest rate hike affect costs?
+  https://www.npr.org/2026/09/16/b
+
+### 2026-09-17 · NPR
+- Mortgage rates jump after the Fed hike
+  https://www.npr.org/2026/09/17/c
+
+### 2026-09-17 · The Guardian
+- Fed rate rise rattles emerging markets
+  https://www.theguardian.com/world/2026/sep/17/d
+`;
+  const its = parseHeadlines(text, "world");
+  assert.deepEqual(its.filter((i) => i.kind === "npr").map((i) => `${i.day} ${i.outlet}`), ["2026-09-16 npr.org", "2026-09-16 npr.org", "2026-09-17 npr.org"]);
+  const defs = parseDefs(JSON.stringify([{ field: "world", topic: "연준 인상", pattern: "Fed(eral Reserve)?\\b" }]));
+  const { result, hits } = countTopics(its, defs);
+  // 9/16 npr.org(위키 인용 + 목록 2건), 9/17 npr.org·theguardian.com
+  assert.deepEqual(result.world[0], { topic: "연준 인상", days: 2, outlets: 3, media: 2, articles: 5 });
+  assert.match(formatDetail(hits), /  N 0916 npr\.org The Fed raises/);
+});

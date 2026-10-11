@@ -7,6 +7,7 @@
 // domestic  네이버 뉴스 랭킹 — 날짜별·언론사별 많이 본 기사
 // front     10개 일간지 A1면 — 대상 주 화요일 ~ 다음 주 월요일 신문. 신문 없는 날은 연합 주요뉴스로 메운다
 // world     Wikipedia Portal:Current events(날짜별, 인용 URL 포함) + The Guardian 날짜 목록(영상·라이브·브리핑 제외)
+//           + NPR business 날짜 아카이브(미국 경제·통화정책 보완)
 // tech      Hacker News 프런트 페이지 — 날짜별 기술 화제
 // ai        AI 연구소·기업 뉴스룸 1차 출처
 // aimedia   TechCrunch·The Verge 날짜별 AI 기사 — AI 의 보도량을 센다
@@ -257,6 +258,26 @@ function guardianDay(day) {
   return parseGuardian(get(`https://www.theguardian.com/world/${path}/all`), path);
 }
 
+// 해외 보조 2. 위키·Guardian world 가 미국 경제·통화정책을 거의 담지 않아 W38 연준 금리 인상이
+// 후보에서 빠졌다(experiments/exp2-measure-gaps). NPR business 날짜 아카이브는 지난 날짜도 받아진다.
+// 쪽은 그 날짜부터 거슬러 15건이라 앞 날짜 기사가 섞인다. 기사 주소의 날짜(/YYYY/MM/DD/)로
+// 그날 것만 남긴다. 주소에 시각이 없어 KST 로 옮기지 못하고 NPR 날짜(미국)를 그대로 쓴다. Guardian 과 같다.
+export function parseNpr(html, day) {
+  const want = day.replace(/-/g, "/");
+  const items = [];
+  for (const m of html.matchAll(/<h2 class="title"><a href="(https:\/\/www\.npr\.org\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g)) {
+    const d = m[1].match(/\/(\d{4}\/\d\d\/\d\d)\//);
+    if (!d || d[1] !== want) continue;
+    if (!items.some((i) => i.url === m[1])) items.push({ title: clean(m[2]), url: m[1] });
+  }
+  return items;
+}
+
+function nprDay(day) {
+  const [yy, mm, dd] = day.split("-").map(Number);
+  return parseNpr(get(`https://www.npr.org/sections/business/archive?date=${mm}-${dd}-${yy}`), day);
+}
+
 // ---------- AI 테크 매체 ----------
 // 뉴스룸은 회사마다 한 번 발표해서 "얼마나 크게 다뤄졌는가"를 셀 수 없다.
 // 테크 매체의 날짜별 AI 기사로 며칠에 걸쳐 몇 개 매체가 다뤘는지 센다.
@@ -379,9 +400,11 @@ const ai = (from, to) => collectFeeds(FEEDS, from, to);
 
 // 해외는 날짜별 Wikipedia 를 뼈대로 하고 Guardian 날짜 목록을 덧붙인다.
 // Guardian 은 날짜마다 한 묶음이라 며칠에 걸쳐 다뤘는지 셀 수 있다. 기사 수는 점수로 쓰지 않는다.
+// NPR business 도 같은 형식(날짜 · 매체)으로 덧붙인다. 받기가 실패해도 경고만 내고 이어 간다.
 function world(from, to) {
   const out = [];
   const guardian = [];
+  const npr = [];
   for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1)) {
     const day = dt.toISOString().slice(0, 10);
     try {
@@ -396,8 +419,14 @@ function world(from, to) {
     } catch (e) {
       console.error(`경고: world The Guardian ${day} 를 못 받았다 (${e.message}).`);
     }
+    try {
+      const items = nprDay(day);
+      if (items.length) npr.push({ group: `${day} · NPR`, items });
+    } catch (e) {
+      console.error(`경고: world NPR ${day} 를 못 받았다 (${e.message}). 이 날의 미국 경제 보도량이 빠진다.`);
+    }
   }
-  return out.concat(guardian);
+  return out.concat(guardian, npr);
 }
 
 // ---------- 실행 ----------

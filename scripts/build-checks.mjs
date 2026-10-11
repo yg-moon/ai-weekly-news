@@ -276,6 +276,9 @@ export function badSelections(runs) {
         const lack = [1, 2, 3, 4, 5].filter((n) => !ranks.includes(n));
         if (lack.length) shape.push(`${where} 에 rank ${lack.join(",")} 가 없다`);
         if (shape.length) return shape;
+        const hasOver = (t) => typeof t.over === "string" && t.over.trim() !== "";
+        // 매체 보도 없는 AI 발표는 막지 않고, 실을 이유와 그 사안을 다룬 다른 매체를 over 에 남긴다(2026-10-11, exp2).
+        const silent = f === "ai" ? list.filter((t) => t.rank && t.outlets === 0 && !hasOver(t)).map((t) => `${where} rank ${t.rank} "${t.topic}" 는 aimedia 0곳이라 over 가 있어야 한다`) : [];
         // 1면 우선 순서가 실제로 지켜지는지 본다(2026-10-08). 더 크게 다뤄진 사안을 아래에 두거나 뺐으면 over 로 이유를 댄다.
         const size = (t) => (f === "korea" ? [t.outlets, t.days, t.click[1], t.click[0]] : [t.outlets, t.days]);
         const bigger = (a, b) => {
@@ -283,12 +286,12 @@ export function badSelections(runs) {
           const i = x.findIndex((v, k) => v !== y[k]);
           return i >= 0 && x[i] > y[i];
         };
-        return list
-          .filter((a) => a.rank && !(typeof a.over === "string" && a.over.trim()))
+        return silent.concat(list
+          .filter((a) => a.rank && !hasOver(a) && !(f === "ai" && a.outlets === 0))
           .flatMap((a) => {
             const b = list.find((t) => (t.out || t.rank > a.rank) && bigger(t, a));
             return b ? [`${where} rank ${a.rank} "${a.topic}" 에 over 가 없다. 더 크게 다뤄진 "${b.topic}" 가 ${b.out ? "빠졌다" : `rank ${b.rank} 다`}`] : [];
-          });
+          }));
       });
     })
     .sort();
