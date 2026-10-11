@@ -63,11 +63,15 @@ const clean = (s) =>
 
 function domestic(day) {
   const ymd = day.replace(/-/g, "");
-  const buf = get(`https://news.naver.com/main/ranking/popularDay.naver?date=${ymd}`, { binary: true });
-  const html = new TextDecoder("euc-kr").decode(buf); // 네이버 랭킹은 EUC-KR
   // 아카이브 밖 날짜를 요청하면 네이버가 오늘 랭킹을 대신 준다. 그대로 쓰면
   // 오늘 뉴스가 그 주의 기사로 실린다. 페이지의 날짜 이동 목록에 요청한
-  // 날짜가 있는지로 가려낸다.
+  // 날짜가 있는지로 가려낸다. 아카이브 안의 날짜도 가끔 날짜 없는 빈 페이지(23KB)가 오고
+  // 다시 받으면 채워져서(2026-10-11, 8-30·9-01), 세 번까지 다시 받는다.
+  let html = "";
+  for (let i = 0; i < 3 && !html.includes(`date=${ymd}`); i++) {
+    if (i) execFileSync("sleep", ["5"]);
+    html = new TextDecoder("euc-kr").decode(get(`https://news.naver.com/main/ranking/popularDay.naver?date=${ymd}`, { binary: true })); // 네이버 랭킹은 EUC-KR
+  }
   if (!html.includes(`date=${ymd}`))
     throw new Error(`${day} 은 네이버 랭킹 아카이브 밖이다 — 오늘 랭킹이 대신 온다`);
   const out = [];
