@@ -300,7 +300,8 @@ function aimedia(from, to) {
   const all = [];
   for (const [name, fn] of [["TechCrunch", techcrunch], ["The Verge", verge]]) {
     try {
-      for (const i of fn(from, to)) all.push({ ...i, name });
+      // WordPress 의 after/before 는 사이트 시간대로 읽혀 대상 주 밖 기사가 섞인다(2026-10-11). KST 날짜로 다시 자른다.
+      for (const i of fn(from, to)) if (i.day >= from && i.day <= to) all.push({ ...i, name });
     } catch (e) {
       console.error(`경고: aimedia ${name} 를 못 받았다 (${e.message}). 보도량 세기에서 이 매체가 빠진다.`);
     }
