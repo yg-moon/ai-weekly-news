@@ -113,8 +113,10 @@ export function countTopics(items, defs, { exclude } = {}) {
     const ex = d.exclude ? new RegExp(d.exclude, "i") : null;
     // The Verge 사이트맵은 같은 기사를 한 날에 두 번 싣기도 한다. 같은 날·매체·제목은 한 건이다.
     const seen = new Set();
+    // 1면 제목에 호환 한자(李 U+F9E1)가 섞여 정의의 李 와 어긋난다(2026-10-11). NFKC 로 맞춰 견준다.
     const hit = items.filter((i) => {
-      if (!KINDS[d.field].includes(i.kind) || !re.test(i.title) || ex?.test(i.title) || global?.test(i.title)) return false;
+      const t = i.title.normalize("NFKC");
+      if (!KINDS[d.field].includes(i.kind) || !re.test(t) || ex?.test(t) || global?.test(t)) return false;
       const key = `${i.kind}\t${i.day}\t${i.outlet}\t${i.title}`;
       return !seen.has(key) && seen.add(key);
     });
