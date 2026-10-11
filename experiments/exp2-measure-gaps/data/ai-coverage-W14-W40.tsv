@@ -1,0 +1,136 @@
+주	순위	유형	매체수	날수	날·매체쌍	기사수	제목	정규식
+W14	1	투자	1	1	1	1	OpenAI, 1천220억 달러 투자 유치	OpenAI.*(122|raise|funding|valuation)|(122|raise|funding|valuation).*OpenAI
+W14	2	사고	1	1	1	1	Anthropic, Claude Code 소스코드 실수로 공개	Claude Code.*(leak|source)|(leak|source).*Claude Code|anthropic.*leak
+W14	3	출시	1	1	1	1	구글, 공개 모델 'Gemma 4' 출시	Gemma 4|gemma
+W14	4	출시	1	1	1	1	마이크로소프트, 자체 기반 모델 3종 출시	Microsoft.*(model|MAI)|MAI-
+W14	5	사고	1	1	1	1	AI 데이터 업체 Mercor, 공급망 공격에 뚫려	Mercor
+W15	1	출시	1	2	2	2	Anthropic 'Mythos Preview', 보안 협력사에만 공개	Mythos
+W15	2	사고	2	2	2	2	샘 올트먼 자택에 화염병, 20세 용의자 체포	Altman.*(home|house|molotov|attack|arrest)|molotov
+W15	3	투자	2	2	2	2	Anthropic, 구글·브로드컴과 TPU 대형 계약	Anthropic.*(TPU|Broadcom)|(TPU|Broadcom).*Anthropic
+W15	4	출시	1	1	1	1	메타 초지능연구소 첫 모델 'Muse Spark' 공개	Muse Spark|Meta.*superintelligence.*model|muse spark
+W15	5	정책	1	1	1	1	플로리다 법무장관, ChatGPT 총격 관여 의혹 수사	Florida.*(ChatGPT|OpenAI)|(ChatGPT|OpenAI).*Florida|Uthmeier
+W16	1	정책	2	2	3	3	Anthropic CEO, 백악관 비서실장·재무장관과 회동	thawing|tides turning|briefed the Trump
+W16	2	출시	2	1	2	2	OpenAI, Codex 대규모 업데이트	Codex
+W16	3	출시	1	1	1	1	Anthropic, 디자인 도구 'Claude Design' 공개	Claude Design
+W16	4	인사	2	1	2	2	OpenAI 케빈 웨일·빌 피블스 퇴사	Kevin Weil|Weil|Peebles
+W16	5	출시	1	1	1	1	Anthropic, Claude Opus 4.7 출시	Opus 4\.7|opus 4 7
+W17	1	사고	2	2	3	3	Anthropic 'Mythos'에 비인가 그룹 접근	unauthori|breach
+W17	2	출시	2	1	2	2	OpenAI, GPT-5.5 출시	GPT-5\.5|gpt 5 5
+W17	3	투자	2	1	2	2	구글, Anthropic에 최대 400억 달러 투자	Google.*invest.*Anthropic|google is investing.*anthropic
+W17	4	출시	1	1	1	1	DeepSeek, V4 미리보기 공개	DeepSeek.*V4|deepseek v4
+W17	5	투자	1	1	1	1	스페이스X, AI 코딩 도구 Cursor와 인수 조건부 협력	SpaceX.*Cursor|Cursor.*SpaceX|spacex cursor|cursor spacex
+W18	1	정책	2	5	6	8	머스크 대 올트먼 재판 시작	Musk.*(Altman|OpenAI).*(trial|jury|court)|(trial|jury).*(Musk|OpenAI)|musk openai trial|musk v openai|musk altman
+W18	2	투자	2	2	3	3	마이크로소프트·OpenAI 계약 개정, 독점 끝나	microsoft renegotiate|microsoft exclusivity|Microsoft legal peril
+W18	3	정책	2	3	3	4	미 국방부 기밀망 AI 계약, Anthropic만 빠져	Pentagon.*Anthropic|Anthropic.*Pentagon|classified.*AI|defense.*anthropic|anthropic.*(defense|dod)
+W18	4	정책	2	2	3	3	중국, 메타의 Manus 인수 불허	Manus
+W18	5	출시	1	1	1	1	OpenAI, GPT-5.5-Cyber 방어자에게만 공개	GPT-5\.5-Cyber|5 5 cyber|gpt.*cyber
+W19	1	정책	2	4	6	10	머스크 대 올트먼 재판 둘째 주, 브록먼 증언	Brockman|Musk.*(trial|testif)|musk openai trial|trial.*(Musk|OpenAI)
+W19	2	투자	1	1	1	1	Anthropic, 스페이스X 데이터센터 전량 사용 계약	Anthropic.*SpaceX|SpaceX.*Anthropic|anthropic spacex|spacex anthropic|colossus
+W19	3	출시	2	1	2	2	OpenAI, ChatGPT 새 기본 모델 출시	ChatGPT.*(default|new model)|GPT-5\.5 Instant|gpt 5 5 instant
+W19	4	사업	2	2	2	2	클라우드플레어, AI 이유로 직원 20% 감원	cloudflare
+W19	5	투자	2	2	2	2	스페이스X, 반도체 공장에 최대 1,190억 달러 투자	SpaceX.*(fab|chip|semiconductor|119)|spacex (fab|chip)
+W20	1	정책	1	3	3	5	머스크 대 OpenAI 재판, 최종 변론 마쳐	Musk.*(OpenAI|Altman).*(closing|trial|jury|verdict)|closing argument|musk openai trial|musk v openai
+W20	2	출시	2	2	3	3	Anthropic, 법률·소상공인용 Claude 출시	Claude.*(legal|law|small business)|anthropic.*(legal|small business)
+W20	3	출시	1	1	1	1	OpenAI, ChatGPT·Codex 통합	ChatGPT.*Codex|Codex.*ChatGPT|chatgpt codex|codex chatgpt
+W20	4	사업	1	1	1	1	AI 반도체 기업 Cerebras 나스닥 상장	Cerebras
+W20	5	출시	2	1	2	2	OpenAI, ChatGPT에 은행·증권 계좌 연결	ChatGPT.*(bank|brokerage|financ|Plaid)|chatgpt (bank|finance)
+W21	1	출시	1	1	1	2	구글 I/O, Gemini 3.5 Flash와 에이전트 공개	Google I/O|Gemini 3\.5|gemini 3 5|google io
+W21	2	정책	2	1	2	2	머스크, OpenAI 상대 소송 패소	Musk.*(lose|lost|verdict|jury|ruling)|verdict|musk openai
+W21	3	투자	1	1	1	1	Anthropic, xAI 컴퓨트 월 12억5천만 달러에 빌려	Anthropic.*xAI|xAI.*Anthropic|anthropic xai|xai anthropic
+W21	4	연구	1	1	1	1	OpenAI 모델, 80년 된 에르되시 추측 반증	80-year-old math
+W21	5	인사	2	1	2	2	안드레이 카파시, Anthropic 합류	Karpathy
+W22	1	정책	2	2	2	3	교황 레오 14세, 첫 회칙으로 AI 다뤄	Pope|Leo XIV|encyclical
+W22	2	투자	2	1	2	2	Anthropic, 650억 달러 투자 유치	Anthropic.*(65|raise|funding|valuation)|anthropic (raise|funding|valuation)
+W22	3	출시	1	1	1	1	Anthropic, Claude Opus 4.8 출시	Opus 4\.8|opus 4 8
+W22	4	출시	2	1	2	2	Robinhood, AI 에이전트의 주식 매매 허용	Robinhood
+W22	5	정책	1	1	1	1	YouTube, AI 생성 영상에 자동 표시	YouTube.*(label|AI-generated|AI generated)|youtube ai (label|video)
+W23	1	투자	2	1	2	2	Anthropic, 기업공개 서류 비공개 제출	Anthropic.*(IPO|S-1|confidential|file)|anthropic ipo
+W23	2	정책	1	1	1	1	트럼프, AI 모델 공개 전 정부 심사 행정명령	Trump.*(executive order|review|vetting).*(AI|model)|executive order.*AI|ai executive order
+W23	3	정책	2	1	2	2	플로리다주, OpenAI와 샘 올트먼 제소	Florida.*(OpenAI|Altman)|(OpenAI|Altman).*Florida|florida
+W23	4	출시	2	2	2	2	Anthropic, Mythos 제공 기관 150여 곳 추가	Mythos
+W23	5	출시	2	1	2	2	OpenAI Codex, 주간 사용자 500만 명	Codex.*(million|users|5)|codex
+W24	1	정책	2	3	5	5	미국 정부, Fable 5·Mythos 5 차단 명령	ban|government|national security
+W24	2	출시	2	2	4	11	애플, WWDC에서 AI Siri 공개	WWDC|Siri
+W24	3	투자	2	2	3	4	OpenAI, 상장 증권신고서 비공개 제출	OpenAI.*(IPO|S-1|confidential|file)|openai ipo
+W24	4	투자	2	1	2	2	베이조스의 Prometheus, 120억 달러 투자 유치	Prometheus|Bezos
+W24	5	정책	1	2	2	2	시애틀, 신규 데이터센터 1년 유예	Seattle.*data cent|data cent.*Seattle|seattle
+W25	1	투자	2	1	2	2	스페이스X, AI 코딩 도구 Cursor 600억 달러에 인수	SpaceX.*Cursor|Cursor.*SpaceX|spacex cursor|cursor spacex|cursor
+W25	2	인사	1	1	1	1	샤지어 OpenAI로, 점퍼 Anthropic으로	Shazeer|Jumper
+W25	3	투자	1	1	1	1	세일즈포스, AI 고객상담 기업 Fin 36억 달러에 인수	Salesforce.*Fin|Intercom|salesforce fin
+W25	4	정책	1	1	1	1	미 에너지규제위, 데이터센터 전력망 연결 신속 처리	fast lane to the grid
+W25	5	사업	1	1	1	1	ChatGPT 점유율 처음으로 50% 아래	ChatGPT.*(share|50%|market)|chatgpt market share
+W26	1	정책	2	2	3	3	OpenAI, 정부 요청에 GPT-5.6 제한 공개	GPT-5\.6|gpt 5 6
+W26	2	정책	2	2	3	4	미 정부, Mythos 5를 100여 기관에 다시 허용	Mythos
+W26	3	출시	2	3	4	4	OpenAI, 첫 자체 추론 칩 '할라페뇨' 공개	jalape|OpenAI.*chip|openai chip
+W26	4	정책	1	1	1	1	미국 지역신문 400곳, OpenAI·MS에 저작권 소송	newspaper.*(OpenAI|Microsoft|copyright)|copyright.*(OpenAI|Microsoft)|local news
+W26	5	출시	2	1	2	2	Anthropic, 슬랙 AI 동료 Claude Tag 출시	Claude Tag|claude tag|Slack.*Claude|claude slack
+W27	1	정책	2	2	3	4	미국, Mythos 5·Fable 5 수출 통제 해제	Trump drops|fable 5 is back|officially back online
+W27	2	출시	2	1	2	2	Anthropic, Claude Sonnet 5 출시	Sonnet 5|sonnet 5
+W27	3	정책	2	2	2	2	Cloudflare, AI 학습 겸하는 크롤러 기본 차단	Cloudflare.*(crawl|block)|cloudflare
+W27	4	정책	2	1	2	2	캘리포니아, 주·지방정부에 Claude 반값 제공	California.*Claude|claude california|california.*anthropic|anthropic california
+W27	5	출시	2	2	2	2	Anthropic, 연구용 Claude Science 공개	Claude Science|claude science
+W28	1	출시	2	2	3	5	OpenAI, GPT-5.6 출시, Atlas 종료	GPT-5\.6|gpt 5 6|Atlas
+W28	2	인사	2	2	3	3	피지 시모 등 OpenAI 경영진 잇단 이탈	Fidji Simo|simo|chief futurist
+W28	3	정책	1	1	1	1	애플, OpenAI 상대로 영업비밀 침해 소송	Apple.*OpenAI.*(sue|lawsuit|trade secret)|apple openai|trade secret
+W28	4	정책	2	1	2	2	뉴욕타임스 "OpenAI가 증거 숨겼다"	New York Times.*OpenAI|NYT|evidence|new york times openai
+W28	5	출시	2	4	4	4	메타, 남의 사진 쓰는 AI 기능 사흘 만에 철회	Muse Image|opt out of letting people use your instagram|stop Meta.s AI from using your photos|removes controversial AI feature
+W29	1	정책	2	4	5	5	OpenAI, 애플 소송에 "근거 없다" 반박	OpenAI.*Apple|Apple.*OpenAI|apple openai|openai apple
+W29	2	출시	1	2	2	2	Moonshot AI, 2조8천억 매개변수 Kimi K3 공개	Kimi|Moonshot
+W29	3	출시	2	1	2	2	Thinking Machines Lab, 첫 모델 Inkling 공개	Thinking Machines|Inkling|Murati
+W29	4	정책	2	2	2	2	뉴욕주, 대형 데이터센터 신규 허가 중단	New York.*data cent|data cent.*New York|hochul|moratorium
+W29	5	사고	2	1	2	2	Suno, 유튜브 음원 대량 수집 드러나	Suno
+W30	1	정책	2	3	3	5	미국, 중국 Kimi K3 '증류' 의혹에 제재 경고	Kimi|distill
+W30	2	사고	2	3	4	4	OpenAI, 자사 모델의 Hugging Face 침입 공개	Hugging Face.*(breach|hack|intru)|OpenAI.*Hugging Face|hugging face
+W30	3	투자	0	0	0	0	한미 기업, AI 서밋서 9500억 달러 협력 발표	summit.*(Korea|Korean)|Korea.*AI|korea|950
+W30	4	정책	2	2	3	3	Anthropic 저작권 소송 15억 달러 합의 승인	Anthropic.*(settlement|1\.5)|settlement.*Anthropic|anthropic settlement|authors
+W30	5	출시	2	1	2	2	Anthropic, Claude Opus 5 출시	Opus 5\b|opus 5$|opus 5 |claude opus 5
+W31	1	사고	2	1	2	2	Anthropic, Claude의 평가 중 침입 사고 공개	breached three companies|hacked other companies three times
+W31	2	사업	0	0	0	0	OpenAI, GPT-5.6 가격 최대 80% 인하	GPT-5\.6.*(price|cut|cheap)|(price|cut).*GPT-5\.6|openai price
+W31	3	정책	0	0	0	0	미국 FCC, 외국산 휴머노이드 수입 금지	FCC.*humanoid|humanoid.*(ban|FCC)|fcc humanoid
+W31	4	출시	1	1	1	1	마이크로소프트·메타, 자체 AI 모델 확대	Microsoft.*(model|MAI)|Meta.*(model|in-house)|MAI-
+W31	5	출시	0	0	0	0	구글 DeepMind, Gemini Robotics 2 공개	Gemini Robotics|gemini robotics
+W32	1	사고	2	1	2	2	OpenAI, Astra '치명' 등급 우려에 작업 중단	Astra|OpenAI.*(pause|halt|critical)
+W32	2	인사	0	0	0	0	허사비스, 구글 DeepMind CEO에서 의장으로	Hassabis
+W32	3	정책	1	2	2	2	애플 "전 직원 11명 더 연루 가능성"	Apple.*(employee|11)|apple.*(openai|trade secret)|apple openai
+W32	4	투자	0	0	0	0	AMD, 추론 칩 스타트업 탈라스 인수	AMD.*(Talas|acqui)|talas
+W32	5	연구	0	0	0	0	Anthropic, Fable 5 생물학 차단 85% 줄여	Fable.*(bio|refus)|anthropic.*bio
+W33	1	출시	2	3	4	4	Anthropic, Claude 생성 글에 워터마크	anthropic.*watermark|claude.*watermark|watermarks will
+W33	2	출시	1	1	1	1	메타, 오픈 웨이트 모델 Muse Glimmer 공개	Muse Glimmer|glimmer|Meta.*open.weight
+W33	3	출시	1	1	1	1	OpenAI, 보안 전용 모델 공개	OpenAI.*(security|cyber).*model|openai (security|cyber)
+W33	4	출시	1	1	1	1	Grok·Qwen·DeepSeek 새 모델 하루 새 공개	grok bot|qwen|deepseek
+W33	5	출시	0	0	0	0	구글 Gemini 3.7 Flash 공개	Gemini 3\.7|gemini 3 7
+W34	1	사고	1	1	1	1	OpenAI, 강화 학습 2주 중단	hit brakes voluntary pacing
+W34	2	투자	1	1	1	1	스트라이프, OpenRouter 인수	OpenRouter|Stripe
+W34	3	투자	2	1	2	2	엔비디아, OpenAI 데이터센터에 1050억 달러 지원	Nvidia.*OpenAI|OpenAI.*Nvidia|nvidia openai|openai nvidia|105
+W34	4	사고	0	0	0	0	미 정부 "AI 만든 스크립트로 산업 제어기 공격"	(industrial|ICS|SCADA|CISA).*AI|AI.*(industrial|ICS|SCADA|script)|cisa
+W34	5	출시	2	1	2	2	OpenAI, 10대용 ChatGPT 출시	ChatGPT.*(teen|minor|kids)|teen.*ChatGPT|chatgpt teen
+W35	1	정책	2	1	2	2	법원 "국방부의 Anthropic 공급망 지정 위법"	Pentagon.*Anthropic|Anthropic.*(Pentagon|supply.chain|court|judge|ruling)|supply chain risk
+W35	2	사고	2	2	3	3	OpenAI, Hugging Face 침해 사건 보고서 공개	hugging face (breach|hack|cyber)|alabama|report on the hugging face
+W35	3	사업	0	0	0	0	엔비디아 분기 매출 962억 달러	Nvidia.*(earnings|revenue|quarter)|nvidia (earnings|q2)
+W35	4	출시	2	1	2	2	OpenAI, 자체 칩 Jalapeño 첫 벤치마크	jalape|OpenAI.*chip|openai chip
+W35	5	연구	0	0	0	0	런던 병원, AI 도운 뇌종양 수술 첫 사례	brain tumor|surgery|London hospital
+W36	1	출시	2	5	7	8	OpenAI, GPT-6 Astra 출시	GPT-6|gpt 6|Astra
+W36	2	투자	1	1	1	1	엔비디아, Hugging Face 129억 달러에 인수	Nvidia.*Hugging Face|buy Hugging Face
+W36	3	출시	1	1	1	1	Anthropic, Fable 5.1·Mythos 5.1 출시	Fable 5\.1|Mythos 5\.1|fable 5 1|mythos 5 1
+W36	4	출시	1	1	1	1	구글, Gemini 3.8 Flash 공개	Gemini 3\.8|gemini 3 8
+W36	5	투자	0	0	0	0	OpenAI, 사이버 방어에 10억 달러 지원	OpenAI.*(cyber|defense).*(billion|fund|1)|openai cyber
+W37	1	연구	1	2	2	2	OpenAI, 나비에-스토크스 문제 해결 발표	Navier|navier
+W37	2	인사	1	2	2	2	Anthropic 연구원, AI 위험 경고하며 퇴사	Anthropic.*(resign|quit|leav|researcher)|anthropic researcher
+W37	3	투자	1	1	1	1	Mistral, 삼성전자 주도로 30억 유로 조달	Mistral
+W37	4	사고	1	1	1	1	"OpenAI 에이전트가 루비젬스 공격" 보고서	RubyGems|rubygems
+W37	5	연구	1	1	1	1	구글 DeepMind, 인간 유전체 변이 영향 예측	DeepMind.*(genom|variant|DNA)|AlphaGenome|alphagenome|genome
+W38	1	정책	2	4	5	5	빅테크 수장들, AI 자율 규제 기구 무산시켜	ai executives politicians safety regulation|leave safety to us|doesnt need regulation|regulation smackdown|zuckerberg jensen huang and elon musk
+W38	2	정책	2	2	3	3	NYT 소송서 마이크로소프트 내부 문서 공개	microsoft exec called|new york times doom loop
+W38	3	사고	1	1	1	1	미군, 챗봇 허위 첩보로 중국 선박 나포할 뻔	(military|Navy|Pentagon).*(chatbot|AI).*(ship|seiz|China|Chinese)|chinese ship
+W38	4	정책	1	1	1	1	마이크로소프트, AI 행동 강령 초안 공개	Microsoft.*(code of conduct|behavior|principles)|microsoft ai (code|conduct)
+W38	5	출시	0	0	0	0	구글, Gemini 3.8 Live 공개	Gemini 3\.8 Live|Gemini Live|gemini live|gemini 3 8 live
+W39	1	사고	2	1	2	2	OpenAI 에이전트, 호주 정부 사이트 침입	(Australia|Australian).*(OpenAI|agent|hack|breach)|australia
+W39	2	출시	2	5	8	11	메타 AI 에이전트 'Muse', 앱스토어 1위	Meta.*Muse|Muse.*(App Store|top|chart)|meta muse
+W39	3	출시	2	1	2	4	Claude Opus 5.5·GPT-6 Sol·Luna 잇따라 출시	Opus 5\.5|GPT-6 Sol|opus 5 5|gpt 6 sol|Luna|Sonnet 5\.5|Haiku 5\.5|sonnet 5 5|haiku 5 5
+W39	4	정책	1	2	2	2	20개국 AI 통제 지지, 트럼프는 거부	un ai panel|frontier ai controls
+W39	5	연구	2	1	2	2	Anthropic 생물학 실험실, 새 효소 체계 공개	Anthropic.*(bio|lab|enzyme)|enzyme
+W40	1	출시	2	4	5	10	OpenAI, 개인 에이전트 Dots·GPT-6.1 Sol 공개	Dots|GPT-6\.1|gpt 6 1
+W40	2	사고	2	5	7	9	OpenAI, 안전 문제로 새 모델 보류·연구자 이탈	OpenAI.*(withhold|hold back|shelve|delay|safety|researcher|depart)|openai (safety|researcher)
+W40	3	정책	1	3	3	3	트럼프·빅테크 수장, 구속력 없는 AI 안전 서약	trump.*(tech leaders|self regulation|safety deal)|self policing
+W40	4	투자	2	1	2	3	Anthropic 상장 서류, 손실과 '인류 위험' 경고	Anthropic.*(S-1|IPO|filing|loss)|anthropic (ipo|s 1)
+W40	5	출시	1	1	1	1	구글, 최상위 모델 Gemini 4 Argon 공개	Gemini 4|Argon|gemini 4
