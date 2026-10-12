@@ -1,6 +1,6 @@
 // 주간호 하나의 국내 항목 순서를 바꾼다. 번호가 바뀌어 링크가 다른 항목을 가리키는 일을 막는다.
 //
-//   node scripts/renumber-week.mjs <WEEK> <새 순서> [--dry-run]
+//   node scripts/renumber-week.mjs <WEEK> <새 순서> [--dry-run] [--world]
 //   node scripts/renumber-week.mjs 2026-W17 5,1,4,2,3 --dry-run
 //
 // 새 순서는 옛 번호를 새 자리 순으로 적는다. 5,1,4,2,3 은 새 1번이 옛 5번이라는 뜻이다.
@@ -23,8 +23,14 @@ import { createHash } from "node:crypto";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const SECTION = { ko: "국내", en: "Korea" };
-const GROUP_WORD = /(국내|Korea) (\d+)$/;
+// 기본은 국내다. 명령줄의 --world 는 해외 항목에 같은 일을 한다.
+let SECTION = { ko: "국내", en: "Korea" };
+let GROUP_WORD = /(국내|Korea) (\d+)$/;
+let KEY = "korea";
+export function useSection(key) {
+  if (key === "world") [SECTION, GROUP_WORD, KEY] = [{ ko: "해외", en: "World" }, /(해외|World) (\d+)$/, "world"];
+  else [SECTION, GROUP_WORD, KEY] = [{ ko: "국내", en: "Korea" }, /(국내|Korea) (\d+)$/, "korea"];
+}
 
 // en-fill.mjs·build-checks.mjs 와 같은 원본 지문.
 export const sourceHash = (buf) => createHash("sha256").update(buf).digest("hex").slice(0, 12);
@@ -90,7 +96,7 @@ function linkRe(week, self) {
   const w = week.replace(/[-]/g, "\\-");
   // ../../week/2026-W17/ (분기호·연간호), ../2026-W17/ (다른 주간호) 를 모두 받는다.
   const path = `(?:[^)\\s]*\\/)?${w}\\/?`;
-  return new RegExp(`\\[([^\\]]*)\\]\\((${self ? `(?:${path})?` : path})#korea-(\\d+)\\)`, "g");
+  return new RegExp(`\\[([^\\]]*)\\]\\((${self ? `(?:${path})?` : path})#${KEY}-(\\d+)\\)`, "g");
 }
 
 // 링크를 새 번호로 고친다. 고친 링크와 고치지 않은(번호가 같은) 링크를 함께 돌려준다.
@@ -99,7 +105,7 @@ export function rewriteLinks(text, week, newOf, { self = false } = {}) {
   const out = text.replace(linkRe(week, self), (whole, label, path, n) => {
     const oldN = Number(n), newN = newOf[oldN];
     if (newN === undefined) {
-      links.push({ label, oldN, newN: oldN, newLabel: label, changed: false, warn: `#korea-${oldN} 은 없는 항목이다` });
+      links.push({ label, oldN, newN: oldN, newLabel: label, changed: false, warn: `#${KEY}-${oldN} 은 없는 항목이다` });
       return whole;
     }
     const m = label.match(GROUP_WORD);
@@ -107,8 +113,8 @@ export function rewriteLinks(text, week, newOf, { self = false } = {}) {
     if (m && Number(m[2]) === oldN) newLabel = label.replace(GROUP_WORD, `${m[1]} ${newN}`);
     else warn = `링크 글자 "${label}" 에 앵커와 같은 번호(국내/Korea ${oldN})가 없어 글자는 그대로 둔다`;
     const changed = newN !== oldN || newLabel !== label;
-    links.push({ label, oldN, newN, newLabel, changed, warn, old: whole, now: `[${newLabel}](${path}#korea-${newN})` });
-    return `[${newLabel}](${path}#korea-${newN})`;
+    links.push({ label, oldN, newN, newLabel, changed, warn, old: whole, now: `[${newLabel}](${path}#${KEY}-${newN})` });
+    return `[${newLabel}](${path}#${KEY}-${newN})`;
   });
   return { text: out, links };
 }
@@ -116,7 +122,7 @@ export function rewriteLinks(text, week, newOf, { self = false } = {}) {
 // selection.korea 의 rank 를 바꾼다. 바뀐 것이 없으면 null.
 export function rerankRun(raw, newOf) {
   const data = JSON.parse(raw);
-  const korea = data.selection?.korea;
+  const korea = data.selection?.[KEY];
   if (!Array.isArray(korea)) return { text: null, changes: [] };
   if (Object.entries(newOf).every(([o, n]) => Number(o) === n)) return { text: null, changes: [] };
   const changes = [];
@@ -134,7 +140,7 @@ export function rerankRun(raw, newOf) {
     changes.push({ topic: it.topic, from: it.rank, to: newRank, rank_was: out.rank_was });
     return out;
   });
-  data.selection.korea = items;
+  data.selection[KEY] = items;
   const text = JSON.stringify(data, null, 2) + "\n";
   return { text: text === raw ? null : text, changes };
 }
@@ -220,7 +226,7 @@ export function planRenumber({ root, week, orderText }) {
 export function report(plan, { dryRun, root }) {
   const out = [];
   const { order, koItems, enItems } = plan;
-  out.push(`${plan.week} 국내 새 순서${dryRun ? " (dry-run, 쓰지 않음)" : ""}:`);
+  out.push(`${plan.week} ${SECTION.ko} 새 순서${dryRun ? " (dry-run, 쓰지 않음)" : ""}:`);
   order.forEach((old, i) =>
     out.push(`  ${i + 1}. ← 옛 ${old}. ${koItems[old - 1].title}${enItems ? ` / ${enItems[old - 1].title}` : ""}`));
   const changed = plan.links.filter((l) => l.changed), same = plan.links.filter((l) => !l.changed);
@@ -250,9 +256,10 @@ export function renumberWeek({ root, week, orderText, dryRun = false }) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
-  const [week, orderText] = args.filter((a) => a !== "--dry-run");
+  if (args.includes("--world")) useSection("world");
+  const [week, orderText] = args.filter((a) => !a.startsWith("--"));
   if (!week || !orderText) {
-    console.error("사용법: node scripts/renumber-week.mjs <WEEK> <새 순서, 예: 5,1,4,2,3> [--dry-run]");
+    console.error("사용법: node scripts/renumber-week.mjs <WEEK> <새 순서, 예: 5,1,4,2,3> [--dry-run] [--world]");
     process.exit(1);
   }
   try {
