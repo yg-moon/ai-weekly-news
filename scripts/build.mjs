@@ -89,7 +89,6 @@ const TEXT = {
       long: "분기호·연간호", longQ: "분기호", longLede: "분기호는 분기 도중 매주 다시 쓰므로, 모든 판의 비용과 시간을 더해 적습니다.",
       longTh: ["발행물", "판 수", "총 비용", "평균 비용", "총 소요 시간", "평균 소요 시간"],
       notes: [
-        [["2026-W40"], "W40부터 영문판 번역과 링크·수치 검사를 발행 시 함께 수행합니다. 따라서 지난 호를 한꺼번에 만든 W39까지보다 비용과 시간이 증가했습니다."],
         [["2026-Q2", "2026-Q3"], "2026-Q2·Q3는 분기가 끝난 뒤 한 번에 써서 판이 하나입니다."],
       ],
       sec: "발행 비용 및 시간",
@@ -136,7 +135,6 @@ const TEXT = {
       long: "Quarterly and annual reviews", longQ: "Quarterly reviews", longLede: "Quarterly reviews are rewritten every week during the quarter, so the cost and time of all editions are added up.",
       longTh: ["Publication", "Editions", "Total cost", "Average cost", "Total time", "Average time"],
       notes: [
-        [["2026-W40"], "From W40, the English translation and the link and figure checks are done with each publication. So cost and time are higher than up to W39, when past briefings were made all at once."],
         [["2026-Q2", "2026-Q3"], "2026-Q2 and Q3 were written once after their quarters ended, so each has one edition."],
       ],
       sec: "Cost and time per publication",
