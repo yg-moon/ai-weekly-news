@@ -1,0 +1,199 @@
+{
+  "week": "2026-W42",
+  "environment": "cloud",
+  "session": "a7ccceeb-32d7-55da-9610-0f6e4cf1289b",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-19T06:05:41+09:00",
+  "published": "2026-10-19T06:38:05+09:00",
+  "cost_usd": 7.37,
+  "headlines": 1352,
+  "tokens": {
+    "input": 142,
+    "output": 84148,
+    "cache_read": 15300848,
+    "cache_write": 328469
+  },
+  "selection": {
+    "korea": [
+      {
+        "topic": "브런슨 '전작권 전환 조건 변해' 한미 갈등",
+        "days": 5,
+        "outlets": 10,
+        "click": [
+          2,
+          3
+        ],
+        "rank": 1
+      },
+      {
+        "topic": "코스피 폭락",
+        "days": 4,
+        "outlets": 10,
+        "click": [
+          5,
+          8
+        ],
+        "rank": 2
+      },
+      {
+        "topic": "외교·국방·통일부 등 44개 기관 세종 이전",
+        "days": 2,
+        "outlets": 9,
+        "click": [
+          2,
+          2
+        ],
+        "rank": 3
+      },
+      {
+        "topic": "임광현 대통령비서실장 발탁",
+        "days": 1,
+        "outlets": 8,
+        "click": [
+          1,
+          1
+        ],
+        "rank": 4,
+        "over": "되돌리기 어려움: 비서실장 임명은 집행된 인사다. 더 큰 '굴종·사대' 발언(9곳)은 한미 갈등 항목에 묶은 중복이고, 인천 흉기난동(8곳)은 단발 사건이다"
+      },
+      {
+        "topic": "부천 화재 소방관 순직, 추미애 '재정 빨대'",
+        "days": 2,
+        "outlets": 7,
+        "click": [
+          4,
+          13
+        ],
+        "rank": 5,
+        "over": "되돌리기 어려움·영향 범위: 소방관이 순직했고, 국가직 소방의 지방 재정 구조 문제가 1면 분석 다섯 곳으로 이어졌다. 더 큰 '굴종·사대' 발언(중복)과 인천 흉기난동(단발)은 게이트에서 빠졌다"
+      },
+      {
+        "topic": "이 대통령 '굴종·사대 지양'",
+        "days": 2,
+        "outlets": 9,
+        "click": [
+          0,
+          0
+        ],
+        "out": "중복"
+      },
+      {
+        "topic": "인천 전자발찌 흉기난동",
+        "days": 1,
+        "outlets": 8,
+        "click": [
+          6,
+          11
+        ],
+        "out": "단발"
+      },
+      {
+        "topic": "관계성 범죄·스토킹 보호 실패",
+        "days": 3,
+        "outlets": 6,
+        "click": [
+          1,
+          1
+        ],
+        "out": "발언"
+      }
+    ],
+    "world": [
+      {
+        "topic": "후티-사우디 전쟁 확대, UAE 재참전",
+        "days": 6,
+        "outlets": 19,
+        "rank": 1
+      },
+      {
+        "topic": "프랑스 학생 시위 50만 명, 폭동·노란 조끼 합류",
+        "days": 5,
+        "outlets": 10,
+        "rank": 2
+      },
+      {
+        "topic": "우크라이나 Starlink 제한, 에너지 휴전 붕괴",
+        "days": 7,
+        "outlets": 9,
+        "rank": 3
+      },
+      {
+        "topic": "교황 레오 폐암 수술",
+        "days": 5,
+        "outlets": 5,
+        "rank": 4
+      },
+      {
+        "topic": "동남아 연무·인도네시아 산불",
+        "days": 4,
+        "outlets": 5,
+        "rank": 5
+      },
+      {
+        "topic": "인도 바퀴벌레당 시위 탄압",
+        "days": 3,
+        "outlets": 5,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "서안 정착민 폭력",
+        "days": 3,
+        "outlets": 5,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "알바니아 학생 시위",
+        "days": 3,
+        "outlets": 4,
+        "out": "국면 없음"
+      }
+    ],
+    "ai": [
+      {
+        "topic": "메타 Muse Wonder·오픈 웨이트 모델",
+        "days": 2,
+        "outlets": 2,
+        "rank": 1,
+        "over": "축적 가치·영향 범위: 메타의 첫 프런티어 모델과 미국 최대 오픈 웨이트 모델이다. 날 수가 많은 금융사 에이전트 차단은 각 사의 방침 발표다"
+      },
+      {
+        "topic": "구글 Gemini 4 Argon",
+        "days": 2,
+        "outlets": 1,
+        "rank": 2,
+        "over": "축적 가치·영향 범위: Gemini 3 이후 구글의 첫 주요 프런티어 모델로 Gemini 앱과 검색에 들어갔다. 구글 뉴스룸과 DeepMind 블로그 네 편이 발표했고, aimedia 는 The Verge 만 다뤘다. 2곳인 Character.AI 파산·금융사 차단·평가기관 접근권보다 위에 둔다"
+      },
+      {
+        "topic": "Character.AI 파산",
+        "days": 2,
+        "outlets": 2,
+        "rank": 3,
+        "over": "되돌리기 어려움: 파산보호 신청과 자산 매각은 집행된 결정이다. 날 수가 많은 금융사 에이전트 차단은 각 사의 방침 발표다"
+      },
+      {
+        "topic": "금융사 AI 에이전트 차단",
+        "days": 4,
+        "outlets": 2,
+        "rank": 4
+      },
+      {
+        "topic": "독립 평가기관 접근권: METR·연구자 400명",
+        "days": 2,
+        "outlets": 2,
+        "rank": 5
+      },
+      {
+        "topic": "OpenAI-애플 영업비밀 소송",
+        "days": 2,
+        "outlets": 2,
+        "out": "단발"
+      },
+      {
+        "topic": "로그 AI 에이전트·G7 모의훈련",
+        "days": 2,
+        "outlets": 2,
+        "out": "예고"
+      }
+    ]
+  }
+}
