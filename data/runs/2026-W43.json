@@ -1,0 +1,216 @@
+{
+  "week": "2026-W43",
+  "environment": "cloud",
+  "session": "dc99ec28-b195-55d6-8e17-e60552011cb3",
+  "model": "claude-opus-5-5",
+  "started": "2026-10-26T06:08:11+09:00",
+  "published": "2026-10-26T06:45:11+09:00",
+  "cost_usd": 7.12,
+  "headlines": 1420,
+  "tokens": {
+    "input": 142,
+    "output": 82679,
+    "cache_read": 15099230,
+    "cache_write": 305898
+  },
+  "selection": {
+    "korea": [
+      {
+        "topic": "이 대통령 '중수청 지휘 포기는 탄핵 사유'",
+        "days": 3,
+        "outlets": 10,
+        "click": [
+          3,
+          6
+        ],
+        "rank": 1
+      },
+      {
+        "topic": "김여정 '확성기 가동'·북한 MDL 요새화",
+        "days": 5,
+        "outlets": 9,
+        "click": [
+          5,
+          5
+        ],
+        "rank": 2
+      },
+      {
+        "topic": "김정은 당일치기 방중",
+        "days": 1,
+        "outlets": 9,
+        "click": [
+          6,
+          9
+        ],
+        "rank": 3
+      },
+      {
+        "topic": "오세훈 2심 무죄",
+        "days": 3,
+        "outlets": 6,
+        "click": [
+          6,
+          11
+        ],
+        "rank": 4,
+        "over": "되돌리기 어려움: 1심 시장직 상실형을 뒤집은 항소심 판결이다. 더 큰 부승찬 '소방 빨대'·3기 신도시 '공급 전격전'·전작권 조기 환수는 발언에 그쳤고, PHP 취약점은 AI 항목과 같은 사안이다"
+      },
+      {
+        "topic": "솔리다임 미국 상장 철회",
+        "days": 4,
+        "outlets": 4,
+        "click": [
+          1,
+          2
+        ],
+        "rank": 5,
+        "over": "되돌리기 어려움·영향 범위: 최대 26조 원 조달을 접은 공시로 집행된 결정이고, 해외 중복상장 규제 공백 논란과 이어진다. 더 큰 후보는 발언(소방 빨대·공급 전격전·전작권)이거나 AI 항목과 중복(PHP)이다"
+      },
+      {
+        "topic": "부승찬·추미애 '소방 빨대'",
+        "days": 3,
+        "outlets": 7,
+        "click": [
+          7,
+          13
+        ],
+        "out": "발언"
+      },
+      {
+        "topic": "3기 신도시 '공급 전격전'",
+        "days": 2,
+        "outlets": 7,
+        "click": [
+          1,
+          1
+        ],
+        "out": "발언"
+      },
+      {
+        "topic": "이 대통령 '전작권 조기 환수'",
+        "days": 1,
+        "outlets": 7,
+        "click": [
+          0,
+          0
+        ],
+        "out": "발언"
+      },
+      {
+        "topic": "PHP 취약점",
+        "days": 1,
+        "outlets": 7,
+        "click": [
+          0,
+          0
+        ],
+        "out": "중복"
+      }
+    ],
+    "world": [
+      {
+        "topic": "후티-사우디 전쟁",
+        "days": 5,
+        "outlets": 12,
+        "rank": 1
+      },
+      {
+        "topic": "러시아-우크라이나 올레시키 휴전·협상 재개",
+        "days": 5,
+        "outlets": 12,
+        "rank": 2
+      },
+      {
+        "topic": "프랑스 시위 격화",
+        "days": 7,
+        "outlets": 11,
+        "rank": 3
+      },
+      {
+        "topic": "서안 봉쇄·정착민 폭력",
+        "days": 4,
+        "outlets": 8,
+        "rank": 4
+      },
+      {
+        "topic": "수단 아비에이 시장 드론 공격",
+        "days": 4,
+        "outlets": 7,
+        "rank": 5,
+        "over": "되돌리기 어려움: 시장 공격 한 번에 최소 153명이 숨졌다. 날 수가 많은 브라질 대선 결선은 개표 결과가 KST 10월 26일에 나와 다음 주에 든다"
+      },
+      {
+        "topic": "브라질 대선 결선",
+        "days": 5,
+        "outlets": 7,
+        "out": "경계"
+      },
+      {
+        "topic": "이탈리아·유럽 Z세대 시위",
+        "days": 4,
+        "outlets": 7,
+        "out": "경계"
+      },
+      {
+        "topic": "세르비아 총선 부치치 패배",
+        "days": 5,
+        "outlets": 6,
+        "out": "경계"
+      }
+    ],
+    "ai": [
+      {
+        "topic": "AI가 찾은 PHP 치명적 취약점",
+        "days": 2,
+        "outlets": 2,
+        "rank": 1,
+        "over": "영향 범위: 전 세계 웹사이트 약 70%가 쓰는 PHP의 결함으로 한국 정부가 사이버위기 경보를 올렸고 국내 10개지 중 7곳이 1면에 실었다. 날 수가 하루 많은 OpenAI 인터넷 차단 학습은 한 회사의 학습 방침이다"
+      },
+      {
+        "topic": "OpenAI 에이전트 감시 무력화·인터넷 차단 학습",
+        "days": 3,
+        "outlets": 2,
+        "rank": 2
+      },
+      {
+        "topic": "미국 연방기관 DeepSeek 퇴출",
+        "days": 2,
+        "outlets": 2,
+        "rank": 3
+      },
+      {
+        "topic": "Anthropic Claude Duet",
+        "days": 1,
+        "outlets": 2,
+        "rank": 4,
+        "over": "축적 가치: Anthropic의 새 에이전트 제품 출시다. 날 수가 많은 Muse 1천만 다운로드는 지난주 실린 Muse 출시의 후속 수치다"
+      },
+      {
+        "topic": "마이크로소프트 진단 오케스트레이터",
+        "days": 1,
+        "outlets": 2,
+        "rank": 5,
+        "over": "축적 가치: 사이언스에 실린 동료 심사 연구다. 날 수가 많은 Muse 1천만 다운로드는 지난주 실린 Muse 출시의 후속 수치다"
+      },
+      {
+        "topic": "메타 Muse 1천만 다운로드",
+        "days": 2,
+        "outlets": 2,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "코어위브 부채 우려",
+        "days": 2,
+        "outlets": 1,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "Anthropic 컴퓨팅 계약",
+        "days": 2,
+        "outlets": 1,
+        "out": "예고"
+      }
+    ]
+  }
+}
