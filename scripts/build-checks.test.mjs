@@ -35,6 +35,23 @@ const weekBody = (title = "국내 사안", what = "일이 있었다.", date = "9
 - **왜 중요한가**: 중요하다.
 - **출처**: [연합뉴스](https://example.com/a)
 `;
+// 국내 항목 다섯인 주간호. 분기호·연간호는 분야마다 5건이어야 해서, 검사할 항목 밖의 자리를 채우는 데 쓴다.
+const fullWeek = (id) => doc("week", id, `\n## 국내\n${[1, 2, 3, 4, 5].map((i) => `
+### ${i}. 국내 사안 ${i}
+
+- **날짜**: 9월 21일 (월)
+- **무슨 일**: 일이 있었다.
+- **왜 중요한가**: 중요하다.
+- **출처**: [연합뉴스](https://example.com/${i})
+`).join("")}`);
+// 단발 count개를 번호 start부터 만든다. 근거는 id 의 2번부터 건다(1번은 검사할 항목이 쓴다).
+const filler = (count, start, id, kind = "week") => Array.from({ length: count }, (_, i) => `
+### ${start + i}. 채움 사안 ${i + 1}
+
+- **무슨 일**: 일이 있었다.
+- **왜 중요한가**: 중요하다.
+- **근거**: [${id}](../../${kind}/2026-${id}/#korea-${i + 2})
+`).join("");
 const run = ({ ko = {}, en = {}, content } = {}) => {
   const sets = (s) => ({ week: s.week ?? [], quarter: s.quarter ?? [], year: s.year ?? [] });
   return checkContent({ SETS: { ko: sets(ko), en: sets(en) }, TEXT, KINDS, CONTENT: content, placeOf }).errors.join("\n");
@@ -114,8 +131,8 @@ test("분기호 항목의 모양을 잡는다", () => {
 - **무슨 일**: ${what}
 - **왜 중요한가**: ${why}
 - **근거**: [W39 국내 1](../../week/2026-W39/#korea-1)
-`);
-  const ko = (q) => ({ week: [week("2026-W39")], quarter: [q] });
+${filler(4, 5, "W38")}`);
+  const ko = (q) => ({ week: [week("2026-W39"), fullWeek("2026-W38")], quarter: [q] });
   assert.equal(run({ ko: ko(quarter("일이 있었다.", "중요하다.")) }), "");
   assert.equal(run({ ko: ko(quarter("하나다. 둘이다. 셋이다. 넷이다.", "중요하다.")) }), "");
   assert.match(run({ ko: ko(quarter("하나다. 둘이다. 셋이다. 넷이다. 다섯이다.", "중요하다.")) }), /무슨 일이 5문장/);
@@ -132,8 +149,8 @@ test("분기호 흐름의 전개는 세 문단, 여덟 문장까지다", () => {
 - **전개**: ${body}
 - **왜 중요한가**: 중요하다.
 - **근거**: [W38 국내 1](../../week/2026-W38/#korea-1) / [W39 국내 1](../../week/2026-W39/#korea-1)
-`);
-  const ko = (q) => ({ week: [doc("week", "2026-W38", weekBody()), doc("week", "2026-W39", weekBody())], quarter: [q] });
+${filler(4, 2, "W38")}`);
+  const ko = (q) => ({ week: [fullWeek("2026-W38"), doc("week", "2026-W39", weekBody())], quarter: [q] });
   assert.equal(run({ ko: ko(quarter("하나다. 둘이다.\n\n  셋이다. 넷이다. 다섯이다.\n\n  여섯이다. 일곱이다. 여덟이다.")) }), "");
   assert.match(run({ ko: ko(quarter("하나다.\n\n  둘이다.")) }), /전개가 2문단/);
   assert.match(run({ ko: ko(quarter("하나다. 둘이다. 셋이다.\n\n  넷이다. 다섯이다. 여섯이다.\n\n  일곱이다. 여덟이다. 아홉이다.")) }), /전개가 9문장/);
@@ -171,16 +188,17 @@ test("진행 중 분기호의 기준 주와 흐름 수를 본다", () => {
 - **왜 중요한가**: 중요하다.
 - **근거**: [${w}](../../week/2026-${w}/#korea-1)
 `;
-  const weeks = ["W27", "W28", "W29", "W30", "W31"].map((w) => doc("week", `2026-${w}`, weekBody()));
+  const weeks = ["W28", "W29", "W30", "W31"].map((w) => doc("week", `2026-${w}`, weekBody())).concat(fullWeek("2026-W27"));
   const q = (through, body) => doc("quarter", "2026-Q3", `\n## 국내\n${body}`, "ko", through ? { through } : {});
-  const ok = flow(1, "W27", "W28") + single(2, "W29") + single(3, "W30");
-  // 흐름이 하나뿐이어도 단발이 2번부터 오면 통과한다.
+  const ok = flow(1, "W27", "W28") + single(2, "W29") + single(3, "W30") + filler(2, 4, "W27");
+  // 흐름이 하나뿐이어도 단발이 2번부터 와서 5건을 채우면 통과한다. 단발이 둘뿐이면 4건이라 걸린다.
+  assert.match(run({ ko: { week: weeks, quarter: [q("2026-W30", flow(1, "W27", "W28") + single(2, "W29") + single(3, "W30"))] } }), /국내: 흐름 1 · 단발 2이다\(모두 5건/);
   assert.equal(run({ ko: { week: weeks, quarter: [q("2026-W30", ok)] } }), "");
   assert.match(run({ ko: { week: weeks, quarter: [q("2026-W29", ok)] } }), /근거 링크가 가리키는 항목이 없거나 범위 밖이다: 2026-Q3 → \.\.\/\.\.\/week\/2026-W30/);
   assert.match(run({ ko: { week: weeks, quarter: [q("2026-W40", ok)] } }), /through 2026-W40 가 그 분기의 주차가 아니다/);
   assert.match(run({ ko: { week: weeks, quarter: [q("2026-W30", single(1, "W29") + flow(2, "W27", "W28"))] } }), /흐름이 단발보다 앞에 오지 않았다/);
   // 연간호는 진행 중인 분기호를 근거로 걸 수 없다.
-  const year = doc("year", "2026", `\n## 국내\n${single(4, "Q3").replace("../../week/2026-Q3/", "../../quarter/2026-Q3/")}`);
+  const year = doc("year", "2026", `\n## 국내\n${single(1, "Q3").replace("../../week/2026-Q3/", "../../quarter/2026-Q3/")}${filler(4, 2, "Q3", "quarter")}`);
   assert.match(run({ ko: { week: weeks, quarter: [q("2026-W30", ok)], year: [year] } }), /2026 → \.\.\/\.\.\/quarter\/2026-Q3/);
   assert.equal(run({ ko: { week: weeks, quarter: [q(null, ok)], year: [year] } }), "");
 });

@@ -187,6 +187,8 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
 
   // 분기호와 연간호의 항목 모양을 본다. 2026-Q2·Q3 첫 발행에서 흐름이 주제 묶음으로
   // 불어나고 전개가 연표가 된 것을 막는다(분기 런북 3·5절).
+  // - 분야마다 5건이다. 진행 중인 판도 흐름이 모자란 만큼 단발로 채운다. 건수가 다르면 홈 카드에 건수가 붙어
+  //   다른 호와 모양이 달라진다(사용자 2026-10-26).
   // - 1~3번 흐름은 서로 다른 주(연간호는 분기) 둘 이상에 근거가 있다.
   // - 한 항목의 근거는 주마다 하나다. 같은 주 항목을 더 붙여 흐름을 키우지 않는다.
   // - 한 주간호 항목은 한 번만 쓴다. 한 사안을 흐름과 단발에 나눠 싣지 않는다.
@@ -204,7 +206,7 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
         for (const item of chunk.split(/^### /m).slice(1)) {
           const num = Number(item.match(/^(\d+)\./)?.[1]);
           const at = `${field} ${num}`;
-          // 흐름은 전개 칸이 있는 항목이다. 진행 중인 분기호는 흐름이 셋보다 적을 수 있어 번호로 가리지 않는다.
+          // 흐름은 전개 칸이 있는 항목이다. 진행 중인 분기호는 흐름이 셋보다 적고 그만큼 단발이 많을 수 있어 번호로 가리지 않는다.
           const flow = /\*\*전개\*\*/.test(item);
           (flow ? flows : singles).push(num);
           // 필드는 다음 필드 줄 앞까지다. 전개처럼 문단을 나눈 필드도 통째로 읽는다. 라벨 뒤 공백에
@@ -231,7 +233,7 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
           if (!line("왜 중요한가").trim()) out.push(`${at}: 왜 중요한가가 없다`);
           if (sentences(line("왜 중요한가")) > 2) out.push(`${at}: 왜 중요한가가 ${sentences(line("왜 중요한가"))}문장이다(2까지)`);
         }
-        if (flows.length > 3 || singles.length > 2) out.push(`${field}: 흐름 ${flows.length} · 단발 ${singles.length}이다(흐름 3, 단발 2까지)`);
+        if (flows.length > 3 || flows.length + singles.length !== 5) out.push(`${field}: 흐름 ${flows.length} · 단발 ${singles.length}이다(모두 5건, 흐름은 3까지)`);
         if (Math.max(...flows) > Math.min(...singles)) out.push(`${field}: 흐름이 단발보다 앞에 오지 않았다`);
       }
       return out.map((m) => `${d.id} ${m}`);
