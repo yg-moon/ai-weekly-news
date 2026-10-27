@@ -66,7 +66,6 @@ const TEXT = {
     tagline: SITE_TAGLINE,
     home: "주간 뉴스 브리핑", recent: "최근",
     why: "왜 중요한가", src: "출처", annual: "연간", toc: "목차", tocGo: "목차로", tocHint: "제목을 누르면 해당 항목으로 이동합니다", stats: "통계", about: "소개",
-    flow: ["흐름", "여러 주에 걸쳐 이어진 일"], single: ["단발", "흐름으로 묶이지 않은 큰 일"],
     count: (n) => `${n}건`,
     state: ["진행중", "완결"],
     pending: (need) => `주간호가 ${need}개 이상 쌓이면 흐름을 모아 분기호를 작성하고, 매주 갱신합니다.`,
@@ -112,7 +111,6 @@ const TEXT = {
     tagline: "The past week in five stories each: Korea\u00a0·\u00a0World\u00a0·\u00a0AI. Collected and summarized by AI, with sources for every item.",
     home: "Weekly News Briefing", recent: "Latest",
     why: "Why it matters", src: "Sources", annual: "Annual", toc: "Contents", tocGo: 'Contents <span aria-hidden="true">↑</span>', tocHint: "Tap a headline to jump to it", stats: "Stats", about: "About",
-    flow: ["Ongoing", "Stories that ran over several weeks"], single: ["Standalone", "Big stories that stand on their own"],
     count: (n) => `${n} items`,
     state: ["In progress", "Complete"],
     pending: (need) => `Once ${["zero", "one", "two", "three", "four", "five"][need]} or more weekly briefings are out, a quarterly review will be written from their trends and updated every week.`,
@@ -285,8 +283,6 @@ function buildItem(slug, num, title, listHtml, T) {
   return `<article class="item" id="${slug}-${num}">${parts.join("")}</article>`;
 }
 
-const kindHead = ([name, what]) => `<p class="kind-h"><b>${name}</b>${what}</p>`;
-
 function structure(html, T) {
   const { groups } = T;
   // 구획으로 먼저 자른다. 항목 앵커에 구획 이름이 들어가므로 항목보다 구획을 먼저 알아야 한다.
@@ -299,19 +295,12 @@ function structure(html, T) {
       const slug = groups[name] ?? "other";
 
       // 항목: <h3>N. 제목</h3> + 바로 뒤 <ul>
-      // 분기호·연간호는 흐름(전개)과 단발(날짜 없는 무슨 일)이 번호를 이어 쓴다. 번호가
-      // 한 줄 순위로 읽히지 않게 각 묶음의 첫 항목 앞에 이름을 단다.
-      const seen = new Set();
+      // 분기호·연간호에 흐름·단발 이름을 달지 않는다. 번호가 곧 순위이고 흐름과 단발이 섞여,
+      // 이름은 런북 안에서만 쓴다(사용자 2026-10-27).
       const body = chunk.slice(m[0].length).replace(
         /<h3[^>]*>\s*(\d+)\.\s*([\s\S]*?)<\/h3>\s*<ul>([\s\S]*?)<\/ul>/g,
         (whole, num, title, list) => {
-          const item = buildItem(slug, num, title.trim(), list, T);
-          if (!item) return whole;
-          const k = /<strong>(전개|Development)<\/strong>/.test(list) ? "flow"
-            : !/<strong>(날짜|Date)<\/strong>/.test(list) ? "single" : null;
-          if (!k || seen.has(k)) return item;
-          seen.add(k);
-          return kindHead(T[k]) + item;
+          return buildItem(slug, num, title.trim(), list, T) || whole;
         }
       );
 

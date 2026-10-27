@@ -142,12 +142,6 @@ header.site.compact { margin-bottom:.75rem; }
 /* 항목 */
 .item { padding:1.25rem 0; border-top:1px solid var(--line); scroll-margin-top:1rem; }
 .group > h2 + .item { border-top:none; padding-top:.75rem; }
-/* 분기호·연간호의 흐름·단발 이름. 단발 이름이 두 묶음을 가르는 선을 갖는다. */
-.kind-h { margin:0; font-size:.78rem; color:var(--muted); }
-.kind-h b { color:var(--accent); margin-right:.5rem; }
-.group > h2 + .kind-h { margin-top:.5rem; }
-.item + .kind-h { border-top:1px solid var(--line); padding-top:1.25rem; }
-.kind-h + .item { border-top:none; padding-top:.6rem; }
 /* 번호 배지는 제목 첫 줄의 가운데에 맞춘다. 제목 줄 높이는 1.2rem × 1.55 다. */
 .item-head { display:flex; gap:.7rem; align-items:flex-start; }
 .num {
