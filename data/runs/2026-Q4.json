@@ -1,16 +1,18 @@
 {
   "week": "2026-Q4",
   "environment": "cloud",
-  "session": "5c454a3e-72b6-58c9-b6d2-3f9972edb362",
+  "session": "7d6ae3e1-57f2-5fec-8e77-607f3d690851",
   "model": "claude-opus-5-5",
   "started": "2026-10-26T07:15:14+09:00",
-  "published": "2026-10-26T07:46:39+09:00",
-  "cost_usd": 4.36,
+  "published": "2026-11-02T07:34:35+09:00",
+  "cost_usd": 8.79,
   "headlines": null,
   "tokens": {
-    "input": 84,
-    "output": 55911,
-    "cache_read": 7705486,
-    "cache_write": 212022
-  }
+    "input": 169,
+    "output": 114815,
+    "cache_read": 15446364,
+    "cache_write": 424649
+  },
+  "minutes": 51,
+  "editions": 2
 }
