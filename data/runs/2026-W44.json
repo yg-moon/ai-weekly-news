@@ -1,0 +1,227 @@
+{
+  "week": "2026-W44",
+  "environment": "cloud",
+  "session": "7d64646f-0b2a-52b1-b215-9b9e10ffb61e",
+  "model": "claude-opus-5-5",
+  "started": "2026-11-02T06:08:23+09:00",
+  "published": "2026-11-02T06:29:59+09:00",
+  "cost_usd": 6.95,
+  "headlines": 1396,
+  "tokens": {
+    "input": 146,
+    "output": 76798,
+    "cache_read": 14964714,
+    "cache_write": 303118
+  },
+  "selection": {
+    "korea": [
+      {
+        "topic": "민주당 조희대 대법원장 국정조사",
+        "days": 2,
+        "outlets": 10,
+        "click": [
+          2,
+          4
+        ],
+        "rank": 1
+      },
+      {
+        "topic": "수도권 그린벨트 해제 7.67만 가구 공급",
+        "days": 2,
+        "outlets": 10,
+        "click": [
+          1,
+          1
+        ],
+        "rank": 2
+      },
+      {
+        "topic": "3분기 GDP 1% 성장",
+        "days": 3,
+        "outlets": 8,
+        "click": [
+          0,
+          0
+        ],
+        "rank": 3
+      },
+      {
+        "topic": "북한 드론·미사일 무력시위",
+        "days": 4,
+        "outlets": 7,
+        "click": [
+          3,
+          3
+        ],
+        "rank": 4,
+        "over": "되돌리기 어려움: 탄도미사일 발사와 한국군 시설 모형 타격 시연이 실제로 이뤄졌다. 더 큰 바이낸스 해킹은 해외 항목에 실었다"
+      },
+      {
+        "topic": "금융권 해킹 북한 IP·첫 금전 피해",
+        "days": 4,
+        "outlets": 7,
+        "click": [
+          1,
+          1
+        ],
+        "rank": 5,
+        "over": "되돌리기 어려움: 피해 금융사가 20곳으로 늘고 첫 고객 자산 탈취가 확인됐다. 더 큰 바이낸스 해킹은 해외 항목에 실린 다른 사건이다"
+      },
+      {
+        "topic": "바이낸스 해킹 북한 배후",
+        "days": 2,
+        "outlets": 8,
+        "click": [
+          2,
+          2
+        ],
+        "out": "중복"
+      },
+      {
+        "topic": "이 대통령 CPTPP 발언",
+        "days": 1,
+        "outlets": 8,
+        "click": [
+          0,
+          0
+        ],
+        "out": "발언"
+      },
+      {
+        "topic": "SK하이닉스·삼성전자 3분기 실적·주주환원",
+        "days": 3,
+        "outlets": 7,
+        "click": [
+          3,
+          6
+        ],
+        "out": "경계"
+      },
+      {
+        "topic": "고리 3·4호기 계속운전 허가",
+        "days": 1,
+        "outlets": 7,
+        "click": [
+          0,
+          0
+        ],
+        "out": "경계"
+      }
+    ],
+    "world": [
+      {
+        "topic": "유럽 생활비 시위 확산",
+        "days": 5,
+        "outlets": 11,
+        "rank": 1
+      },
+      {
+        "topic": "브라질 룰라 4선·보우소나루 미국 도피",
+        "days": 6,
+        "outlets": 10,
+        "rank": 2
+      },
+      {
+        "topic": "이스라엘 총선 과반 없음",
+        "days": 5,
+        "outlets": 8,
+        "rank": 3,
+        "over": "되돌리기 어려움: 총선 결과가 확정돼 현 연정이 과반을 잃었다. 더 큰 미-이란 호르무즈 협상은 도하 간접 협상이 결론 없이 이어졌다"
+      },
+      {
+        "topic": "바이낸스 63억 달러 해킹·북한 배후",
+        "days": 3,
+        "outlets": 7,
+        "rank": 4,
+        "over": "되돌리기 어려움·독자 근접성: 63억 달러가 실제로 탈취됐고 FBI가 북한을 배후로 지목했다. 국내 10개지 중 8곳이 1면에 실었다. 더 큰 미-이란 협상은 결론이 없다"
+      },
+      {
+        "topic": "올레시키 민간인 대피",
+        "days": 6,
+        "outlets": 6,
+        "rank": 5,
+        "over": "되돌리기 어려움: 휴전 합의가 개전 후 첫 합동 대피로 집행됐다. 더 큰 미-이란 호르무즈 협상은 결론 없이 이어졌다"
+      },
+      {
+        "topic": "미-이란 호르무즈 협상",
+        "days": 6,
+        "outlets": 9,
+        "out": "경계"
+      },
+      {
+        "topic": "후티-사우디 전쟁",
+        "days": 4,
+        "outlets": 6,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "수단 니알라 드론 공격",
+        "days": 4,
+        "outlets": 6,
+        "out": "원문 확인 불가"
+      },
+      {
+        "topic": "폴란드 헌법재판소 위기",
+        "days": 2,
+        "outlets": 6,
+        "out": "경계"
+      },
+      {
+        "topic": "스페인 톨레도 고속열차 충돌",
+        "days": 4,
+        "outlets": 5,
+        "out": "단발"
+      }
+    ],
+    "ai": [
+      {
+        "topic": "Anthropic 상장 신청",
+        "days": 6,
+        "outlets": 2,
+        "rank": 1
+      },
+      {
+        "topic": "AI 연구소 수학·전산·물리 난제 풀이",
+        "days": 3,
+        "outlets": 2,
+        "rank": 2
+      },
+      {
+        "topic": "Mistral Large 4 가중치 공개",
+        "days": 2,
+        "outlets": 2,
+        "rank": 3
+      },
+      {
+        "topic": "xAI 데이터센터 오염 소송",
+        "days": 2,
+        "outlets": 2,
+        "rank": 4
+      },
+      {
+        "topic": "알파벳 폭락·AI 투자 우려",
+        "days": 2,
+        "outlets": 1,
+        "rank": 5
+      },
+      {
+        "topic": "OpenAI GPT-6.1 Terra",
+        "days": 1,
+        "outlets": 1,
+        "out": "경계"
+      },
+      {
+        "topic": "가짜 Claude Code 확장 프로그램",
+        "days": 1,
+        "outlets": 1,
+        "out": "단발"
+      },
+      {
+        "topic": "Cohere 'Qwen이 베이징에 파일 전송 시도'",
+        "days": 1,
+        "outlets": 1,
+        "out": "발언"
+      }
+    ]
+  }
+}

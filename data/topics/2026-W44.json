@@ -1,0 +1,213 @@
+[
+{
+"field": "korea",
+"topic": "수도권 그린벨트 해제 7.67만 가구 공급",
+"pattern": "그린벨트|7만6700|7\\.6만|7\\.7만|신규 택지|7만7천"
+},
+{
+"field": "korea",
+"topic": "민주당 조희대 대법원장 국정조사",
+"pattern": "조희대|대법원장 국조|대법원장 국정조사"
+},
+{
+"field": "korea",
+"topic": "북한 드론·미사일 무력시위",
+"pattern": "미사일|드론|무인기|강철비|집속|자주포|무력시위|재래무기|잠수정|초토화|GP 모형|GP모형"
+},
+{
+"field": "korea",
+"topic": "금융권 해킹 북한 IP·첫 금전 피해",
+"pattern": "해킹|프라뱅|북 IP|北 IP|빗썸",
+"exclude": "바이낸스|8\\.4조|코인 8|FBI"
+},
+{
+"field": "korea",
+"topic": "바이낸스 해킹 북한 배후",
+"pattern": "바이낸스|8\\.4조|코인 절도|FBI"
+},
+{
+"field": "korea",
+"topic": "SK하이닉스·삼성전자 3분기 실적·주주환원",
+"pattern": "하이닉스|하닉|삼성전자|100조|주주환원|106조"
+},
+{
+"field": "korea",
+"topic": "고리 3·4호기 계속운전 허가",
+"pattern": "고리"
+},
+{
+"field": "korea",
+"topic": "3분기 GDP 1% 성장",
+"pattern": "GDP|깜짝 성장|성장률|高성장|3분기 1%"
+},
+{
+"field": "korea",
+"topic": "이 대통령 CPTPP 발언",
+"pattern": "CPTPP|농어민|농어업"
+},
+{
+"field": "korea",
+"topic": "이 대통령 다문화 우대 폐지 검토",
+"pattern": "다문화|이주민|내국인"
+},
+{
+"field": "korea",
+"topic": "SCM 연기·전작권 이견",
+"pattern": "SCM|전작권|안보협의회|한미안보|한·미 “안보|한미 국방"
+},
+{
+"field": "korea",
+"topic": "선관위특검 올공 투표지 검증",
+"pattern": "올공|올림픽공원|투표지|투표함|선관위특검"
+},
+{
+"field": "korea",
+"topic": "퇴직연금 기금형·사외적립 의무화",
+"pattern": "퇴직|사외적립|사외 적립"
+},
+{
+"field": "korea",
+"topic": "진성준 미국 비자 거부",
+"pattern": "진성준|비자"
+},
+{
+"field": "korea",
+"topic": "소득 상향 이동 역대 최저",
+"pattern": "상향 이동|개천"
+},
+{
+"field": "korea",
+"topic": "최불암 별세",
+"pattern": "최불암|국민 아버지"
+},
+{
+"field": "korea",
+"topic": "김혜경 여사 골프 의혹 공방",
+"pattern": "김혜경|김여사 골프|김 여사 골프|황제 골프|황제골프|리디아"
+},
+{
+"field": "world",
+"topic": "브라질 룰라 4선·보우소나루 미국 도피",
+"pattern": "Brazil|Lula|Bolsonaro"
+},
+{
+"field": "world",
+"topic": "바이낸스 63억 달러 해킹·북한 배후",
+"pattern": "Binance|crypto hack|crypto heist|North Korea",
+"exclude": "fortifying"
+},
+{
+"field": "world",
+"topic": "이스라엘 총선 과반 없음",
+"pattern": "Israel.*election|Knesset|Netanyahu|Eisenkot|Arab (parties|voters)|Bedouin|Palestinian parties"
+},
+{
+"field": "world",
+"topic": "스페인 톨레도 고속열차 충돌",
+"pattern": "Toledo|train (crash|collision|disaster)|high-speed rail|Spain.*train|Spain’s Sánchez"
+},
+{
+"field": "world",
+"topic": "유럽 생활비 시위 확산",
+"pattern": "France|French|German|Frankfurt|Italy|Italian|Zurich|Hague|Portug|Lisbon|European unrest",
+"exclude": "France 24|Kevin Aymoz|Louis XVI|helicopter crash|Audi boss"
+},
+{
+"field": "world",
+"topic": "미-이란 호르무즈 협상",
+"pattern": "\\bIran|Hormuz",
+"exclude": "Saudi Arabia launches|fuel crisis"
+},
+{
+"field": "world",
+"topic": "라가르드 ECB 총재 사임",
+"pattern": "Lagarde|European Central Bank"
+},
+{
+"field": "world",
+"topic": "폴란드 헌법재판소 위기",
+"pattern": "Poland|Polish"
+},
+{
+"field": "world",
+"topic": "후티-사우디 전쟁",
+"pattern": "Houthi|Saudi|Yemen|Taiz",
+"exclude": "Iranian leadership"
+},
+{
+"field": "world",
+"topic": "수단 니알라 드론 공격",
+"pattern": "Sudan|Nyala"
+},
+{
+"field": "world",
+"topic": "올레시키 민간인 대피",
+"pattern": "Ukrain|Russia|Oleshky|Putin|Dnipro|Zelensk",
+"exclude": "Belarus|KuCoin|Novaya|ice hockey|G20|AI boom"
+},
+{
+"field": "world",
+"topic": "커먼웰스 노예제 배상 논란",
+"pattern": "Commonwealth|slavery|Reparations"
+},
+{
+"field": "ai",
+"topic": "Anthropic 상장 신청",
+"pattern": "Anthropic.*(IPO|public debut|S-1|s1|after the IPO|junk)|anthropic ipo|anthropic s 1"
+},
+{
+"field": "ai",
+"topic": "AI 연구소 수학·전산·물리 난제 풀이",
+"pattern": "Exponential Time|breakthrough math|science math physics|computer science research|ai math"
+},
+{
+"field": "ai",
+"topic": "OpenAI GPT-6.1 Terra",
+"pattern": "Terra"
+},
+{
+"field": "ai",
+"topic": "Mistral Large 4 가중치 공개",
+"pattern": "Mistral"
+},
+{
+"field": "ai",
+"topic": "알파벳 폭락·AI 투자 우려",
+"pattern": "Cracks|Intel|lowers funding|bubble"
+},
+{
+"field": "ai",
+"topic": "가짜 Claude Code 확장 프로그램",
+"pattern": "malicious claude code"
+},
+{
+"field": "ai",
+"topic": "구글 Genie 4",
+"pattern": "Genie 4"
+},
+{
+"field": "ai",
+"topic": "Cohere 'Qwen이 베이징에 파일 전송 시도'",
+"pattern": "Qwen|Cohere"
+},
+{
+"field": "ai",
+"topic": "뉴욕주 아동 AI 챗봇 규제법",
+"pattern": "hochul|chatbot features for kids"
+},
+{
+"field": "ai",
+"topic": "GPT-4o 발작약 중단 소송",
+"pattern": "seizure"
+},
+{
+"field": "ai",
+"topic": "xAI 데이터센터 오염 소송",
+"pattern": "xai .*data center|xAI data center"
+},
+{
+"field": "ai",
+"topic": "마이크로소프트 실적·OpenAI 매출",
+"pattern": "Microsoft (just shared|recorded|hits)"
+}
+]
