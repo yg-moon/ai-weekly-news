@@ -436,7 +436,6 @@ ${path === null ? "" : `<meta property="og:url" content="${SITE_URL}${T.dir}${pa
 <link rel="icon" href="${root}favicon.svg" type="image/svg+xml">
 <link rel="icon" href="${root}favicon-96.png" type="image/png" sizes="96x96">
 <link rel="apple-touch-icon" href="${root}apple-touch-icon.png">
-<link rel="alternate" type="application/rss+xml" title="${SITE_TITLE}${lang === "ko" ? "" : ` (${T.name})`}" href="${SITE_URL}${T.dir}feed.xml">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="${UMAMI_ID}" data-domains="yg-moon.github.io"></script>
 ${hreflang}
 ${THEME_SCRIPT}
@@ -451,7 +450,7 @@ ${full ? `<header class="site">
 </header>` : `<header class="site compact">${masthead}</header>`}
 ${body}
 <footer>
-  <p><a href="${home}about/">${T.about}</a> · <a href="${home}stats/">${T.stats}</a> · <button class="fb-open" type="button">${T.fb.link}</button> · <a href="${home}feed.xml">RSS</a> · <a href="${REPO_URL}">GitHub</a></p>
+  <p><a href="${home}about/">${T.about}</a> · <a href="${home}stats/">${T.stats}</a> · <button class="fb-open" type="button">${T.fb.link}</button> · <a href="${REPO_URL}">GitHub</a></p>
   <p class="updated">${UPDATED_MARK}</p>
 </footer>
 ${feedback(T)}
@@ -1198,39 +1197,6 @@ writeFileSync(
 <p lang="en">This page doesn't exist. <a href="${new URL(SITE_URL).pathname}en/">Go to the English home</a></p></div>`,
   })
 );
-
-// RSS. 언어판마다 하나이고 최근 발행물 20개를 싣는다. 항목 제목을 분야별로 적는다.
-// 발행 시각은 실행 기록에서 읽고, 기록이 없으면 기간 다음 날 오전 6시(KST)로 둔다.
-const FEED_SIZE = 20;
-const xml = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const pubDate = (d) => {
-  const r = runs.find((x) => x.week === d.id);
-  return new Date(r ? r.published : new Date(Date.parse(`${d.meta.period_end}T06:00:00+09:00`) + 864e5)).toUTCString();
-};
-for (const lang of LANG_NAMES) {
-  const T = TEXT[lang];
-  const docs = KIND_NAMES.flatMap((k) => SETS[lang][k])
-    // 지난 호는 한꺼번에 만든 것이 많아 발행 시각이 아니라 기간 끝 순서로 놓는다.
-    .sort(newestFirst)
-    .slice(0, FEED_SIZE);
-  const items = docs.map((d) => {
-    const url = `${SITE_URL}${T.dir}${d.kind}/${d.id}/`;
-    const desc = d.body.split(/^## /m).slice(1).map((chunk) => {
-      const titles = [...chunk.matchAll(/^### (\d+)\.\s*(.+)$/gm)].map(([, n, t]) => `${n}. ${plainTitle(marked.parseInline(t))}`);
-      return `<p><b>${chunk.split("\n")[0].trim()}</b><br>${titles.join("<br>")}</p>`;
-    }).join("");
-    return `<item><title>${xml(pageTitle(d))}</title><link>${url}</link><guid>${url}</guid><pubDate>${pubDate(d)}</pubDate><description>${xml(desc)}</description></item>`;
-  });
-  writeFileSync(
-    join(SITE, T.dir, "feed.xml"),
-    `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"><channel>
-<title>${SITE_TITLE}${lang === "ko" ? "" : ` (${T.name})`}</title><link>${SITE_URL}${T.dir}</link><description>${xml(T.tagline)}</description><language>${lang}</language>
-${items.join("\n")}
-</channel></rss>
-`
-  );
-}
 
 // 검색 엔진에 내는 페이지 목록. 두 언어판의 모든 페이지다.
 writeFileSync(

@@ -248,7 +248,7 @@ export function checkContent({ SETS, TEXT, KINDS, CONTENT, placeOf }) {
 }
 
 // 실행 기록이 없는 발행물. 런북은 기록을 발행물과 같은 커밋에 넣게 한다.
-// 빠지면 통계에서 그 호가 소리 없이 빠지고, RSS 발행 시각이 추정값이 된다.
+// 빠지면 통계에서 그 호가 소리 없이 빠진다.
 export function missingRuns(ids, runs) {
   const have = new Set(runs.map((r) => r.week));
   return [...new Set(ids)].filter((id) => !have.has(id)).sort();
