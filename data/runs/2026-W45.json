@@ -1,0 +1,225 @@
+{
+  "week": "2026-W45",
+  "environment": "cloud",
+  "session": "1bc3c2b7-f36b-5df4-930a-98750a229b4f",
+  "model": "claude-opus-5-5",
+  "started": "2026-11-09T06:07:30+09:00",
+  "published": "2026-11-09T06:27:07+09:00",
+  "cost_usd": 6.56,
+  "headlines": 1271,
+  "tokens": {
+    "input": 149,
+    "output": 71530,
+    "cache_read": 14225570,
+    "cache_write": 285989
+  },
+  "selection": {
+    "korea": [
+      {
+        "topic": "조작기소 특검법 국회 통과",
+        "days": 5,
+        "outlets": 10,
+        "click": [
+          1,
+          1
+        ],
+        "rank": 1
+      },
+      {
+        "topic": "코스피 급락·장중 5000 붕괴",
+        "days": 3,
+        "outlets": 9,
+        "click": [
+          4,
+          9
+        ],
+        "rank": 2,
+        "over": "되돌리기 어려움: 이틀 새 코스피가 11% 떨어지고 서킷브레이커가 발동됐다. 더 큰 시정연설은 이미 제출된 예산안 처리를 요청한 발언이다"
+      },
+      {
+        "topic": "청해부대 호르무즈 작전 해역 확대",
+        "days": 2,
+        "outlets": 9,
+        "click": [
+          0,
+          0
+        ],
+        "rank": 3,
+        "over": "되돌리기 어려움: 정부가 작전 해역 확대와 병력 증파를 담은 동의안을 의결했다. 더 큰 시정연설은 이미 제출된 예산안 처리를 요청한 발언이다"
+      },
+      {
+        "topic": "윤석열 선거법 2심 당선무효형",
+        "days": 1,
+        "outlets": 7,
+        "click": [
+          3,
+          4
+        ],
+        "rank": 4,
+        "over": "되돌리기 어려움: 항소심이 당선무효형을 유지했다. 더 큰 시정연설은 이미 제출된 예산안 처리를 요청한 발언이다"
+      },
+      {
+        "topic": "대통령 전용기 탑승자 정보 유출",
+        "days": 2,
+        "outlets": 6,
+        "click": [
+          2,
+          2
+        ],
+        "rank": 5,
+        "over": "되돌리기 어려움: 168명의 여권 정보가 실제로 유출돼 경찰 수사와 여권 재발급이 시작됐다. 더 큰 시정연설은 이미 제출된 예산안 처리를 요청한 발언이다"
+      },
+      {
+        "topic": "이 대통령 시정연설 '모두의 성장'",
+        "days": 2,
+        "outlets": 10,
+        "click": [
+          0,
+          0
+        ],
+        "out": "발언"
+      },
+      {
+        "topic": "김민석 '신천지 개입설' 사과",
+        "days": 1,
+        "outlets": 6,
+        "click": [
+          2,
+          5
+        ],
+        "out": "발언"
+      },
+      {
+        "topic": "순천대·경국대 의대 신설",
+        "days": 2,
+        "outlets": 5,
+        "click": [
+          1,
+          2
+        ],
+        "out": "경계"
+      },
+      {
+        "topic": "이용철 법무장관 후보자 지명",
+        "days": 2,
+        "outlets": 5,
+        "click": [
+          0,
+          0
+        ],
+        "out": "경계"
+      }
+    ],
+    "world": [
+      {
+        "topic": "미 중간선거 민주당 상·하원 장악",
+        "days": 2,
+        "outlets": 8,
+        "rank": 1
+      },
+      {
+        "topic": "파라과이 페냐 대통령 탄핵",
+        "days": 2,
+        "outlets": 5,
+        "rank": 2
+      },
+      {
+        "topic": "방글라데시 의류 노동자 임금 시위",
+        "days": 2,
+        "outlets": 4,
+        "rank": 3
+      },
+      {
+        "topic": "프랑스 총파업·생활비 시위",
+        "days": 2,
+        "outlets": 3,
+        "rank": 4,
+        "over": "되돌리기 어려움·영향의 범위: 총파업에 57만5천 명이 참여했다. 더 큰 수단 내전 항목은 인용 매체가 수단 트리뷴 하나다"
+      },
+      {
+        "topic": "조슈아 웡·마카오 국가안보 중형",
+        "days": 2,
+        "outlets": 2,
+        "rank": 5,
+        "over": "되돌리기 어려움: 국가안보법 중형 선고가 집행됐다. 더 큰 수단 내전은 원문을 확인할 주요 매체가 없다"
+      },
+      {
+        "topic": "미국 호르무즈 '방어적 공습'",
+        "days": 2,
+        "outlets": 4,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "수단 내전",
+        "days": 3,
+        "outlets": 3,
+        "out": "원문 확인 불가"
+      },
+      {
+        "topic": "예멘 타이즈·사나 공습",
+        "days": 2,
+        "outlets": 2,
+        "out": "국면 없음"
+      }
+    ],
+    "ai": [
+      {
+        "topic": "중간선거 뒤 AI·데이터센터 반발",
+        "days": 4,
+        "outlets": 2,
+        "rank": 1
+      },
+      {
+        "topic": "Anthropic AI 개발 가속 공시·METR 평가",
+        "days": 3,
+        "outlets": 2,
+        "rank": 2
+      },
+      {
+        "topic": "OpenAI 1.25조 달러 가치 투자",
+        "days": 2,
+        "outlets": 2,
+        "rank": 3,
+        "over": "되돌리기 어려움: 110억 달러 투자가 이뤄졌다. 더 큰 Anthropic 상장 서류는 Anthropic AI 개발 가속 항목에 합쳐 실었다"
+      },
+      {
+        "topic": "GPT-6 Cyber 출시",
+        "days": 2,
+        "outlets": 2,
+        "rank": 4,
+        "over": "되돌리기 어려움: 모델이 출시됐다. 더 큰 Anthropic 상장 서류는 Anthropic AI 개발 가속 항목에 합쳐 실었다"
+      },
+      {
+        "topic": "메타 Conductor 인수",
+        "days": 1,
+        "outlets": 2,
+        "rank": 5,
+        "over": "되돌리기 어려움: 인수가 끝났다. 더 큰 Grok 사용 제한은 10월 31일~11월 1일 일이고, ChatGPT 탭 통합은 계획 단계다. Anthropic 상장 서류는 Anthropic AI 개발 가속 항목에 합쳐 실었다"
+      },
+      {
+        "topic": "Anthropic 상장 서류·재무",
+        "days": 3,
+        "outlets": 2,
+        "out": "중복"
+      },
+      {
+        "topic": "Grok 사용 제한",
+        "days": 2,
+        "outlets": 2,
+        "out": "경계"
+      },
+      {
+        "topic": "ChatGPT Chat·Work 통합",
+        "days": 2,
+        "outlets": 2,
+        "out": "예고"
+      },
+      {
+        "topic": "Claude 개인 재무 기능",
+        "days": 1,
+        "outlets": 2,
+        "out": "경계"
+      }
+    ]
+  }
+}

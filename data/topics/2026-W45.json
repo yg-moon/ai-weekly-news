@@ -1,0 +1,221 @@
+[
+ {
+  "field": "korea",
+  "topic": "조작기소 특검법 국회 통과",
+  "pattern": "조작기소|조작 기소|조작기소특검"
+ },
+ {
+  "field": "korea",
+  "topic": "청해부대 호르무즈 작전 해역 확대",
+  "pattern": "청해부대|호르무즈 기여|호르무즈 650"
+ },
+ {
+  "field": "korea",
+  "topic": "코스피 급락·장중 5000 붕괴",
+  "pattern": "코스피|오천피|5000피|5000 붕괴|K증시|삼전닉스|패닉셀|증시|하닉",
+  "exclude": "졸속 추진|이미숙"
+ },
+ {
+  "field": "korea",
+  "topic": "윤석열 선거법 2심 당선무효형",
+  "pattern": "선거법|당선무효|397억",
+  "exclude": "용혜인"
+ },
+ {
+  "field": "korea",
+  "topic": "이 대통령 시정연설 '모두의 성장'",
+  "pattern": "모두의 성장|시정연설|821조|역대 최대 예산안|성장 36번|162조"
+ },
+ {
+  "field": "korea",
+  "topic": "대통령 전용기 탑승자 정보 유출",
+  "pattern": "1호기|탑승자|여권번호"
+ },
+ {
+  "field": "korea",
+  "topic": "김민석 '신천지 개입설' 사과",
+  "pattern": "신천지"
+ },
+ {
+  "field": "korea",
+  "topic": "순천대·경국대 의대 신설",
+  "pattern": "의대 신설|의대, 순천대|순천대|경국대|국립의대"
+ },
+ {
+  "field": "korea",
+  "topic": "이용철 법무장관 후보자 지명",
+  "pattern": "이용철"
+ },
+ {
+  "field": "korea",
+  "topic": "여당 종부세 공제 14억 요구",
+  "pattern": "종부세"
+ },
+ {
+  "field": "korea",
+  "topic": "조희대 국정조사·법관대표회의",
+  "pattern": "조희대|국조|법관대표회의|법관회의|사법 압박"
+ },
+ {
+  "field": "korea",
+  "topic": "초등 입학생 30만 명 아래로",
+  "pattern": "입학생|초등 입학"
+ },
+ {
+  "field": "korea",
+  "topic": "가상자산 과세 2년 유예",
+  "pattern": "가상자산 과세"
+ },
+ {
+  "field": "korea",
+  "topic": "국방드론본부 출범",
+  "pattern": "드론본부|드론사|드론작전사"
+ },
+ {
+  "field": "korea",
+  "topic": "증권사 해킹·금융 해킹",
+  "pattern": "해킹",
+  "exclude": "1호기|탑승자"
+ },
+ {
+  "field": "world",
+  "topic": "미 중간선거 민주당 상·하원 장악",
+  "pattern": "midterm|Democrat|House of Representatives|Senate election|blue wave|Bottoms|El-Sayed|Talarico|120th Congress",
+  "exclude": "Grenad|Nigeria|Kivu|New Zealand"
+ },
+ {
+  "field": "world",
+  "topic": "미국 호르무즈 '방어적 공습'",
+  "pattern": "Iran|Hormuz"
+ },
+ {
+  "field": "world",
+  "topic": "파라과이 페냐 대통령 탄핵",
+  "pattern": "Paraguay|Peña|ueno"
+ },
+ {
+  "field": "world",
+  "topic": "예멘 타이즈·사나 공습",
+  "pattern": "Yemen|Houthi|Taiz|Sanaa",
+  "exclude": "Spanish interior|Asian Cup"
+ },
+ {
+  "field": "world",
+  "topic": "크라쿠프 총기 난사",
+  "pattern": "Krak"
+ },
+ {
+  "field": "world",
+  "topic": "방글라데시 의류 노동자 임금 시위",
+  "pattern": "Bangladesh|garment",
+  "exclude": "Spanish interior"
+ },
+ {
+  "field": "world",
+  "topic": "프랑스 총파업·생활비 시위",
+  "pattern": "French student|yellow vests|general strike"
+ },
+ {
+  "field": "world",
+  "topic": "이스라엘 아이젠코트 연정 구성권",
+  "pattern": "Eisenkot|Knesset"
+ },
+ {
+  "field": "world",
+  "topic": "수단 내전",
+  "pattern": "Sudan|Kordofan|Rapid Support"
+ },
+ {
+  "field": "world",
+  "topic": "소말리아 대법원 개헌 무효",
+  "pattern": "Somalia",
+  "exclude": "Uganda"
+ },
+ {
+  "field": "world",
+  "topic": "중간선거 뒤 기술주 급락",
+  "pattern": "rout|tech stocks",
+  "exclude": "Route du Rhum"
+ },
+ {
+  "field": "ai",
+  "topic": "중간선거 뒤 AI·데이터센터 반발",
+  "pattern": "midterm|blue wave|election|AI PAC|data centers ai energy|2028 election"
+ },
+ {
+  "field": "ai",
+  "topic": "Anthropic 상장 서류·재무",
+  "pattern": "S.?1|economics of compute|nears its IPO|AI spending stalling",
+  "exclude": "dating apps"
+ },
+ {
+  "field": "ai",
+  "topic": "Anthropic AI 개발 가속 공시·METR 평가",
+  "pattern": "RSI|metr|self-building"
+ },
+ {
+  "field": "ai",
+  "topic": "OpenAI 1.25조 달러 가치 투자",
+  "pattern": "1\\.25 trillion|1 25 trillion|IPO ready"
+ },
+ {
+  "field": "ai",
+  "topic": "GPT-6 Cyber 출시",
+  "pattern": "gpt.?6 cyber|cybersecurity model|linux kernel"
+ },
+ {
+  "field": "ai",
+  "topic": "Grok 사용 제한",
+  "pattern": "grok"
+ },
+ {
+  "field": "ai",
+  "topic": "ChatGPT Chat·Work 통합",
+  "pattern": "chat and work|chats? and work"
+ },
+ {
+  "field": "ai",
+  "topic": "메타 Conductor 인수",
+  "pattern": "conductor"
+ },
+ {
+  "field": "ai",
+  "topic": "OpenAI Pierre 인수",
+  "pattern": "pierre"
+ },
+ {
+  "field": "ai",
+  "topic": "Claude 개인 재무 기능",
+  "pattern": "personal finance|plaid"
+ },
+ {
+  "field": "ai",
+  "topic": "엔비디아 칩 중국",
+  "pattern": "nvidia ai chips china|megaspeed"
+ },
+ {
+  "field": "ai",
+  "topic": "구글 학교 AI 정책 반발",
+  "pattern": "schools"
+ },
+ {
+  "field": "ai",
+  "topic": "Anthropic AP 라이선스",
+  "pattern": "associated press"
+ },
+ {
+  "field": "ai",
+  "topic": "Claude 게임 복제 정책",
+  "pattern": "video game clones|making games"
+ },
+ {
+  "field": "world",
+  "topic": "조슈아 웡·마카오 국가안보 중형",
+  "pattern": "Joshua Wong|Au Kam San"
+ },
+ {
+  "field": "world",
+  "topic": "뉴질랜드 총선",
+  "pattern": "New Zealand general election"
+ }
+]
