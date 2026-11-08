@@ -6,8 +6,8 @@
 //
 // domestic  네이버 뉴스 랭킹 — 날짜별·언론사별 많이 본 기사
 // front     10개 일간지 A1면 — 대상 주 화요일 ~ 다음 주 월요일 신문. 신문 없는 날은 연합 주요뉴스로 메운다
-// world     Wikipedia Portal:Current events(날짜별, 인용 URL 포함) + The Guardian 날짜 목록(영상·라이브·브리핑 제외)
-//           + NPR business 날짜 아카이브(미국 경제·통화정책 보완)
+// world     Wikipedia Portal:Current events(날짜별, 인용 URL 포함) + NPR world·business 날짜 아카이브
+//           (Up First 뉴스레터 제외)
 // tech      Hacker News 프런트 페이지 — 날짜별 기술 화제
 // ai        AI 연구소·기업 뉴스룸 1차 출처
 // aimedia   TechCrunch·The Verge 날짜별 AI 기사 — AI 의 보도량을 센다
@@ -234,48 +234,36 @@ const FEEDS = [
   ["Hugging Face", "https://huggingface.co/blog/feed.xml", "rss"],
 ];
 
-// 해외 보조. Wikipedia 가 약한 경제·기업 사안을 메운다.
-// 피드는 최근 8.5일치뿐이라 지난 주차에서 비었다. 날짜 목록은 과거 날짜도 준다.
-// 영상·라이브블로그·사진·오디오와 매일 나오는 브리핑("Ukraine war briefing:")은 뺀다.
-// 같은 사건을 형식만 바꿔 여러 번 내거나, 계속되는 전쟁이 날마다 자동으로 잡히기 때문이다.
-const GUARDIAN_SKIP_URL = /\/(video|live|gallery|audio)\//;
-const GUARDIAN_SKIP_TITLE = /briefing:/i;
-
-export function parseGuardian(html, path) {
-  const items = [];
-  const re = new RegExp(`<a href="(https://www\\.theguardian\\.com/[a-z/-]+/${path}/[^"]+)" class="fc-item__link"[^>]*>([\\s\\S]*?)</a>`, "g");
-  for (const m of html.matchAll(re)) {
-    const title = clean(m[2]);
-    if (GUARDIAN_SKIP_URL.test(m[1]) || GUARDIAN_SKIP_TITLE.test(title)) continue;
-    if (!items.some((i) => i.url === m[1])) items.push({ title, url: m[1] });
-  }
-  return items;
-}
-
-function guardianDay(day) {
-  const [yy, mm, dd] = day.split("-").map(Number);
-  const path = `${yy}/${MONTHS[mm - 1].slice(0, 3).toLowerCase()}/${String(dd).padStart(2, "0")}`;
-  return parseGuardian(get(`https://www.theguardian.com/world/${path}/all`), path);
-}
-
-// 해외 보조 2. 위키·Guardian world 가 미국 경제·통화정책을 거의 담지 않아 W38 연준 금리 인상이
-// 후보에서 빠졌다(experiments/exp2-measure-gaps). NPR business 날짜 아카이브는 지난 날짜도 받아진다.
+// 해외 보조. NPR 날짜 아카이브는 지난 날짜도 받아진다. world 는 위키가 적게 인용한 사안의 보도량을,
+// business 는 위키가 거의 담지 않는 미국 경제·통화정책을 메운다(W38 연준 금리 인상이 후보에서 빠졌다,
+// experiments/exp2-measure-gaps). world 는 막힌 The Guardian 날짜 목록을 대신한다(experiments/exp4-guardian-block).
 // 쪽은 그 날짜부터 거슬러 15건이라 앞 날짜 기사가 섞인다. 기사 주소의 날짜(/YYYY/MM/DD/)로
-// 그날 것만 남긴다. 주소에 시각이 없어 KST 로 옮기지 못하고 NPR 날짜(미국)를 그대로 쓴다. Guardian 과 같다.
+// 그날 것만 남긴다. 주소에 시각이 없어 KST 로 옮기지 못하고 NPR 날짜(미국)를 그대로 쓴다.
+// 아침 뉴스레터 Up First 는 뺀다. 제목 하나에 사안 둘을 담아("A. And, B") 매일 자동으로 잡힌다.
+const NPR_SKIP_URL = /\/up-first-newsletter/;
+
 export function parseNpr(html, day) {
   const want = day.replace(/-/g, "/");
   const items = [];
   for (const m of html.matchAll(/<h2 class="title"><a href="(https:\/\/www\.npr\.org\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g)) {
     const d = m[1].match(/\/(\d{4}\/\d\d\/\d\d)\//);
-    if (!d || d[1] !== want) continue;
+    if (!d || d[1] !== want || NPR_SKIP_URL.test(m[1])) continue;
     if (!items.some((i) => i.url === m[1])) items.push({ title: clean(m[2]), url: m[1] });
   }
   return items;
 }
 
-function nprDay(day) {
+// 응답이 200 이어도 기사 목록이 없으면 받지 못한 것으로 본다. 봇 확인 페이지가 200 으로 와서
+// The Guardian 이 0건으로 조용히 빠진 적이 있다(2026-11-09).
+export function assertListing(html, marker, name) {
+  if (!html.includes(marker)) throw new Error(`${name} 응답에 기사 목록이 없다. 봇 확인 페이지일 수 있다`);
+  return html;
+}
+
+function nprDay(section, day) {
   const [yy, mm, dd] = day.split("-").map(Number);
-  return parseNpr(get(`https://www.npr.org/sections/business/archive?date=${mm}-${dd}-${yy}`), day);
+  const html = assertListing(get(`https://www.npr.org/sections/${section}/archive?date=${mm}-${dd}-${yy}`), '<h2 class="title">', `NPR ${section}`);
+  return parseNpr(html, day);
 }
 
 // ---------- AI 테크 매체 ----------
@@ -398,12 +386,11 @@ function collectFeeds(list, from, to) {
 
 const ai = (from, to) => collectFeeds(FEEDS, from, to);
 
-// 해외는 날짜별 Wikipedia 를 뼈대로 하고 Guardian 날짜 목록을 덧붙인다.
-// Guardian 은 날짜마다 한 묶음이라 며칠에 걸쳐 다뤘는지 셀 수 있다. 기사 수는 점수로 쓰지 않는다.
-// NPR business 도 같은 형식(날짜 · 매체)으로 덧붙인다. 받기가 실패해도 경고만 내고 이어 간다.
+// 해외는 날짜별 Wikipedia 를 뼈대로 하고 NPR world·business 날짜 아카이브를 덧붙인다.
+// NPR 은 날짜마다 한 묶음이라 며칠에 걸쳐 다뤘는지 셀 수 있다. 기사 수는 점수로 쓰지 않는다.
+// 받기가 실패해도 경고만 내고 이어 간다.
 function world(from, to) {
   const out = [];
-  const guardian = [];
   const npr = [];
   for (let dt = new Date(from + "T00:00:00Z"); dt <= new Date(to + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + 1)) {
     const day = dt.toISOString().slice(0, 10);
@@ -413,20 +400,17 @@ function world(from, to) {
       out.push({ group: `${day} — 수집 실패: ${e.message}`, items: [] });
       console.error(`경고: world ${day} 를 못 받았다 (${e.message}). 이 날의 사안이 후보 풀에서 빠진다.`);
     }
-    try {
-      const items = guardianDay(day);
-      if (items.length) guardian.push({ group: `${day} · The Guardian`, items });
-    } catch (e) {
-      console.error(`경고: world The Guardian ${day} 를 못 받았다 (${e.message}).`);
+    const items = [];
+    for (const section of ["world", "business"]) {
+      try {
+        for (const i of nprDay(section, day)) if (!items.some((x) => x.url === i.url)) items.push(i);
+      } catch (e) {
+        console.error(`경고: world NPR ${section} ${day} 를 못 받았다 (${e.message}). 이 날의 보도량이 빠진다.`);
+      }
     }
-    try {
-      const items = nprDay(day);
-      if (items.length) npr.push({ group: `${day} · NPR`, items });
-    } catch (e) {
-      console.error(`경고: world NPR ${day} 를 못 받았다 (${e.message}). 이 날의 미국 경제 보도량이 빠진다.`);
-    }
+    if (items.length) npr.push({ group: `${day} · NPR`, items });
   }
-  return out.concat(guardian, npr);
+  return out.concat(npr);
 }
 
 // ---------- 실행 ----------

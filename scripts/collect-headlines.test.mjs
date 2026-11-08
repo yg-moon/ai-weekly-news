@@ -3,7 +3,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseFront, parseYna, parseGuardian, parseNpr } from "./collect-headlines.mjs";
+import { parseFront, parseYna, parseNpr, assertListing } from "./collect-headlines.mjs";
 
 const brick = (page, links) => `
 <div class="newspaper_brick_item _start_page">
@@ -46,21 +46,6 @@ test("연합 주요뉴스 이력에서 제목과 기사 주소를 꺼내고 같�
   ]);
 });
 
-test("Guardian 날짜 목록에서 영상·라이브블로그·브리핑을 뺀다", () => {
-  const path = "2026/sep/30";
-  const a = (href, t) => `<a href="https://www.theguardian.com/${href}" class="fc-item__link" data-link-name="article"><span class="js-headline-text">${t}</span></a>`;
-  const html = [
-    a(`world/${path}/flydubai-pilot-stabbing`, "Flydubai pilot arrested after stabbing"),
-    a(`world/video/${path}/lethal-russian-strikes`, "Lethal Russian strikes hit residential area in Kyiv – video"),
-    a(`world/live/${path}/russia-ukraine-war`, "No imminent threat to Nato territory"),
-    a(`world/${path}/ukraine-war-briefing-nato`, "Ukraine war briefing: Nato condemns Moscow"),
-    a(`world/${path}/wednesday-briefing-burnham`, "Wednesday briefing: Can Andy Burnham live up"),
-    a(`australia-news/${path}/sydney-floods`, "Sydney floods"),
-    a(`world/${path}/flydubai-pilot-stabbing`, "Flydubai pilot arrested after stabbing"),
-  ].join("\n");
-  assert.deepEqual(parseGuardian(html, path).map((i) => i.title), ["Flydubai pilot arrested after stabbing", "Sydney floods"]);
-});
-
 test("NPR business 아카이브에서 그날 기사만 남기고 같은 기사는 한 번만 둔다", () => {
   // 2026-10-11 받은 9-16-2026 쪽에서 줄였다. 쪽은 그 날짜부터 거슬러 15건이라 앞 날짜가 섞인다.
   const a = (href, t) => `<article class="item has-image"><div class="item-info"><h2 class="title"><a href="https://www.npr.org/${href}"  data-metrics-ga4='{"action":"topic_homepage_recirculation_click","clickPosition":"2.1"}' >${t}</a></h2></div></article>`;
@@ -77,4 +62,21 @@ test("NPR business 아카이브에서 그날 기사만 남기고 같은 기사�
     { title: "The powerful millionaires hiding in plain sight", url: "https://www.npr.org/sections/planet-money/2026/09/16/g-s1-1/millionaires" },
   ]);
   assert.deepEqual(parseNpr(html, "2026-09-17"), []);
+});
+
+test("NPR world 아카이브에서 Up First 뉴스레터를 뺀다", () => {
+  // 2026-11-09 받은 10-27-2026 world 쪽에서 줄였다. 뉴스레터는 제목 하나에 사안 둘을 담는다.
+  const a = (href, t) => `<h2 class="title"><a href="https://www.npr.org/${href}" >${t}</a></h2>`;
+  const html = [
+    a("2026/10/27/nx-s1-6012345/israel-election-turnout", "Israel's voter turnout soars as Netanyahu faces a tight election"),
+    a("2026/10/27/g-s1-149506/up-first-newsletter-israel-election-midterms-poll", "Democrats have a midterm edge, poll shows. And, Israelis vote in high-stakes election"),
+  ].join("\n");
+  assert.deepEqual(parseNpr(html, "2026-10-27").map((i) => i.title), ["Israel's voter turnout soars as Netanyahu faces a tight election"]);
+});
+
+test("응답이 200 이어도 기사 목록이 없으면 받지 못한 것으로 본다", () => {
+  // 2026-11-09 The Guardian 이 200 으로 돌려준 봇 확인 페이지에서 줄였다.
+  const challenge = "<!doctype html><html><head><title>Client Challenge</title></head><body><noscript>JavaScript is disabled in your browser.</noscript></body></html>";
+  assert.throws(() => assertListing(challenge, '<h2 class="title">', "NPR world"), /기사 목록이 없다/);
+  assert.equal(assertListing('<h2 class="title"><a href="x">t</a></h2>', '<h2 class="title">', "NPR world").length > 0, true);
 });
