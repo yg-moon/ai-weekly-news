@@ -14,13 +14,13 @@
 - **날짜를 지정해 받을 수 있는 소스만 뼈대로 쓴다.**
   - 대상 주 7일을 정확히 덮어야 한다. 일반 뉴스 RSS 는 최신 몇십 건뿐이다. 발행 빈도가 낮은 뉴스룸 RSS 만 예외다.
   - 국내: 10개 일간지 1면과 네이버 뉴스 랭킹(주요 매체 15곳). 둘 다 날짜별 아카이브라 회고와 검증이 된다. 1면은 편집 판단이고 랭킹은 클릭이다.
-  - 해외: Wikipedia Current events 를 뼈대로 The Guardian 날짜 목록과 NPR business 날짜 아카이브를 보탠다. 위키는 분류와 출처가 있고 매체 편향이 없지만 경제·기업이 약하다. NPR 은 미국 경제·통화정책을 보완한다(2026-10-11, W38 연준 금리 인상이 위키·Guardian 에 없었다).
+  - 해외: Wikipedia Current events 를 뼈대로 NPR world·business 날짜 아카이브를 보탠다. 위키는 분류와 출처가 있고 매체 편향이 없지만 경제·기업이 약하다. NPR business 는 미국 경제·통화정책을 보완한다(2026-10-11, W38 연준 금리 인상이 위키·Guardian 에 없었다). NPR world 는 막힌 The Guardian 날짜 목록을 대신한다(2026-11-09). W42~W44 를 다시 세니 실린 후보끼리의 순서가 Guardian 을 넣었을 때와 더 많이 맞았다(일치 67·불일치 18 → 76·9). 유럽·아시아 사안은 Guardian 보다 덜 잡힌다.
   - AI: 뉴스룸 1차 출처 7곳, TechCrunch·The Verge 날짜별 AI 기사, Hacker News 날짜별 프런트. 뉴스룸은 수치가 정확하고, 테크 매체로 보도량을 세고, HN 이 업계 반응을 잡는다.
-  - 버린 것: BBC World RSS(3.3일치), CNN World RSS(날짜가 깨져 있다), The Guardian 월드 RSS(8.5일치라 백필에서 비었다), Guardian business(영국 국내 경제 기사가 섞여 실린 1위를 넘었다), Techmeme(과거 날짜 403), Ars Technica 로 보도량 세기(날짜 페이지에 인기 기사가 섞인다), Reuters·Wired·The Register 로 AI 보도량 세기(동점은 풀었지만 실린 순위와 더 맞지 않았고, Reuters 시장 칼럼이 시장이 반응한 사안을 부풀렸다).
-- **주요 매체는 국내 15곳, 해외 The Guardian · BBC · CNN · NPR · The New York Times 다.**
+  - 버린 것: BBC World RSS(3.3일치), CNN World RSS(날짜가 깨져 있다), The Guardian 월드 RSS(8.5일치라 백필에서 비었다), Guardian business(영국 국내 경제 기사가 섞여 실린 1위를 넘었다), Techmeme(과거 날짜 403), Ars Technica 로 보도량 세기(날짜 페이지에 인기 기사가 섞인다), Reuters·Wired·The Register 로 AI 보도량 세기(동점은 풀었지만 실린 순위와 더 맞지 않았고, Reuters 시장 칼럼이 시장이 반응한 사안을 부풀렸다), The Guardian 날짜 목록(2026-11-09 부터 봇 확인 페이지만 온다), Guardian 공식 API(AI 텍스트 마이닝이 비상업 키로 허용되는지 약관 확인이 필요하고 키 관리가 는다), 봇 확인 페이지 통과(우회다).
+- **주요 매체는 국내 15곳, 해외 BBC · CNN · NPR · The New York Times 다.**
   - 국내는 종합일간지 8곳, 방송 6곳, 통신사 1곳이다.
   - Al Jazeera 는 보조다. 카타르 국영 자금 매체이고, 검색이 BBC·The Guardian 에 닿지 않아 2026-W31~W38 해외 40건 중 32건이 Al Jazeera 에 기댔다.
-  - 버린 것: MBN · 채널A · TV조선 · 오마이뉴스(연성 기사 비중이 높다), 뉴시스를 주요로(같은 성격의 뉴스1 이 보조다), Al Jazeera 를 주요로.
+  - 버린 것: MBN · 채널A · TV조선 · 오마이뉴스(연성 기사 비중이 높다), 뉴시스를 주요로(같은 성격의 뉴스1 이 보조다), Al Jazeera 를 주요로, The Guardian 을 주요로(2026-11-09 부터 막혔다).
 - **국내 사안은 한국어 원문을 우선한다.**
   - 버린 것: 영문판 중심 국내 뉴스. 국문 원문은 검색만 막히고 받기는 되며 영문판에 없는 세부가 많다.
 - **사실은 원문 대조로만 확정한다.** 검색 결과 요약은 생성된 텍스트다.

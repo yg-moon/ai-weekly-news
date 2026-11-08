@@ -1,0 +1,20 @@
+{
+ "korea": [],
+ "world": [
+  {"topic":"후티-사우디 전쟁 확대, UAE 재참전","days":5,"outlets":14,"media":9,"articles":10},
+  {"topic":"우크라이나 Starlink 제한, 에너지 휴전 붕괴","days":7,"outlets":9,"media":3,"articles":10},
+  {"topic":"프랑스 학생 시위 50만 명, 폭동·노란 조끼 합류","days":1,"outlets":5,"media":5,"articles":5},
+  {"topic":"흑해 상선 드론 공격","days":3,"outlets":3,"media":3,"articles":3},
+  {"topic":"교황 레오 폐암 수술","days":3,"outlets":3,"media":1,"articles":3},
+  {"topic":"인도 바퀴벌레당 시위 탄압","days":3,"outlets":3,"media":3,"articles":3},
+  {"topic":"호르무즈 인근 화물선 2척 침몰","days":2,"outlets":3,"media":3,"articles":2},
+  {"topic":"서안 정착민 폭력","days":2,"outlets":3,"media":3,"articles":3},
+  {"topic":"알바니아 학생 시위","days":2,"outlets":2,"media":2,"articles":2},
+  {"topic":"동남아 연무·인도네시아 산불","days":2,"outlets":2,"media":1,"articles":3},
+  {"topic":"체코 상원 선거 여당 전패","days":2,"outlets":2,"media":2,"articles":2},
+  {"topic":"윤초 폐지","days":1,"outlets":2,"media":2,"articles":1},
+  {"topic":"파키스탄 페샤와르 학교 지붕 붕괴","days":1,"outlets":2,"media":2,"articles":2},
+  {"topic":"아일랜드 공공부문 총파업","days":1,"outlets":1,"media":1,"articles":1}
+ ],
+ "ai": []
+}

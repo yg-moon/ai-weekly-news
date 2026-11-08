@@ -59,7 +59,7 @@ done
 | 분야 | 출처 | 무엇을 주는가 |
 |---|---|---|
 | 국내 | 네이버 뉴스 랭킹(`domestic`) + 10개 일간지 1면(`front`) | 날짜별·주요 언론사 15곳별 많이 본 기사 5건씩, 날짜별·신문별 A1면 기사 |
-| 해외 | Wikipedia Portal:Current events + The Guardian 날짜 목록 + NPR business 날짜 아카이브 | 날짜별로 분류·정리된 국제 사안과 인용 기사 URL, 날짜별 Guardian 기사(영상·라이브블로그·브리핑 제외), 날짜별 NPR 경제 기사(미국 경제·통화정책 보완) |
+| 해외 | Wikipedia Portal:Current events + NPR world·business 날짜 아카이브 | 날짜별로 분류·정리된 국제 사안과 인용 기사 URL, 날짜별 NPR 국제·경제 기사(Up First 뉴스레터 제외) |
 | AI | 연구소·기업 뉴스룸 7곳(`ai`) + TechCrunch·The Verge AI 기사(`aimedia`) + Hacker News 프런트(`tech`) | 1차 발표, 날짜·매체별 보도, 기술 화제 |
 
 **1면은 대상 주 화요일 신문부터 다음 주 월요일 신문까지 받는다.** 월요일 신문은 앞 주 토·일 사건을 싣기 때문이다. 창 끝에 휴간이 걸리면 수집기가 휴간 뒤 첫 발행일까지 늘린다. 그래서 `front` 는 다음 주 월요일 신문이 나온 뒤에 받는다. 신문이 하나도 없는 날(일요일, 연휴)은 연합뉴스 주요뉴스 이력이 따로 묶여 들어온다. 이 묶음은 그 날에 새로 나온 사안을 확인하는 데만 쓴다.
@@ -85,7 +85,7 @@ node scripts/rank-topics.mjs /tmp/<WEEK>/domestic.md --top 40
 | 분야 | 측정 방법 |
 |---|---|
 | 국내 | **1면에서 센다.** 사안마다 며칠에 걸쳐 몇 개 신문이 1면에 실었는지 센다. 클릭 랭킹의 일·곳은 참고값으로 함께 적는다. 정규식으로 묶은 뒤 걸린 제목을 눈으로 확인한다(4절 `count-topics.mjs`). 해외 분야에 실린 사안은 국내 순위에서 뺀다 |
-| 해외 | 도구로 빈도를 뽑고 묶는다. 영어는 고유명사만 센다. 보도량은 (날짜, 매체) 쌍의 수다. Guardian·NPR 은 하루 1곳으로 센다. 기사 수는 참고값으로만 적는다 |
+| 해외 | 도구로 빈도를 뽑고 묶는다. 영어는 고유명사만 센다. 보도량은 (날짜, 매체) 쌍의 수다. NPR 은 world·business 를 합쳐 하루 1곳으로 센다. 기사 수는 참고값으로만 적는다 |
 | AI | **목록 전체를 읽고 `aimedia` 에서 센다.** 사안마다 며칠에 걸쳐 몇 개 매체가 다뤘는지 센다. 기사 수는 TechCrunch 가 절반을 넘어 매체 수로 센다. 뉴스룸과 HN 은 후보를 보탤 뿐 보도량이 아니다. HN 은 개발자 관심사로 치우쳐 제품 출시를 부풀린다 |
 
 **'많이 본'과 '많이 보도된'은 다르다.** 네이버 랭킹은 독자 클릭 기준이라 정치 논란과 사건사고가 유리하고 재정·정책 기사가 불리하다. 1면은 편집 판단이라 정책 결정과 제도 시행이 올라온다. 후보는 랭킹과 1면을 합쳐 찾는다. 보도량은 1면으로 매긴다. 1면에 한 곳도 없는 랭킹 상위 사안은 연합 주요뉴스에서 다시 확인하고, 둘 다 약하면 싣는 이유를 따로 적는다.
@@ -190,7 +190,7 @@ node scripts/count-topics.mjs /tmp/<WEEK> data/topics/<WEEK>.json --detail
 | 분야 | 주요 | 보조 |
 |---|---|---|
 | 국내 | 조선일보 · 중앙일보 · 동아일보 · 한겨레 · 경향신문 · 한국일보 · 서울신문 · 국민일보 · KBS · SBS · MBC · JTBC · YTN · 연합뉴스 · 연합뉴스TV (15곳) | 한국경제 · 매일경제 · 서울경제 · 이데일리 · 뉴시스 · 뉴스1 · 프레시안 · 전자신문 · ZDNet |
-| 해외 | Wikipedia Current events(수집 뼈대) · The Guardian · BBC · CNN · NPR · The New York Times | Al Jazeera · CBS News · NBC News · USA Today · The Independent · Gulf News |
+| 해외 | Wikipedia Current events(수집 뼈대) · BBC · CNN · NPR · The New York Times | Al Jazeera · CBS News · NBC News · USA Today · The Independent · Gulf News |
 | AI | 연구소 1차 출처(아래) · TechCrunch · The Verge · Ars Technica | The Register · The New Stack · BNN Bloomberg · The Information · Semafor |
 
 국내 사안은 **한국어 원문을 우선한다.** 번역을 거치지 않아 표현과 수치가 정확하고, 영문판에 없는 사안이 많다.
@@ -213,13 +213,13 @@ node scripts/count-topics.mjs /tmp/<WEEK> data/topics/<WEEK>.json --detail
 
 **도구가 거부하는 매체가 있다.** 검색 도구의 `allowed_domains` 에 연합·조선·중앙·동아·한겨레·매경·Reuters·AP·BBC·The Guardian·The New York Times 를 넣으면 호출 전체가 실패한다. 넣지 않는다. 다만 URL 을 알면 원문 받기는 되므로 대조에는 쓴다. Wall Street Journal 은 원문도 막혀 있다(401).
 
-**BBC 와 The Guardian 은 검색으로 찾지 않는다.** `site:` 로 찾아도 두 매체 기사는 나오지 않는다. 검색에만 기대면 검색이 닿는 매체로 출처가 쏠린다. W31~W38 해외 40건 중 32건이 Al Jazeera 였다. BBC 는 `world` 수집의 위키 인용 URL 에서, The Guardian 은 같은 수집의 날짜 목록에서 찾는다.
+**BBC 는 검색으로 찾지 않는다.** `site:` 로 찾아도 BBC 기사는 나오지 않는다. 검색에만 기대면 검색이 닿는 매체로 출처가 쏠린다. W31~W38 해외 40건 중 32건이 Al Jazeera 였다. BBC 는 `world` 수집의 위키 인용 URL 에서 찾는다.
 
-**봇 차단으로 원문을 받을 수 없는 매체가 있다.** 2026-W37 실측에 2026-09-23 실측을 더했다. 주요 매체 목록은 이 결과로 정했다.
+**봇 차단으로 원문을 받을 수 없는 매체가 있다.** 2026-W37 실측에 2026-09-23 실측을 더했다. 주요 매체 목록은 이 결과로 정했다. 2026-11-09 부터 The Guardian 은 봇 확인 페이지만 돌려준다.
 
 | 받아진다 | 막힌다 |
 |---|---|
-| The Guardian · BBC · CNN · Al Jazeera · NPR · The New York Times · CBS News · NBC News · USA Today · The Independent · TechCrunch · Ars Technica · The Register · The New Stack · BNN Bloomberg | Reuters(401) · AP(403, 자바스크립트 챌린지) · France 24(403) · CNBC(403) · Washington Post(연결 실패) · Times of Israel(403) · Axios(403) · Sky News(403) · Bloomberg(403) · VentureBeat(봇 확인 페이지) |
+| BBC · CNN · Al Jazeera · NPR · The New York Times · CBS News · NBC News · USA Today · The Independent · TechCrunch · Ars Technica · The Register · The New Stack · BNN Bloomberg | Reuters(401) · AP(403, 자바스크립트 챌린지) · France 24(403) · CNBC(403) · Washington Post(연결 실패) · Times of Israel(403) · Axios(403) · Sky News(403) · Bloomberg(403) · VentureBeat(봇 확인 페이지) · The Guardian(봇 확인 페이지) |
 
 **차단은 우회하지 않는다.** 받아지는 매체로 대조하고, 한 사안을 인용한 매체가 전부 막혔으면 그 사안은 싣지 않는다. 막힌 매체는 출처 줄에도 쓰지 않는다. 읽지 못한 원문을 근거로 내세우는 것이 된다. **표는 정기 실행 환경에서 잰 결과다. 다른 환경에서 열리더라도 막힌 매체로 다룬다.** 호마다 출처 기준이 같아야 분기호에서 함께 묶을 수 있다.
 

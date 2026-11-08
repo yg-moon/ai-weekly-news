@@ -1,0 +1,19 @@
+{
+ "korea": [],
+ "world": [
+  {"topic":"미 중간선거 민주당 상·하원 장악","days":3,"outlets":9,"media":8,"articles":12},
+  {"topic":"미국 호르무즈 '방어적 공습'","days":3,"outlets":7,"media":5,"articles":6},
+  {"topic":"파라과이 페냐 대통령 탄핵","days":3,"outlets":7,"media":5,"articles":6},
+  {"topic":"방글라데시 의류 노동자 임금 시위","days":2,"outlets":4,"media":4,"articles":4},
+  {"topic":"수단 내전","days":3,"outlets":3,"media":1,"articles":3},
+  {"topic":"프랑스 총파업·생활비 시위","days":2,"outlets":3,"media":3,"articles":2},
+  {"topic":"소말리아 대법원 개헌 무효","days":2,"outlets":3,"media":3,"articles":2},
+  {"topic":"조슈아 웡·마카오 국가안보 중형","days":2,"outlets":3,"media":3,"articles":3},
+  {"topic":"예멘 타이즈·사나 공습","days":2,"outlets":2,"media":1,"articles":2},
+  {"topic":"이스라엘 아이젠코트 연정 구성권","days":1,"outlets":2,"media":2,"articles":1},
+  {"topic":"뉴질랜드 총선","days":1,"outlets":2,"media":2,"articles":1},
+  {"topic":"크라쿠프 총기 난사","days":1,"outlets":1,"media":1,"articles":1},
+  {"topic":"중간선거 뒤 기술주 급락","days":1,"outlets":1,"media":1,"articles":1}
+ ],
+ "ai": []
+}
