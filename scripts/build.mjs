@@ -417,7 +417,7 @@ function layout({ title, description, root, body, full = false, lang = "ko", pat
   ).join("")}</nav>`;
   const searchLink = `<a class="search-link" href="${home}search/" aria-label="${T.search.label}"${path === "search/" ? ' aria-current="page"' : ""}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></a>`;
   const themeButton = `<button class="theme-toggle" type="button" aria-label="${T.theme}"><svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg><svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2.1"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg></button>`;
-  const masthead = `<div class="masthead"><h1><a href="${home}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></h1><div class="tools">${searchLink}${themeButton}${switcher}</div></div>`;
+  const masthead = `<div class="masthead"><${full ? "h1" : "p"} class="brand"><a href="${home}"><img class="logo" src="${root}favicon.svg" alt="">${SITE_TITLE}</a></${full ? "h1" : "p"}><div class="tools">${searchLink}${themeButton}${switcher}</div></div>`;
   return `<!doctype html>
 <html lang="${lang}"${altAttrs}>
 <head>

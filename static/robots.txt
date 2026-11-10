@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yg-moon.github.io/ai-weekly-news/sitemap.xml

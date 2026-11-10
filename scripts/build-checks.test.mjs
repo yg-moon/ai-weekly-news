@@ -203,6 +203,9 @@ test("진행 중 분기호의 기준 주와 흐름 수를 본다", () => {
   const year = doc("year", "2026", `\n## 국내\n${single(1, "Q3").replace("../../week/2026-Q3/", "../../quarter/2026-Q3/")}${filler(4, 2, "Q3", "quarter")}`);
   assert.match(run({ ko: { week: weeks, quarter: [q("2026-W30", ok)], year: [year] } }), /2026 → \.\.\/\.\.\/quarter\/2026-Q3/);
   assert.equal(run({ ko: { week: weeks, quarter: [q(null, ok)], year: [year] } }), "");
+  // 연간호도 순위대로 번호를 매긴다. 단발의 근거가 여러 분기면 걸린다.
+  const wide = year.body.replace("#korea-1)\n", "#korea-1) / [Q2](../../quarter/2026-Q2/#korea-1)\n");
+  assert.match(run({ ko: { week: weeks, quarter: [q(null, ok)], year: [{ ...year, body: wide }] } }), /단발인데 근거가 여러 분기에 걸친다/);
 });
 
 test("고른 탭·칩에 배경이 없으면 걸린다", () => {

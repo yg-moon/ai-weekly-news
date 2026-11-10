@@ -75,7 +75,7 @@ for (const width of [390, 1280]) {
   let first = null;
   for (const path of PAGES) {
     const page = await open(path, width);
-    const box = await page.evaluate(() => ["header.site h1", "header.site .logo", "header.site .tools"].map((s) => {
+    const box = await page.evaluate(() => ["header.site .brand", "header.site .logo", "header.site .tools"].map((s) => {
       const r = document.querySelector(s)?.getBoundingClientRect();
       return r ? [r.left, r.top, r.width, r.height].map(Math.round).join(",") : "없음";
     }).join(" | "));
