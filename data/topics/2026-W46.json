@@ -1,0 +1,202 @@
+[
+ {
+  "field": "korea",
+  "topic": "세무사 시험 AI 커닝",
+  "pattern": "AI 커닝|AI 안경|AI안경|세무사|AI 부정행위|AI부정행위|커닝|AI활용 부정행위|국가시험 부정|국가자격시험|시험의 나라|모든 시험"
+ },
+ {
+  "field": "korea",
+  "topic": "충청 메가프로젝트 착공",
+  "pattern": "메가프로젝트|메가사업|메가.{0,3}첫|메가' 첫|첫 삽|첫삽|23\\.6조"
+ },
+ {
+  "field": "korea",
+  "topic": "금융지주 회장 연임 규제",
+  "pattern": "연임"
+ },
+ {
+  "field": "korea",
+  "topic": "이용철 법무장관 후보자 청문회",
+  "pattern": "이용철"
+ },
+ {
+  "field": "korea",
+  "topic": "부동산 세제 당청 갈등",
+  "pattern": "종부세|장특공|부동산 과세|부동산 토론회|세제 이견|부동산 일관성|스텔스 증세"
+ },
+ {
+  "field": "korea",
+  "topic": "금융보안원 해킹·개인정보 유출",
+  "pattern": "금융보안원|개인정보|노란우산|해킹",
+  "exclude": "젠슨|앨리스"
+ },
+ {
+  "field": "korea",
+  "topic": "민주당 내분·최민희 발언",
+  "pattern": "최민희|친청|명·청|내홍|내분|계파|조희대 탄핵|등 뒤|개혁방해|개혁의 이름",
+  "exclude": "北포로"
+ },
+ {
+  "field": "korea",
+  "topic": "이 대통령 자본시장 정상화 지시",
+  "pattern": "자본시장|증시 정상화|주가조작|적대적 M&A|주가 누르기|저평가",
+  "exclude": "앨리스"
+ },
+ {
+  "field": "korea",
+  "topic": "배민·쿠팡이츠 과징금",
+  "pattern": "배민|쿠팡이츠|6319억"
+ },
+ {
+  "field": "korea",
+  "topic": "청해부대 파견 연장안 국회 제출",
+  "pattern": "청해부대"
+ },
+ {
+  "field": "korea",
+  "topic": "조작기소특검법 공포",
+  "pattern": "조작기소|특검 vs|특검법안"
+ },
+ {
+  "field": "korea",
+  "topic": "청년 취업 감소",
+  "pattern": "취업|쉬었음|비정규직",
+  "exclude": "휴게소"
+ },
+ {
+  "field": "korea",
+  "topic": "방한 외국인 2000만",
+  "pattern": "2000만명|2000만 명|관광객 2000"
+ },
+ {
+  "field": "korea",
+  "topic": "분당 버스 연쇄 추돌",
+  "pattern": "분당|성남 연쇄|32대|31대"
+ },
+ {
+  "field": "korea",
+  "topic": "한덕수 석방 가능성",
+  "pattern": "한덕수"
+ },
+ {
+  "field": "world",
+  "topic": "젠슨 황 엔비디아 사임",
+  "pattern": "Huang|Nvidia"
+ },
+ {
+  "field": "world",
+  "topic": "미국 FAA 전국 이륙 금지",
+  "pattern": "FAA|ground stop|항공 대란|항공 전면 중단|공항 대란|관제센터"
+ },
+ {
+  "field": "world",
+  "topic": "인도네시아 부통령 사임",
+  "pattern": "Gibran|Indonesia's VP|Indonesian vice president"
+ },
+ {
+  "field": "world",
+  "topic": "러·우 아부다비 협상·포로 교환",
+  "pattern": "Abu Dhabi|Russia and Ukraine|Ukraine talks|Kushner|Russo-Ukrainian war"
+ },
+ {
+  "field": "world",
+  "topic": "스페인 주거비 총파업",
+  "pattern": "Spain's workers|Spanish housing|Spain's first general strike|general strike over housing"
+ },
+ {
+  "field": "world",
+  "topic": "방글라데시 의류 노동자 시위",
+  "pattern": "garment"
+ },
+ {
+  "field": "world",
+  "topic": "이란 전쟁 걸프 공격",
+  "pattern": "Iran war|Iran's Islamic|Hormuz|Bahrain|strategy now with Iran",
+  "exclude": "Abu Dhabi|Iran International|U-17|fuel crisis"
+ },
+ {
+  "field": "world",
+  "topic": "브루클린 건물 붕괴",
+  "pattern": "Brooklyn|building collapse"
+ },
+ {
+  "field": "world",
+  "topic": "가자 병원 공습",
+  "pattern": "Gaza"
+ },
+ {
+  "field": "world",
+  "topic": "콩고 에볼라 1만1천 명",
+  "pattern": "Ebola"
+ },
+ {
+  "field": "world",
+  "topic": "마이크로소프트 접속 장애",
+  "pattern": "Microsoft|Outlook"
+ },
+ {
+  "field": "world",
+  "topic": "미시시피강 유람선 충돌",
+  "pattern": "New Orleans|American Heritage"
+ },
+ {
+  "field": "ai",
+  "topic": "젠슨 황 엔비디아 CEO 사임",
+  "pattern": "jensen|huang|nvidia|kress"
+ },
+ {
+  "field": "ai",
+  "topic": "Anthropic 상장 공모가·19일 상장",
+  "pattern": "ipo|roadshow|publicly trading|cash out"
+ },
+ {
+  "field": "ai",
+  "topic": "Claude Fable·Mythos 5.2 출시",
+  "pattern": "mythos|fable"
+ },
+ {
+  "field": "ai",
+  "topic": "Gemini 4 Carbon·Hydrogen 출시",
+  "pattern": "gemini 4|hydrogen|search upgrade"
+ },
+ {
+  "field": "ai",
+  "topic": "ChatGPT Wallet 출시",
+  "pattern": "wallet"
+ },
+ {
+  "field": "ai",
+  "topic": "구글 8세대 TPU 2종",
+  "pattern": "eighth gen|specialized chips"
+ },
+ {
+  "field": "ai",
+  "topic": "Claude 업무 도구(Meetings·오피스)",
+  "pattern": "claude meetings|office suite|claude duet"
+ },
+ {
+  "field": "ai",
+  "topic": "ChatGPT 비즈니스 프로필",
+  "pattern": "business profiles|business agents hub"
+ },
+ {
+  "field": "ai",
+  "topic": "메타 Muse Ember·Muse 기능",
+  "pattern": "muse"
+ },
+ {
+  "field": "ai",
+  "topic": "뉴욕주 AI 안전법 시행",
+  "pattern": "safety law"
+ },
+ {
+  "field": "ai",
+  "topic": "유나이티드항공 AI 에이전트 예약 차단",
+  "pattern": "united"
+ },
+ {
+  "field": "ai",
+  "topic": "AI 에이전트 마야 유적 발견",
+  "pattern": "maya"
+ }
+]
