@@ -1,0 +1,304 @@
+{
+  "week": "2026-W47",
+  "environment": "cloud",
+  "session": "7b4c9374-811f-52f1-a659-c99ab60d1e42",
+  "model": "claude-opus-5-5",
+  "started": "2026-11-23T06:07:24+09:00",
+  "published": "2026-11-23T06:28:00+09:00",
+  "cost_usd": 6.61,
+  "headlines": 1359,
+  "tokens": {
+    "input": 153,
+    "output": 61364,
+    "cache_read": 15674105,
+    "cache_write": 281032
+  },
+  "selection": {
+    "korea": [
+      {
+        "topic": "수능 AI 커닝 대혼란·교육장관 사퇴",
+        "days": 6,
+        "outlets": 10,
+        "click": [
+          7,
+          15
+        ],
+        "rank": 1
+      },
+      {
+        "topic": "한덕수·김건희 대법 선고",
+        "days": 3,
+        "outlets": 9,
+        "click": [
+          5,
+          7
+        ],
+        "rank": 2
+      },
+      {
+        "topic": "조작기소 특검법 의결·공포",
+        "days": 3,
+        "outlets": 9,
+        "click": [
+          1,
+          1
+        ],
+        "rank": 3
+      },
+      {
+        "topic": "한중 FTA 서비스·투자 타결",
+        "days": 1,
+        "outlets": 9,
+        "click": [
+          0,
+          0
+        ],
+        "rank": 4
+      },
+      {
+        "topic": "코스피 급락·증안펀드",
+        "days": 5,
+        "outlets": 6,
+        "click": [
+          2,
+          3
+        ],
+        "rank": 5,
+        "over": "되돌리기 어려움: 코스피가 한 주 7.95% 떨어져 10개월 만의 최저로 내려갔고 당국이 18년 만의 증안펀드 가동 준비에 착수했다. 더 큰 조희대 탄핵 추진은 한덕수 판결 항목에 함께 실었다"
+      },
+      {
+        "topic": "조희대 대법원장 탄핵 추진",
+        "days": 3,
+        "outlets": 7,
+        "click": [
+          3,
+          3
+        ],
+        "out": "중복"
+      },
+      {
+        "topic": "연간 수출 1조 달러 돌파",
+        "days": 2,
+        "outlets": 6,
+        "click": [
+          1,
+          2
+        ],
+        "out": "경계"
+      },
+      {
+        "topic": "추경호 1심 무죄",
+        "days": 1,
+        "outlets": 6,
+        "click": [
+          1,
+          2
+        ],
+        "out": "경계"
+      },
+      {
+        "topic": "사관학교 통합",
+        "days": 2,
+        "outlets": 4,
+        "click": [
+          0,
+          0
+        ],
+        "out": "국면 없음"
+      },
+      {
+        "topic": "IMF 성장률 3.9% 전망",
+        "days": 1,
+        "outlets": 3,
+        "click": [
+          0,
+          0
+        ],
+        "out": "발언"
+      },
+      {
+        "topic": "리트 만점자 부정 의혹·사망",
+        "days": 1,
+        "outlets": 1,
+        "click": [
+          7,
+          15
+        ],
+        "out": "단발"
+      }
+    ],
+    "world": [
+      {
+        "topic": "미·중·러 첫 3국 정상회담",
+        "days": 5,
+        "outlets": 7,
+        "rank": 1,
+        "over": "되돌리기 어려움: 세 정상이 처음 함께 만나 공동 평화선언을 냈다. 더 큰 방글라데시 정치 폭력은 인용 매체가 7절 표에 없어 원문을 대조하지 못했고, 의류 노동자 시위는 W45에 실렸고 국면이 바뀌지 않았다. 가자 집계는 일상 공습이 대부분이다"
+      },
+      {
+        "topic": "크림대교 공격·붕괴",
+        "days": 3,
+        "outlets": 7,
+        "rank": 2,
+        "over": "되돌리기 어려움: 다리 도로 구간이 무너져 연결이 끊겼다. 더 큰 가자 공습은 국면 없음"
+      },
+      {
+        "topic": "ICJ 미얀마 로힝야 집단학살 판결",
+        "days": 1,
+        "outlets": 2,
+        "rank": 3,
+        "over": "축적 가치: ICJ가 국가에 집단학살 책임을 인정한 첫 판결이다. 더 큰 몽골 대통령 사임은 인용 매체(AP)가 막혔고, 이란 전쟁은 국면 없음, Anthropic 상장은 AI 분야에 실었다"
+      },
+      {
+        "topic": "미주 홍역 퇴치 지위 박탈",
+        "days": 1,
+        "outlets": 2,
+        "rank": 4,
+        "over": "영향의 범위: 미국이 26년 만에 홍역 퇴치 지위를 잃었다. 더 큰 몽골 대통령 사임은 원문 확인 불가, AI 살상무기 회의는 합의 없이 끝났고, 카르텔 두목 체포는 단발이다"
+      },
+      {
+        "topic": "COP 기후총회 합의 결렬",
+        "days": 1,
+        "outlets": 1,
+        "rank": 5,
+        "over": "축적 가치: 200개국 가까이 모인 기후총회가 합의문 없이 끝났다. 위키에는 없었지만 국내 1면(경향)과 연합 주요뉴스에도 실렸다. 더 큰 몽골 대통령 사임은 원문 확인 불가, 리비아 코르벳 격침은 단발이다"
+      },
+      {
+        "topic": "방글라데시 정치 보복 폭력",
+        "days": 7,
+        "outlets": 15,
+        "out": "원문 확인 불가"
+      },
+      {
+        "topic": "방글라데시 의류 노동자 시위",
+        "days": 6,
+        "outlets": 12,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "이스라엘 가자 중부 작전",
+        "days": 4,
+        "outlets": 8,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "이란 전쟁·호르무즈",
+        "days": 3,
+        "outlets": 7,
+        "out": "국면 없음"
+      },
+      {
+        "topic": "Anthropic 상장(해외)",
+        "days": 3,
+        "outlets": 3,
+        "out": "중복"
+      },
+      {
+        "topic": "몽골 대통령 사임",
+        "days": 2,
+        "outlets": 2,
+        "out": "원문 확인 불가"
+      },
+      {
+        "topic": "AI 살상무기 유엔 회의",
+        "days": 2,
+        "outlets": 2,
+        "out": "발언"
+      },
+      {
+        "topic": "미국 증시 급락",
+        "days": 2,
+        "outlets": 2,
+        "out": "중복"
+      },
+      {
+        "topic": "멕시코 카르텔 두목 체포",
+        "days": 2,
+        "outlets": 2,
+        "out": "단발"
+      },
+      {
+        "topic": "우크라이나 드론, 리비아서 러 코르벳 격침",
+        "days": 1,
+        "outlets": 2,
+        "out": "단발"
+      }
+    ],
+    "ai": [
+      {
+        "topic": "엔비디아 황 이후·실적·SEC 조사",
+        "days": 7,
+        "outlets": 2,
+        "rank": 1
+      },
+      {
+        "topic": "Anthropic 상장",
+        "days": 3,
+        "outlets": 2,
+        "rank": 2
+      },
+      {
+        "topic": "Claude 보조 리만 가설 증명 주장",
+        "days": 1,
+        "outlets": 2,
+        "rank": 3,
+        "over": "축적 가치: 밀레니엄 난제 증명이 Lean 코드로 공개돼 컴파일이 확인됐다. 더 큰 수출 통제는 엔비디아 항목에 함께 실었고, Muse는 5위에 실었고, Signal 스크린샷 차단과 AI 사이버공격 기사는 단발이다"
+      },
+      {
+        "topic": "캘리포니아주, OpenAI 제소",
+        "days": 1,
+        "outlets": 2,
+        "rank": 4,
+        "over": "되돌리기 어려움: 주 법무장관이 실제로 소송을 냈다. 더 큰 Muse는 5위에 실었고, Signal 스크린샷 차단과 AI 사이버공격 기사는 단발이다"
+      },
+      {
+        "topic": "메타 Muse 에이전트 대화 혼선",
+        "days": 2,
+        "outlets": 2,
+        "rank": 5
+      },
+      {
+        "topic": "미국 AI 칩 수출 통제 강화",
+        "days": 2,
+        "outlets": 2,
+        "out": "중복"
+      },
+      {
+        "topic": "Signal AI 스크린샷 차단",
+        "days": 2,
+        "outlets": 2,
+        "out": "단발"
+      },
+      {
+        "topic": "AI 사이버공격·취약점",
+        "days": 2,
+        "outlets": 2,
+        "out": "단발"
+      },
+      {
+        "topic": "마이크로소프트 Ignite·나델라",
+        "days": 1,
+        "outlets": 1,
+        "out": "발언"
+      },
+      {
+        "topic": "AI 거품론·증시 급락",
+        "days": 1,
+        "outlets": 1,
+        "out": "중복"
+      },
+      {
+        "topic": "GPT-6.2 Astra·Sol 출시",
+        "days": 0,
+        "outlets": 0,
+        "out": "원문 확인 불가"
+      },
+      {
+        "topic": "Gemini 4 Neon 출시",
+        "days": 0,
+        "outlets": 0,
+        "out": "원문 확인 불가"
+      }
+    ]
+  }
+}

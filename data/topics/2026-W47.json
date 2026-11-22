@@ -1,0 +1,211 @@
+[
+ {
+  "field": "korea",
+  "topic": "수능 AI 커닝 대혼란·교육장관 사퇴",
+  "pattern": "수능|커닝|AI 부정|AI부정|재난문자|스티커|흑색연필|검정 연필|최교진|교육장관|교육수장|국가시험|AI안경|AI 안경|98명|정답 찾는 평가|전파 차단|와이파이"
+ },
+ {
+  "field": "korea",
+  "topic": "리트 만점자 부정 의혹·사망",
+  "pattern": "리트|LEET|이진우|MDEET"
+ },
+ {
+  "field": "korea",
+  "topic": "한덕수·김건희 대법 선고",
+  "pattern": "한덕수|김건희|파기환송|위헌-위법|계엄은 ‘내란’"
+ },
+ {
+  "field": "korea",
+  "topic": "조희대 대법원장 탄핵 추진",
+  "pattern": "조희대|대법원장 탄핵|曺 탄핵|曺탄핵|법관회의|법관대표"
+ },
+ {
+  "field": "korea",
+  "topic": "조작기소 특검법 의결·공포",
+  "pattern": "조작기소|공소취소 열차|특검법"
+ },
+ {
+  "field": "korea",
+  "topic": "한중 FTA 서비스·투자 타결",
+  "pattern": "FTA|한한령|한·중 정상|한중 정상|習"
+ },
+ {
+  "field": "korea",
+  "topic": "연간 수출 1조 달러 돌파",
+  "pattern": "1조달러|1조 달러|수출 1조"
+ },
+ {
+  "field": "korea",
+  "topic": "코스피 급락·증안펀드",
+  "pattern": "코스피|5000피|5천피|증안펀드|증시안정|검은 금요일|검은 월요일|블랙먼데이|AI 투매|외국인 탈출|9천→5천"
+ },
+ {
+  "field": "korea",
+  "topic": "추경호 1심 무죄",
+  "pattern": "추경호"
+ },
+ {
+  "field": "korea",
+  "topic": "IMF 성장률 3.9% 전망",
+  "pattern": "IMF|성장률"
+ },
+ {
+  "field": "korea",
+  "topic": "재초환 첫 부과",
+  "pattern": "재초환|재건축 초과"
+ },
+ {
+  "field": "korea",
+  "topic": "사관학교 통합",
+  "pattern": "사관학교|육사|육·해·공사"
+ },
+ {
+  "field": "korea",
+  "topic": "한전 개인정보 유출",
+  "pattern": "한전"
+ },
+ {
+  "field": "world",
+  "topic": "미·중·러 첫 3국 정상회담",
+  "pattern": "trilateral|Xi and Putin|Xi-Putin|Xi, Russian president|Putin.*Trump|Trump.*(Asia|China|Philippines)|APEC",
+  "exclude": "Canada|Chile"
+ },
+ {
+  "field": "world",
+  "topic": "크림대교 공격·붕괴",
+  "pattern": "Crimean Bridge|Russian bridge|Kerch"
+ },
+ {
+  "field": "world",
+  "topic": "ICJ 미얀마 로힝야 집단학살 판결",
+  "pattern": "Rohingya"
+ },
+ {
+  "field": "world",
+  "topic": "몽골 대통령 사임",
+  "pattern": "Mongolia"
+ },
+ {
+  "field": "world",
+  "topic": "방글라데시 정치 보복 폭력",
+  "pattern": "Awami|July Uprising|Yunus|Bangladesh Nationalist Party members are killed|Border Guard",
+  "exclude": "garment"
+ },
+ {
+  "field": "world",
+  "topic": "방글라데시 의류 노동자 시위",
+  "pattern": "garment"
+ },
+ {
+  "field": "world",
+  "topic": "COP 기후총회 합의 결렬",
+  "pattern": "Climate change talks|COP3|fossil fuels"
+ },
+ {
+  "field": "world",
+  "topic": "이란 전쟁·호르무즈",
+  "pattern": "Iran war|Hormuz|Qeshm|Bahrain",
+  "exclude": "Bahrain sentences"
+ },
+ {
+  "field": "world",
+  "topic": "이스라엘 가자 중부 작전",
+  "pattern": "Gaza"
+ },
+ {
+  "field": "world",
+  "topic": "미주 홍역 퇴치 지위 박탈",
+  "pattern": "measles"
+ },
+ {
+  "field": "world",
+  "topic": "AI 살상무기 유엔 회의",
+  "pattern": "killer robots"
+ },
+ {
+  "field": "world",
+  "topic": "미국 증시 급락",
+  "pattern": "S&P 500|AI boom had|Nasdaq composite"
+ },
+ {
+  "field": "world",
+  "topic": "Anthropic 상장(해외)",
+  "pattern": "Anthropic IPO|Anthropic has made|Anthropic says it will put|blockbuster IPO"
+ },
+ {
+  "field": "world",
+  "topic": "멕시코 카르텔 두목 체포",
+  "pattern": "Meza Flores|Cartel leader captured|Mazatlecos"
+ },
+ {
+  "field": "world",
+  "topic": "러 미사일 폴란드 낙하",
+  "pattern": "Poland|Lublin"
+ },
+ {
+  "field": "world",
+  "topic": "우크라이나 드론, 리비아서 러 코르벳 격침",
+  "pattern": "Merkury|Benghazi"
+ },
+ {
+  "field": "ai",
+  "topic": "Anthropic 상장",
+  "pattern": "ipo|nasdaq|own nearly 30%|cashed out|deliver \\$156B|recommits"
+ },
+ {
+  "field": "ai",
+  "topic": "엔비디아 황 이후·실적·SEC 조사",
+  "pattern": "jensen|huang|nvidia|kress"
+ },
+ {
+  "field": "ai",
+  "topic": "Claude 보조 리만 가설 증명 주장",
+  "pattern": "riemann"
+ },
+ {
+  "field": "ai",
+  "topic": "캘리포니아주, OpenAI 제소",
+  "pattern": "california|rogue agent"
+ },
+ {
+  "field": "ai",
+  "topic": "미국 AI 칩 수출 통제 강화",
+  "pattern": "export"
+ },
+ {
+  "field": "ai",
+  "topic": "GPT-6.2 Astra·Sol 출시",
+  "pattern": "gpt-6\\.2|astra and sol"
+ },
+ {
+  "field": "ai",
+  "topic": "Gemini 4 Neon 출시",
+  "pattern": "neon"
+ },
+ {
+  "field": "ai",
+  "topic": "메타 Muse 에이전트 대화 혼선",
+  "pattern": "muse"
+ },
+ {
+  "field": "ai",
+  "topic": "AI 사이버공격·취약점",
+  "pattern": "java4shell|artex|cyberattack|unpatchable|hacked"
+ },
+ {
+  "field": "ai",
+  "topic": "마이크로소프트 Ignite·나델라",
+  "pattern": "nadella|ignite|microsoft"
+ },
+ {
+  "field": "ai",
+  "topic": "AI 거품론·증시 급락",
+  "pattern": "bubble|bad week|circular financing",
+  "exclude": "Anthropic"
+ },
+ {
+  "field": "ai",
+  "topic": "Signal AI 스크린샷 차단",
+  "pattern": "signal"
+ }
+]
