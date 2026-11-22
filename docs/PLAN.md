@@ -29,6 +29,10 @@ W43(10-26)부터 분기 루틴이 매주 진행 중인 판을 낸다. 규칙은 
 - [ ] W28 [KBS](https://n.news.naver.com/article/056/0012212902)
 - [ ] W31 [한국일보](https://n.news.naver.com/article/469/0000945628)
 
+## 수집 누락 (2026-W47 정기 실행)
+
+- [ ] `world` 수집이 위키 Current events 의 11-18 하루를 경고 없이 빠뜨렸다. 같은 명령을 다시 돌리자 7일이 다 받아졌다. 하루가 비면 경고하는 검사가 위키 날짜 블록 누락에는 걸리지 않는 것으로 보인다. `collect-headlines.mjs` 에서 위키 날짜 블록 수가 대상 주 날 수보다 적으면 경고하고 다시 받게 할지 정한다
+
 ## 선정 측정과 기록
 
 국내 보도량을 1면으로 세고 선정 기록을 남기는 절차를 2026-10-08 에 넣었다. 실험과 근거, 판정 기준, 분기마다 볼 지표는 [`experiments/exp1-news-selection`](../experiments/exp1-news-selection/README.md) 에 있다.
