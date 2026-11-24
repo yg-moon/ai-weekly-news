@@ -255,6 +255,14 @@ export function missingRuns(ids, runs) {
 // 선정 기록이 없거나 모자란 주간호. 런북 4절이 분야마다 실린 5개(rank 1~5)와 뺀 후보(out)를
 // 보도량(국내는 click 포함)과 함께 적게 한다. 선정 기록은 2026-10-08 에 정했으므로 그 뒤 첫 호인 2026-W41 부터 본다.
 const SELECTION_FROM = "2026-W41";
+const CLICK_TOP_FROM = "2026-W47";
+const CLICK_TOP_OUTS = ["중복", "원문 확인 불가", "연예·생활"];
+function clickTopMisses(list) {
+  const key = (t) => t.click[0] * 1000 + t.click[1];
+  const top = Math.max(...list.map(key));
+  if (top <= 0) return [];
+  return list.filter((t) => key(t) === top && t.out && !CLICK_TOP_OUTS.includes(t.out));
+}
 export function badSelections(runs) {
   return runs
     .filter((r) => /^\d{4}-W\d{2}$/.test(r.week) && r.week >= SELECTION_FROM)
@@ -288,7 +296,10 @@ export function badSelections(runs) {
           const i = x.findIndex((v, k) => v !== y[k]);
           return i >= 0 && x[i] > y[i];
         };
-        return silent.concat(list
+        // 게이트를 통과한 클릭 1위 국내 사안은 싣는다(2026-11-24). 날 수, 곳 수 순으로 가장 큰 사안이 빠졌으면
+        // 빼는 이유가 해외 중복·같은 항목에 갈래로 넣음(중복), 원문 확인 불가, 연예·생활이어야 한다. 같은 값이 여럿이면 모두 본다.
+        const clickTop = f === "korea" && r.week >= CLICK_TOP_FROM ? clickTopMisses(list).map((t) => `${where} 클릭 1위 "${t.topic}" 를 "${t.out}" 로 뺐다. 빼도 되는 이유는 ${CLICK_TOP_OUTS.join(", ")} 뿐이다`) : [];
+        return silent.concat(clickTop, list
           .filter((a) => a.rank && !hasOver(a) && !(f === "ai" && a.outlets === 0))
           .flatMap((a) => {
             const b = list.find((t) => (t.out || t.rank > a.rank) && bigger(t, a));

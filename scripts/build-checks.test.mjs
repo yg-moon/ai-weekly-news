@@ -286,6 +286,15 @@ test("W41 부터 선정 기록의 형식과 1면 우선 순서를 본다", () =>
   assert.deepEqual(badSelections(sel({ ai: zero(five).map((t) => (t.rank === 5 ? { ...t, over: "Google 발표, Ars Technica 보도" } : t)) })), []);
   assert.deepEqual(badSelections(sel({ world: zero(five) })), []);
 
+  // W47 부터 국내 클릭 1위를 빼려면 이유가 중복, 원문 확인 불가, 연예·생활이어야 한다.
+  const clickTop = (out) => [{ week: "2026-W47", selection: { ...full, korea: kor.concat({ topic: "c", days: 1, outlets: 1, click: [7, 15], out }) } }];
+  assert.deepEqual(badSelections(clickTop("단발")), ['2026-W47: korea 클릭 1위 "c" 를 "단발" 로 뺐다. 빼도 되는 이유는 중복, 원문 확인 불가, 연예·생활 뿐이다']);
+  assert.deepEqual(badSelections(clickTop("중복")), []);
+  assert.deepEqual(badSelections(clickTop("연예·생활")), []);
+  // 클릭 1위가 실렸으면 통과한다. W46 이전은 보지 않는다.
+  assert.deepEqual(badSelections([{ week: "2026-W47", selection: { ...full, korea: kor.map((t) => (t.rank === 5 ? { ...t, click: [7, 15] } : t)) } }]), []);
+  assert.deepEqual(badSelections([{ ...clickTop("단발")[0], week: "2026-W46" }]), []);
+
   // W40 이전은 형식이 달라도 보지 않는다.
   assert.deepEqual(badSelections([{ week: "2026-W40", selection: { korea: five, world: swap(five, 1, 2), ai: [] } }]), []);
 });
